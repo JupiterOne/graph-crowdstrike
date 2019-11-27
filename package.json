@@ -1,9 +1,9 @@
 {
-  "name": "@jupiterone/graph-template",
+  "name": "@jupiterone/graph-crowdstrike",
   "version": "0.1.0",
   "description": "A template for JupiterOne graph converters.",
   "main": "dist/index.js",
-  "repository": "https://github.com/JupiterOne/graph-template",
+  "repository": "https://github.com/JupiterOne/graph-crowdstrike",
   "license": "SEE LICENSE IN LICENSE",
   "files": [
     "LICENSE",

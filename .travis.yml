@@ -1,8 +1,6 @@
 language: node_js
 node_js:
-  - '8'
-  - '10'
-  - '11'
+  - '12'
 
 notifications:
   email:
@@ -15,10 +13,10 @@ deploy:
   provider: npm
   email: npm@jupiterone.io
   api_key:
-    secure: 'travis encrypt <npm@jupiterone.io API key from Dashlane>'
+    secure: "IX3MOuad9EFOkNkOwk35qSJ3pZw5XZws9Cqi7nNE3CwO1HwgItYH2tdhy0t2wlIopZSD7JFgs86dmi5XMQ5XN8N9tnp2s+Ur9XYxqo1QJ3dWo3GWE7XhF7CXLx5iFX003djl13EpoSjeEyJbjYiH4VtAhLtxvGnkSUEjhkxZGormp6AOQqriChOqxORNPRndDi+3/rxDpLb1bJEco9J71IeIYVGuzwTL7qBSZ1/UUdClhOfB5F4FE6ntHiXUg3YF/E8l3YMCgA47PK+E6NyFlZLWr4pOkKk0QaE/NWmRZ6tYwMwnuH/6dtxC3EqpjjaFHUo6j5zBxDQnQ/sbY3cVlwkgch+j3JlmGtxaiYbPBlchDHoIztbk0s7UrLILNewxTf65vC2GbvYfFYMSmuN4d9WfqsEB71+bnujuQdaFWY4O9huredOkQWoeUi+5z3mguAdXkhbrO/bvRrdzWmvvEOKTNdlgVaOb1OhBSKcCeq0iRDElE9k/siFIUjaJgHls89sMZo6ulmyPvNp4IaQdbcyG5Gu6jKQmPHauMg2d05pcvqG0y5s+QAYIPyz1i1oDK1Saxi4JA99ES8XUdA6+cB9J6rV/Po7jgGPeHpys0nYnMhw9jhspJyrRSKOcHOowXLU4b5TgL6ocu/ayW8DUDsxaingpGhAtfkQgcOHSjLo="
   skip_cleanup: true
   on:
     tags: true
     branch: master
-    repo: JupiterOne/graph-template
-    node: '8'
+    repo: JupiterOne/graph-crowdstrike
+    node: '12'

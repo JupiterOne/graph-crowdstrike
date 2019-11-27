@@ -1,6 +1,6 @@
-# graph-template
+# graph-crowdstrike
 
-[![Build Status](https://travis-ci.org/JupiterOne/graph-template.svg?branch=master)](https://travis-ci.org/JupiterOne/graph-template)
+[![Build Status](https://travis-ci.org/JupiterOne/graph-crowdstrike.svg?branch=master)](https://travis-ci.org/JupiterOne/graph-crowdstrike)
 
 Integrations are responsible for connecting to data provider APIs to collect
 current state and maintain a graph database representing the entities and
