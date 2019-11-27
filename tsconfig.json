@@ -1,0 +1,21 @@
+{
+  "include": ["src/**/*", "tools/**/*", "test/**/*"],
+  "compilerOptions": {
+    "outDir": "build",
+    "noUnusedLocals": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "resolveJsonModule": true,
+    "allowJs": false,
+    "moduleResolution": "node",
+    "target": "ESNext",
+    "module": "commonjs",
+    "pretty": true,
+    "inlineSourceMap": true
+  }
+}

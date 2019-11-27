@@ -1,0 +1,13 @@
+{
+  "plugins": [
+    "remark-preset-lint-markdown-style-guide",
+    "remark-preset-lint-recommended",
+    ["remark-lint-emphasis-marker", false],
+    ["remark-lint-list-item-indent", false],
+    ["remark-lint-list-item-spacing", false],
+    ["remark-lint-list-item-bullet-indent", false],
+    ["remark-lint-final-newline", false],
+    ["remark-lint-no-inline-padding", false],
+    ["remark-lint-hard-break-spaces", false]
+  ]
+}
