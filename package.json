@@ -30,6 +30,8 @@
   },
   "dependencies": {
     "@jupiterone/jupiter-managed-integration-sdk": "^28.3.0",
+    "@types/await-timeout": "^0.3.1",
+    "await-timeout": "^1.0.1",
     "node-fetch": "^2.6.0"
   },
   "devDependencies": {
