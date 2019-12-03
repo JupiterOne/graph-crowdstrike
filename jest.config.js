@@ -5,11 +5,8 @@ module.exports = {
     "^.+\\.ts$": "ts-jest",
   },
   testMatch: ["<rootDir>/src/**/*.test.{js,ts}"],
-  collectCoverageFrom: [
-    "src/**/*.ts",
-    "!src/index.ts",
-    "!src/ProviderClient.ts",
-  ],
+  setupFiles: ["dotenv/config"],
+  collectCoverageFrom: ["src/**/*.ts", "!src/index.ts"],
   moduleFileExtensions: [...defaults.moduleFileExtensions, "ts"],
   testEnvironment: "node",
   clearMocks: true,
