@@ -146,10 +146,14 @@ describe("makeRequest", () => {
         });
     });
 
-    const client = new FalconAPIClient(config);
-    await expect(client.authenticate()).rejects.toThrowError(/5/);
+    const client = new FalconAPIClient({
+      ...config,
+      rateLimit: { maxRetries: 2 },
+    });
 
-    expect(requestTimes.length).toBe(5);
+    await expect(client.authenticate()).rejects.toThrowError(/2/);
+
+    expect(requestTimes.length).toBe(2);
   });
 });
 

@@ -3,25 +3,26 @@ import fetch, { Response } from "node-fetch";
 import { DeviceIdentifier } from "./types";
 import Timeout from "await-timeout";
 
-export type OAuth2Token = {
+type OAuth2Token = {
   token: string;
   expiresAt: number;
 };
 
-export type FalconAPIClientConfig = {
+type RateLimitConfig = {
+  maxRetries: number;
+};
+
+type FalconAPIClientConfig = {
   clientId: string;
   clientSecret: string;
+  rateLimit?: RateLimitConfig;
 };
+
+type FetchRequest = () => Promise<Response>;
 
 export type FalconAPIResourceIterationCallback<T> = (
   resources: T[],
 ) => boolean | void | Promise<boolean | void>;
-
-export type FetchRequest = () => Promise<Response>;
-
-export type RequestOptions = {
-  tryAfter?: number;
-};
 
 export class FalconAPIClient {
   public token: OAuth2Token | undefined;
@@ -30,7 +31,6 @@ export class FalconAPIClient {
 
   public async authenticate(): Promise<OAuth2Token> {
     if (!this.token || !isValidToken(this.token)) {
-      // eslint-disable-next-line require-atomic-updates
       this.token = await requestOAuth2Token(this.config);
     }
     return this.token;
@@ -44,12 +44,17 @@ export class FalconAPIClient {
   }
 }
 
-async function makeRequest<T>(request: FetchRequest): Promise<Response> {
-  const maxAttempts = 5;
+const DEFAULT_RATE_LIMIT = { maxRetries: 5 };
+
+async function makeRequest<T>(
+  request: FetchRequest,
+  rateLimit: RateLimitConfig,
+): Promise<Response> {
   let attempts = 0;
   let tryAfter = Date.now();
+
   do {
-    const response = await tryMakeRequest(request, { tryAfter });
+    const response = await tryMakeRequest(request, tryAfter);
     if (response.status === 429) {
       const retryAfterHeader = response.headers.get("x-ratelimit-retryafter");
       tryAfter = Number(retryAfterHeader);
@@ -57,18 +62,18 @@ async function makeRequest<T>(request: FetchRequest): Promise<Response> {
       return response;
     }
     attempts += 1;
-  } while (attempts < maxAttempts);
+  } while (attempts < rateLimit.maxRetries);
 
   throw new Error(`Could not complete request, attempted: ${attempts}!`);
 }
 
 async function tryMakeRequest(
   request: FetchRequest,
-  options: RequestOptions,
+  tryAfter: number,
 ): Promise<Response> {
   const now = Date.now();
-  if (options.tryAfter && options.tryAfter > now) {
-    await Timeout.set(options.tryAfter - now);
+  if (tryAfter > now) {
+    await Timeout.set(tryAfter - now);
   }
   return request();
 }
@@ -88,7 +93,7 @@ async function requestOAuth2Token(
       },
       body: params,
     });
-  });
+  }, config.rateLimit || DEFAULT_RATE_LIMIT);
 
   const responseJson = await response.json();
   if (response.status >= 400) {
