@@ -6,7 +6,7 @@ module.exports = {
   },
   testMatch: ["<rootDir>/src/**/*.test.{js,ts}"],
   setupFiles: ["dotenv/config"],
-  collectCoverageFrom: ["src/**/*.ts", "!src/index.ts"],
+  collectCoverageFrom: ["src/**/*.ts", "!src/**/index.ts"],
   moduleFileExtensions: [...defaults.moduleFileExtensions, "ts"],
   testEnvironment: "node",
   clearMocks: true,
