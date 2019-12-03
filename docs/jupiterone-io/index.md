@@ -1,32 +1,38 @@
-# {{providerTitle}}
+# CrowdStrike Falcon
 
 ## Overview
 
-The integration connects directly to {{providerTitle}} APIs to obtain account
+The integration connects directly to CrowdStrike Falcon APIs to obtain account
 metadata and analyze resource relationships. Customers authorize access by
-creating API credentials in their {{providerTitle}} account and providing those
-credentials when setting up an instance of the integration in JupiterOne.
+creating Client API credentials in their CrowdStrike Falcon account and
+providing those credentials when setting up an instance of the integration in
+JupiterOne.
 
 ## API Authentication
 
-{{providerTitle}} provides [detailed instructions on creating an API
+CrowdStrike Falcon provides [detailed instructions on creating an API
 credentials][1].
 
 ## Entities
 
 These entities are ingested when the integration runs:
 
-| Example Entity Resource | \_type : \_class of the Entity        |
-| ----------------------- | ------------------------------------- |
-| Account                 | `example_account` : `Account`         |
-| Application             | `example_application` : `Application` |
+| Example Entity Resource | \_type : \_class of the Entity                |
+| ----------------------- | --------------------------------------------- |
+| Account                 | `crowdstrike_account` : `Account`             |
+| Service                 | `crowdstrike_endpoint_protection` : `Service` |
+| Device Sensor Agent     | `crowdstrike_sensor` : `HostAgent`            |
+| Sensor Policy           | `crowdstrike_sensor_policy` : `ControlPolicy` |
 
 ## Relationships
 
-These relationships are created/mapped:
+The following relationships are created/mapped:
 
-| From              | Type    | To                    |
-| ----------------- | ------- | --------------------- |
-| `example_account` | **HAS** | `example_application` |
+| Relationships                                                               |
+| --------------------------------------------------------------------------- |
+| `crowdstrike_account` **HAS** `crowdstrike_sensor`                          |
+| `crowdstrike_account` **HAS** `crowdstrike_endpoint_protection`             |
+| `crowdstrike_prevent_policy` **ENFORCES** `crowdstrike_endpoint_protection` |
+| `crowdstrike_sensor` **ASSIGNED** `crowdstrike_prevent_policy`              |
 
-[1]: {{providerUrl}}
+[1]: https://www.crowdstrike.com/blog/tech-center/get-access-falcon-apis/
