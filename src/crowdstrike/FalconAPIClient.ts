@@ -179,7 +179,7 @@ async function executeAPIRequest<T>(request: APIRequest): Promise<APIResponse> {
 
     const tryAfter = Math.max(rateLimitState.retryAfter, tryAfterCooldown);
 
-    const response = await tryMakeRequest(request.exec, tryAfter);
+    const response = await tryAPIRequest(request.exec, tryAfter);
 
     rateLimitState = {
       limitRemaining:
@@ -206,7 +206,7 @@ async function executeAPIRequest<T>(request: APIRequest): Promise<APIResponse> {
   throw new Error(`Could not complete request within ${attempts} attempts!`);
 }
 
-async function tryMakeRequest(
+async function tryAPIRequest(
   request: () => Promise<Response>,
   tryAfter: number,
 ): Promise<Response> {

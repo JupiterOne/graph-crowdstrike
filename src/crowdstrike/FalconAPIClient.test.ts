@@ -86,9 +86,9 @@ describe("authenticate", () => {
   });
 });
 
-describe("makeRequest", () => {
+describe("executeAPIRequest", () => {
   test("waits until retryafter on 429 response", async () => {
-    p = polly(__dirname, "makeRequest429");
+    p = polly(__dirname, "executeAPIRequest429");
 
     const requestTimes: number[] = [];
     p.server.any().on("request", (_req, _event) => {
@@ -123,7 +123,7 @@ describe("makeRequest", () => {
   });
 
   test("retries 429 response limited times", async () => {
-    p = polly(__dirname, "makeRequest429limit");
+    p = polly(__dirname, "executeAPIRequest429limit");
 
     const requestTimes: number[] = [];
     p.server.any().on("request", (_req, _event) => {
@@ -156,7 +156,7 @@ describe("makeRequest", () => {
   });
 
   test("throttles at specified reserveLimit", async () => {
-    p = polly(__dirname, "makeRequestReserveLimit");
+    p = polly(__dirname, "executeAPIRequestReserveLimit");
 
     let limitRemaining = 10;
 
