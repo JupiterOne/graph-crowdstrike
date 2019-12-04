@@ -146,14 +146,50 @@ describe("makeRequest", () => {
         });
     });
 
-    const client = new FalconAPIClient({
-      ...config,
-      rateLimit: { maxRetries: 2 },
+    const client = new FalconAPIClient(config, {
+      maxAttempts: 2,
     });
 
     await expect(client.authenticate()).rejects.toThrowError(/2/);
 
     expect(requestTimes.length).toBe(2);
+  });
+
+  test("throttles at specified reserveLimit", async () => {
+    p = polly(__dirname, "makeRequestReserveLimit");
+
+    let limitRemaining = 10;
+
+    p.server.any().intercept((_req, res) => {
+      limitRemaining--;
+      res
+        .status(201)
+        .setHeaders({
+          "x-ratelimit-limit": "10",
+          "x-ratelimit-remaining": String(limitRemaining),
+        })
+        .json({
+          errors: [
+            {
+              code: 429,
+              message: "API rate limit exceeded.",
+            },
+          ],
+        });
+    });
+
+    const client = new FalconAPIClient(config, {
+      reserveLimit: 8,
+      cooldownPeriod: 1000,
+    });
+
+    const startTime = Date.now();
+
+    await client.authenticate();
+    await client.authenticate();
+    await client.authenticate();
+
+    expect(Date.now() - startTime).toBeGreaterThan(1000);
   });
 });
 
