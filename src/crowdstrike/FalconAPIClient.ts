@@ -154,9 +154,7 @@ export class FalconAPIClient {
     this.rateLimitState = apiResponse.rateLimitState;
 
     if (apiResponse.status >= 400) {
-      const err = new Error(
-        `Failed to obtain access token: ${apiResponse.statusText}`,
-      );
+      const err = new Error(`API request error: ${apiResponse.statusText}`);
       Object.assign(err, { code: apiResponse.status });
       throw err;
     }
