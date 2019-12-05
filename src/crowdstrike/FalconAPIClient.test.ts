@@ -194,18 +194,25 @@ describe("executeAPIRequest", () => {
 });
 
 describe("iterateDevices", () => {
-  test("authenticates if necessary", async () => {
-    p = polly(__dirname, "iterateDevices");
-
-    p.server.any().intercept((req, res) => {
-      // eslint-disable-next-line @typescript-eslint/camelcase
-      res.status(201).json({ access_token: "token", expires_in: 10000 });
-    });
-
+  test("single page", async () => {
+    p = polly(__dirname, "iterateDevicesSinglePage");
     const client = new FalconAPIClient(config);
-    const cbSpy = jest.fn().mockResolvedValue(false);
-
+    const cbSpy = jest.fn();
     await client.iterateDevices(cbSpy);
-    expect(cbSpy).toBeCalledTimes(1);
-  });
+    expect(cbSpy).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ cid: expect.any(String) }),
+        expect.objectContaining({ cid: expect.any(String) }),
+        expect.objectContaining({ cid: expect.any(String) }),
+      ]),
+    );
+  }, 20000);
+
+  test("pagination", async () => {
+    p = polly(__dirname, "iterateDevices");
+    const client = new FalconAPIClient(config);
+    const cbSpy = jest.fn();
+    await client.iterateDevices(cbSpy, { limit: 1 });
+    expect(cbSpy).toHaveBeenCalledTimes(3);
+  }, 20000);
 });

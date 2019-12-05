@@ -1,12 +1,27 @@
+import Timeout from "await-timeout";
 import fetch, { RequestInfo, RequestInit, Response } from "node-fetch";
 
-import { DeviceIdentifier, OAuth2TokenResponse } from "./types";
-import Timeout from "await-timeout";
+import {
+  Device,
+  DeviceIdentifier,
+  OAuth2TokenResponse,
+  ResourcesResponse,
+  ScrollOffsetPaginationState,
+} from "./types";
 
 type OAuth2Token = {
   token: string;
   expiresAt: number;
 };
+
+type ScrollOffsetPaginationParams = {
+  limit: number;
+  offset?: string;
+};
+
+type PaginationParams =
+  | ScrollOffsetPaginationState
+  | ScrollOffsetPaginationParams;
 
 type RateLimitConfig = {
   /**
@@ -112,11 +127,67 @@ export class FalconAPIClient {
     return this.token;
   }
 
+  /**
+   * Iterates the detected devices be listing the AIDs and then fetching the
+   * device details, providing the collection to the provided callback.
+   *
+   * The scroll API is used because it has no limitation on the number of
+   * records it will return. However, note the scroll offset value expires after
+   * 2 minutes. The device details request time combined with the callback
+   * processing time, per page, must be less.
+   *
+   * @param cb iteration callback function to handle batches of devices
+   * @param pagination optional pagination start parameters
+   */
   public async iterateDevices(
-    cb: FalconAPIResourceIterationCallback<DeviceIdentifier>,
+    cb: FalconAPIResourceIterationCallback<Device>,
+    pagination?: ScrollOffsetPaginationParams,
   ): Promise<void> {
-    await this.authenticate();
-    await cb([]);
+    // TODO Answer the PaginationState so that it can be stored for later restart
+
+    let pageParams: PaginationParams | undefined = pagination;
+
+    do {
+      const response = await this.executeAuthenticatedAPIRequest<
+        ResourcesResponse<DeviceIdentifier>
+      >(
+        `https://api.crowdstrike.com/devices/queries/devices-scroll/v1?${toURLSearchParams(
+          pageParams,
+        )}`,
+        {
+          method: "GET",
+          headers: {
+            accept: "application/json",
+          },
+        },
+      );
+
+      const deviceIds = response.resources;
+      if (deviceIds && deviceIds.length) {
+        pageParams = response.meta.pagination as ScrollOffsetPaginationState;
+        await cb(await this.fetchDevices(deviceIds));
+      } else {
+        pageParams = undefined;
+      }
+    } while (pageParams);
+  }
+
+  private async fetchDevices(ids: string[]): Promise<Device[]> {
+    const params = new URLSearchParams();
+    for (const aid of ids) {
+      params.append("ids", aid);
+    }
+
+    const response = await this.executeAuthenticatedAPIRequest<
+      ResourcesResponse<Device>
+    >(`https://api.crowdstrike.com/devices/entities/devices/v1?${params}`, {
+      method: "GET",
+      headers: {
+        accept: "application/json",
+      },
+    });
+
+    return response.resources;
   }
 
   private async requestOAuth2Token(): Promise<OAuth2Token> {
@@ -141,6 +212,17 @@ export class FalconAPIClient {
     };
   }
 
+  private async executeAuthenticatedAPIRequest<T>(
+    info: RequestInfo,
+    init: RequestInit,
+  ): Promise<T> {
+    const token = await this.authenticate();
+    return this.executeAPIRequest<T>(info, {
+      ...init,
+      headers: { ...init.headers, authorization: `bearer ${token.token}` },
+    });
+  }
+
   private async executeAPIRequest<T>(
     info: RequestInfo,
     init: RequestInit,
@@ -154,7 +236,9 @@ export class FalconAPIClient {
     this.rateLimitState = apiResponse.rateLimitState;
 
     if (apiResponse.status >= 400) {
-      const err = new Error(`API request error: ${apiResponse.statusText}`);
+      const err = new Error(
+        `API request error for ${info}: ${apiResponse.statusText}`,
+      );
       Object.assign(err, { code: apiResponse.status });
       throw err;
     }
@@ -217,4 +301,21 @@ async function tryAPIRequest(
 
 function isValidToken(token: OAuth2Token): boolean {
   return !!(token && token.expiresAt > Date.now());
+}
+
+function toURLSearchParams(
+  pagination?: ScrollOffsetPaginationState | ScrollOffsetPaginationParams,
+): URLSearchParams {
+  const params = new URLSearchParams();
+
+  if (pagination) {
+    if (typeof pagination.limit === "number") {
+      params.append("limit", String(pagination.limit));
+    }
+    if (pagination.offset !== undefined) {
+      params.append("offset", String(pagination.offset));
+    }
+  }
+
+  return params;
 }
