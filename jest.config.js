@@ -1,8 +1,10 @@
 const { defaults } = require("jest-config");
 
 module.exports = {
-  transform: {
-    "^.+\\.ts$": "ts-jest",
+  globals: {
+    "ts-jest": {
+      babelConfig: true,
+    },
   },
   testMatch: ["<rootDir>/src/**/*.test.{js,ts}"],
   setupFiles: ["dotenv/config"],
