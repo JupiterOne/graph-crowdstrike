@@ -6,7 +6,7 @@ import {
   DeviceIdentifier,
   OAuth2TokenResponse,
   ResourcesResponse,
-  ScrollOffsetPaginationState,
+  ScrollOffsetPaginationMeta,
 } from "./types";
 
 type OAuth2Token = {
@@ -14,14 +14,15 @@ type OAuth2Token = {
   expiresAt: number;
 };
 
-type ScrollOffsetPaginationParams = {
-  limit: number;
-  offset?: string;
+type ScrollOffsetPaginationState = {
+  limit?: number;
+  seen: number;
+  total: number;
+  offset: string;
+  expiresAt?: number;
 };
 
-type PaginationParams =
-  | ScrollOffsetPaginationState
-  | ScrollOffsetPaginationParams;
+type PaginationParams = Partial<ScrollOffsetPaginationState>;
 
 type RateLimitConfig = {
   /**
@@ -128,7 +129,7 @@ export class FalconAPIClient {
   }
 
   /**
-   * Iterates the detected devices be listing the AIDs and then fetching the
+   * Iterates the detected devices by listing the AIDs and then fetching the
    * device details, providing the collection to the provided callback.
    *
    * The scroll API is used because it has no limitation on the number of
@@ -137,22 +138,32 @@ export class FalconAPIClient {
    * processing time, per page, must be less.
    *
    * @param cb iteration callback function to handle batches of devices
-   * @param pagination optional pagination start parameters
+   * @param pagination optional pagination parameters
    */
   public async iterateDevices(
     cb: FalconAPIResourceIterationCallback<Device>,
-    pagination?: ScrollOffsetPaginationParams,
-  ): Promise<void> {
-    // TODO Answer the PaginationState so that it can be stored for later restart
+    pagination?: PaginationParams,
+  ): Promise<ScrollOffsetPaginationState | undefined> {
+    const invocationTime = Date.now();
+    if (pagination?.expiresAt && pagination.expiresAt < invocationTime) {
+      const expiredAgo = invocationTime - pagination.expiresAt;
+      throw new Error(
+        `Pagination cursor (offset) expired ${expiredAgo} ms ago`,
+      );
+    }
 
-    let pageParams: PaginationParams | undefined = pagination;
+    let paginationParams: PaginationParams | undefined = pagination;
+    let paginationMeta: ScrollOffsetPaginationMeta | undefined;
+    let continuePagination: boolean | void;
+
+    let seen: number = paginationParams?.seen || 0;
 
     do {
-      const response = await this.executeAuthenticatedAPIRequest<
+      const response: ResourcesResponse<DeviceIdentifier> = await this.executeAuthenticatedAPIRequest<
         ResourcesResponse<DeviceIdentifier>
       >(
         `https://api.crowdstrike.com/devices/queries/devices-scroll/v1?${toURLSearchParams(
-          pageParams,
+          paginationParams,
         )}`,
         {
           method: "GET",
@@ -164,12 +175,24 @@ export class FalconAPIClient {
 
       const deviceIds = response.resources;
       if (deviceIds && deviceIds.length) {
-        pageParams = response.meta.pagination as ScrollOffsetPaginationState;
-        await cb(await this.fetchDevices(deviceIds));
+        paginationParams = paginationMeta = response.meta
+          .pagination as ScrollOffsetPaginationMeta;
+        seen += deviceIds.length;
+        continuePagination = await cb(await this.fetchDevices(deviceIds));
       } else {
-        pageParams = undefined;
+        paginationParams = paginationMeta = undefined;
       }
-    } while (pageParams);
+    } while (paginationParams && continuePagination !== false);
+
+    if (paginationMeta) {
+      return {
+        limit: pagination?.limit,
+        offset: paginationMeta.offset,
+        expiresAt: paginationMeta.expires_at,
+        total: paginationMeta.total,
+        seen,
+      };
+    }
   }
 
   private async fetchDevices(ids: string[]): Promise<Device[]> {
@@ -212,21 +235,21 @@ export class FalconAPIClient {
     };
   }
 
-  private async executeAuthenticatedAPIRequest<T>(
+  private async executeAuthenticatedAPIRequest<ResponseType>(
     info: RequestInfo,
     init: RequestInit,
-  ): Promise<T> {
+  ): Promise<ResponseType> {
     const token = await this.authenticate();
-    return this.executeAPIRequest<T>(info, {
+    return this.executeAPIRequest<ResponseType>(info, {
       ...init,
       headers: { ...init.headers, authorization: `bearer ${token.token}` },
     });
   }
 
-  private async executeAPIRequest<T>(
+  private async executeAPIRequest<ResponseType>(
     info: RequestInfo,
     init: RequestInit,
-  ): Promise<T> {
+  ): Promise<ResponseType> {
     const apiResponse = await executeAPIRequest({
       exec: () => fetch(info, init),
       rateLimitConfig: this.rateLimitConfig,
@@ -303,9 +326,7 @@ function isValidToken(token: OAuth2Token): boolean {
   return !!(token && token.expiresAt > Date.now());
 }
 
-function toURLSearchParams(
-  pagination?: ScrollOffsetPaginationState | ScrollOffsetPaginationParams,
-): URLSearchParams {
+function toURLSearchParams(pagination?: PaginationParams): URLSearchParams {
   const params = new URLSearchParams();
 
   if (pagination) {

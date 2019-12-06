@@ -194,11 +194,12 @@ describe("executeAPIRequest", () => {
 });
 
 describe("iterateDevices", () => {
-  test("single page", async () => {
+  test("complete set in single callback, no pagination state", async () => {
     p = polly(__dirname, "iterateDevicesSinglePage");
     const client = new FalconAPIClient(config);
     const cbSpy = jest.fn();
-    await client.iterateDevices(cbSpy);
+    const paginationState = await client.iterateDevices(cbSpy);
+    expect(paginationState).toBeUndefined();
     expect(cbSpy).toHaveBeenCalledWith(
       expect.arrayContaining([
         expect.objectContaining({ cid: expect.any(String) }),
@@ -208,11 +209,69 @@ describe("iterateDevices", () => {
     );
   }, 20000);
 
-  test("pagination", async () => {
-    p = polly(__dirname, "iterateDevices");
+  test("partial set in multiple callbacks, no pagination state", async () => {
+    p = polly(__dirname, "iterateDevicesCompletes");
     const client = new FalconAPIClient(config);
     const cbSpy = jest.fn();
-    await client.iterateDevices(cbSpy, { limit: 1 });
+    const paginationState = await client.iterateDevices(cbSpy, { limit: 1 });
+    expect(paginationState).toBeUndefined();
     expect(cbSpy).toHaveBeenCalledTimes(3);
+    expect(cbSpy.mock.calls[0]).toEqual([
+      [expect.objectContaining({ cid: expect.any(String) })],
+    ]);
+    expect(cbSpy.mock.calls[1]).toEqual([
+      [expect.objectContaining({ cid: expect.any(String) })],
+    ]);
+    expect(cbSpy.mock.calls[2]).toEqual([
+      [expect.objectContaining({ cid: expect.any(String) })],
+    ]);
   }, 20000);
+
+  test("partial set in multiple callbacks, pagination state when interrupted", async () => {
+    p = polly(__dirname, "iterateDevicesInterrupted");
+    const client = new FalconAPIClient(config);
+    const cbSpy = jest.fn().mockResolvedValue(false);
+    const paginationState = await client.iterateDevices(cbSpy, { limit: 1 });
+    expect(paginationState).toEqual({
+      limit: 1,
+      seen: 1,
+      total: 3,
+      expiresAt: expect.any(Number), // eslint-disable-line @typescript-eslint/camelcase
+      offset: expect.any(String),
+    });
+    expect(cbSpy).toHaveBeenCalledTimes(1);
+    expect(cbSpy.mock.calls[0]).toEqual([
+      [expect.objectContaining({ cid: expect.any(String) })],
+    ]);
+  }, 20000);
+
+  test("resumes from pagination state", async () => {
+    p = polly(__dirname, "iterateDevicesResumes");
+    const client = new FalconAPIClient(config);
+    const cbSpy = jest.fn().mockResolvedValueOnce(false);
+    const paginationState = await client.iterateDevices(cbSpy, { limit: 1 });
+    expect(paginationState).not.toBeUndefined();
+    const finalPaginationState = await client.iterateDevices(
+      cbSpy,
+      paginationState,
+    );
+    expect(finalPaginationState).toBeUndefined();
+    expect(cbSpy).toHaveBeenCalledTimes(3);
+  });
+
+  test("throws error on expired pagination offset cursor", async () => {
+    p = polly(__dirname, "iterateDevicesExpiredOffsetCursor", {
+      recordFailedRequests: true,
+    });
+    const client = new FalconAPIClient(config);
+    const cbSpy = jest.fn();
+    await expect(
+      client.iterateDevices(cbSpy, {
+        limit: 1,
+        offset:
+          "DnF1ZXJ5VGhlbkZldGNoBQAAAAA6iW-VFnpjQldDMjNiU2htV1FGbUo5anc1d0EAAAAAOnTgtRZqV0xVRF9ndFFhQ09zYkVhTzNNOUxnAAAAADpz2L8WSWdUN2d1OVBUM2kxNGNVMUlaU1BZUQAAAAA6hrG3FlR6aHpFU1UxUkNpZ3FVV2tWNVBkQ2cAAAAAOnto1hZTajRqVll0dVF3U2VQQThXdlo3ZjZB",
+        expiresAt: Date.now() - 1,
+      }),
+    ).rejects.toThrowError(/expired/);
+  });
 });

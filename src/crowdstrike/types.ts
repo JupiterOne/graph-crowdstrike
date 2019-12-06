@@ -3,13 +3,16 @@ export type OAuth2TokenResponse = {
   expires_in: number;
 };
 
-export type LimitOffsetPaginationState = {
+export type LimitOffsetPaginationMeta = {
   limit: number;
   offset: number;
   total: number;
 };
 
-export type ScrollOffsetPaginationState = {
+/**
+ * Metadata in API responses indicating the pagination state.
+ */
+export type ScrollOffsetPaginationMeta = {
   limit: number;
   offset: string;
   expires_at: number;
@@ -18,7 +21,7 @@ export type ScrollOffsetPaginationState = {
 
 export type ResponseMeta = {
   trace_id: string;
-  pagination?: LimitOffsetPaginationState | ScrollOffsetPaginationState;
+  pagination?: LimitOffsetPaginationMeta | ScrollOffsetPaginationMeta;
 };
 
 export type ResponseError = {
