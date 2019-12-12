@@ -14,10 +14,15 @@ type OAuth2Token = {
   expiresAt: number;
 };
 
-type ScrollOffsetPaginationState = {
+type PaginationState = {
   limit?: number;
+  total?: number;
   seen: number;
-  total: number;
+  pages: number;
+  finished: boolean;
+};
+
+type ScrollOffsetPaginationState = PaginationState & {
   offset: string;
   expiresAt?: number;
 };
@@ -138,12 +143,20 @@ export class FalconAPIClient {
    * processing time, per page, must be less.
    *
    * @param cb iteration callback function to handle batches of devices
+   * @param filter FQL property filter string, will be URL encoded as value of
+   * `filter` GET parameter
    * @param pagination optional pagination parameters
+   * @returns undefined when no more pages
    */
-  public async iterateDevices(
-    cb: FalconAPIResourceIterationCallback<Device>,
-    pagination?: PaginationParams,
-  ): Promise<ScrollOffsetPaginationState | undefined> {
+  public async iterateDevices({
+    cb,
+    pagination,
+    filter,
+  }: {
+    cb: FalconAPIResourceIterationCallback<Device>;
+    pagination?: PaginationParams;
+    filter?: string;
+  }): Promise<PaginationState | ScrollOffsetPaginationState> {
     const invocationTime = Date.now();
     if (pagination?.expiresAt && pagination.expiresAt < invocationTime) {
       const expiredAgo = invocationTime - pagination.expiresAt;
@@ -152,17 +165,21 @@ export class FalconAPIClient {
       );
     }
 
+    let seen: number = pagination?.seen || 0;
+    let total: number = pagination?.total || 0;
+    let pages: number = pagination?.pages || 0;
+    let finished = false;
+
     let paginationParams: PaginationParams | undefined = pagination;
     let paginationMeta: ScrollOffsetPaginationMeta | undefined;
     let continuePagination: boolean | void;
-
-    let seen: number = paginationParams?.seen || 0;
 
     do {
       const response: ResourcesResponse<DeviceIdentifier> = await this.executeAuthenticatedAPIRequest<
         ResourcesResponse<DeviceIdentifier>
       >(
         `https://api.crowdstrike.com/devices/queries/devices-scroll/v1?${toURLSearchParams(
+          filter,
           paginationParams,
         )}`,
         {
@@ -174,24 +191,33 @@ export class FalconAPIClient {
       );
 
       const deviceIds = response.resources;
-      if (deviceIds && deviceIds.length) {
-        paginationParams = paginationMeta = response.meta
-          .pagination as ScrollOffsetPaginationMeta;
-        seen += deviceIds.length;
-        continuePagination = await cb(await this.fetchDevices(deviceIds));
-      } else {
-        paginationParams = paginationMeta = undefined;
-      }
-    } while (paginationParams && continuePagination !== false);
 
-    if (paginationMeta) {
+      continuePagination = await cb(await this.fetchDevices(deviceIds));
+
+      paginationParams = paginationMeta = response.meta
+        .pagination as ScrollOffsetPaginationMeta;
+      seen += deviceIds.length;
+      total = paginationMeta.total;
+      pages += 1;
+      finished = seen >= total;
+    } while (!finished && continuePagination !== false);
+
+    const paginationState: PaginationState = {
+      limit: pagination?.limit,
+      seen,
+      total,
+      pages,
+      finished,
+    };
+
+    if (!finished && paginationMeta) {
       return {
-        limit: pagination?.limit,
+        ...paginationState,
         offset: paginationMeta.offset,
         expiresAt: paginationMeta.expires_at,
-        total: paginationMeta.total,
-        seen,
       };
+    } else {
+      return paginationState;
     }
   }
 
@@ -326,8 +352,15 @@ function isValidToken(token: OAuth2Token): boolean {
   return !!(token && token.expiresAt > Date.now());
 }
 
-function toURLSearchParams(pagination?: PaginationParams): URLSearchParams {
+function toURLSearchParams(
+  filter?: string,
+  pagination?: PaginationParams,
+): URLSearchParams {
   const params = new URLSearchParams();
+
+  if (filter) {
+    params.append("filter", filter);
+  }
 
   if (pagination) {
     if (typeof pagination.limit === "number") {
