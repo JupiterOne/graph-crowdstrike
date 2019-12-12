@@ -24,6 +24,8 @@ These entities are ingested when the integration runs:
 | Device Sensor Agent     | `crowdstrike_sensor` : `HostAgent`            |
 | Sensor Policy           | `crowdstrike_sensor_policy` : `ControlPolicy` |
 
+Only hosts that have been seen within past 30 days are maintained.
+
 ## Relationships
 
 The following relationships are created/mapped:

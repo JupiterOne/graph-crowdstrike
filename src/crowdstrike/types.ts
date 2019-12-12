@@ -45,4 +45,5 @@ export type DeviceIdentifier = string;
  */
 export type Device = {
   device_id: DeviceIdentifier;
+  [camelProperty: string]: string | object | Array<string | object>;
 };
