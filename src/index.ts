@@ -147,6 +147,22 @@ class ProviderGraphObjectCache {
   }
 }
 
+/**
+ * A multi-step integration:
+ *
+ * 1. Create an Account entity using the integration instance name, storing in
+ *    provider entities cache
+ * 2. Iterates recently seen devices from CrowdStrike API, converting to
+ *    entities and building relationships to the Account, storing entities and
+ *    relationships in provider cache
+ * 3. Iterates entities in J1, updating or deleting them depending on their
+ *    presence in the provider entity/relationship cache
+ * 4. Iterates provider entities/relationships, creating any that were no found
+ *    in J1
+ *
+ * Note that devices not seen since `LAST_SEEN_DAYS_BACK` will be deleted! This
+ * maintains a "last 30 days" view of hosts.
+ */
 export const invocationConfig: IntegrationInvocationConfig = {
   instanceConfigFields: {
     clientId: {
@@ -243,11 +259,9 @@ export const invocationConfig: IntegrationInvocationConfig = {
             executionContext: IntegrationStepExecutionContext,
           ): Promise<IntegrationStepExecutionResult> => {
             const { graph, persister } = executionContext.clients.getClients();
-            const cache = new ProviderGraphObjectCache(
+            const providerCache = new ProviderGraphObjectCache(
               executionContext.clients.getCache(),
             );
-
-            // TODO since this is a rolling view, do not delete things that are no longer seen
 
             const synchronizeEntities = async (): Promise<PersisterOperationsResult> => {
               const [
@@ -265,12 +279,16 @@ export const invocationConfig: IntegrationInvocationConfig = {
               const processedEntityKeys: string[] = [];
 
               for (const oldEntity of oldEntities) {
-                const providerEntity = await cache.getEntity(oldEntity._key);
+                const providerEntity = await providerCache.getEntity(
+                  oldEntity._key,
+                );
                 if (providerEntity) {
+                  // Update graph object with latest provider data
                   entityOperations.push(
                     ...persister.processEntities([oldEntity], [providerEntity]),
                   );
                 } else {
+                  // Delete graph object not found in the provider data set
                   entityOperations.push(
                     ...persister.processEntities([oldEntity], []),
                   );
@@ -278,7 +296,8 @@ export const invocationConfig: IntegrationInvocationConfig = {
                 processedEntityKeys.push(oldEntity._key);
               }
 
-              await cache.iterateEntityKeys(
+              // Identify new provider data to create objects in the graph
+              await providerCache.iterateEntityKeys(
                 async (newEntityKey, _index, _qty, getResource) => {
                   if (!processedEntityKeys.includes(newEntityKey)) {
                     const newEntity = await getResource();
@@ -308,10 +327,11 @@ export const invocationConfig: IntegrationInvocationConfig = {
               const processedRelationshipKeys: string[] = [];
 
               for (const oldRelationship of oldRelationships) {
-                const providerRelationship = await cache.getRelationship(
+                const providerRelationship = await providerCache.getRelationship(
                   oldRelationship._key,
                 );
                 if (providerRelationship) {
+                  // Update graph object with latest provider data
                   relationshipOperations.push(
                     ...persister.processRelationships(
                       [oldRelationship],
@@ -319,6 +339,7 @@ export const invocationConfig: IntegrationInvocationConfig = {
                     ),
                   );
                 } else {
+                  // Delete graph object not found in the provider data set
                   relationshipOperations.push(
                     ...persister.processRelationships([oldRelationship], []),
                   );
@@ -326,7 +347,8 @@ export const invocationConfig: IntegrationInvocationConfig = {
                 processedRelationshipKeys.push(oldRelationship._key);
               }
 
-              await cache.iterateRelationshipKeys(
+              // Identify new provider data to create objects in the graph
+              await providerCache.iterateRelationshipKeys(
                 async (key, _index, _qty, getResource) => {
                   if (!processedRelationshipKeys.includes(key)) {
                     const resource = await getResource();
