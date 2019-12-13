@@ -1,4 +1,3 @@
-/* tslint:disable:no-console */
 import { executeIntegrationLocal } from "@jupiterone/jupiter-managed-integration-sdk";
 import { invocationConfig } from "../src/index";
 

@@ -1,0 +1,129 @@
+import {
+  EntityFromIntegration,
+  IntegrationCache,
+  IntegrationError,
+  IntegrationRelationship,
+} from "@jupiterone/jupiter-managed-integration-sdk";
+
+interface KeyIteratorCallback<EntryType> {
+  (
+    key: string,
+    index: number,
+    qty: number,
+    getResource: () => Promise<EntryType>,
+  ): Promise<void>;
+}
+
+/**
+ * A cache of provider data, already converted to `EntityFromIntegration` and
+ * `IntegrationRelationship` objects.
+ */
+export default class ProviderGraphObjectCache {
+  constructor(private resourceCache: IntegrationCache) {}
+
+  public async getAccount(): Promise<EntityFromIntegration> {
+    const entry = await this.resourceCache.getEntry("account");
+    if (!entry.data) {
+      throw new IntegrationError("Account entity not found in cache!");
+    }
+    return entry.data;
+  }
+
+  /**
+   * Stores the account entity for easy access through `getAccount` and places
+   * in the set of entities to synchronize.
+   *
+   * @param entity the entity of class `Account` to which other resources will
+   * be related
+   */
+  public async putAccount(entity: EntityFromIntegration): Promise<number> {
+    await this.resourceCache.putEntry({ key: "account", data: entity });
+    return this.putEntities([entity]);
+  }
+
+  /**
+   * Retrieves an entity created from provider data.
+   *
+   * @param key the entity _key value
+   * @returns undefined when the provider does not have data representing the
+   * key
+   */
+  public async getEntity(
+    key: string,
+  ): Promise<EntityFromIntegration | undefined> {
+    const entry = await this.resourceCache
+      .iterableCache("entities")
+      .getEntry(key);
+    return entry.data;
+  }
+
+  // TODO Upload RawData and ensure entities have temp uris for it?
+  // The cached object will have _rawData too if we don't, though that may not
+  // be a problem. Perhaps we can upload it later as normal?
+  public putEntities(entities: EntityFromIntegration[]): Promise<number> {
+    return this.resourceCache.iterableCache("entities").putEntries(
+      entities.map(e => ({
+        key: e._key,
+        data: e,
+      })),
+    );
+  }
+
+  public iterateEntityKeys(
+    cb: KeyIteratorCallback<EntityFromIntegration>,
+  ): Promise<void> {
+    return this.iterateKeys("entities", cb);
+  }
+
+  public iterateRelationshipKeys(
+    cb: KeyIteratorCallback<IntegrationRelationship>,
+  ): Promise<void> {
+    return this.iterateKeys("relationships", cb);
+  }
+
+  public putRelationships(
+    relationships: IntegrationRelationship[],
+  ): Promise<number> {
+    return this.resourceCache.iterableCache("relationships").putEntries(
+      relationships.map(e => ({
+        key: e._key,
+        data: e,
+      })),
+    );
+  }
+
+  /**
+   * Retrieves a relationship created from provider data.
+   *
+   * @param key the relationship _key value
+   * @returns undefined when the provider does not have data representing the
+   * key
+   */
+  public async getRelationship(
+    key: string,
+  ): Promise<IntegrationRelationship | undefined> {
+    const entry = await this.resourceCache
+      .iterableCache("relationships")
+      .getEntry(key);
+    return entry.data;
+  }
+
+  private iterateKeys<EntryType>(
+    resourceType: "entities" | "relationships",
+    cb: KeyIteratorCallback<EntryType>,
+  ): Promise<void> {
+    return this.resourceCache
+      .iterableCache(resourceType)
+      .forEachKey(async (key, index, qty, getEntry) => {
+        await cb(key, index, qty, async () => {
+          const resource = (await getEntry()).data;
+          if (!resource) {
+            throw new IntegrationError(
+              "Cache has a key listed for which there is no entry in the cache!",
+            );
+          }
+          return resource;
+        });
+      });
+  }
+}
