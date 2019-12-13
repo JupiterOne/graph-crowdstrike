@@ -143,10 +143,10 @@ export class FalconAPIClient {
    * processing time, per page, must be less.
    *
    * @param cb iteration callback function to handle batches of devices
+   * @param pagination optional pagination parameters
    * @param filter FQL property filter string, will be URL encoded as value of
    * `filter` GET parameter
-   * @param pagination optional pagination parameters
-   * @returns undefined when no more pages
+   * @returns pagination state
    */
   public async iterateDevices({
     cb,
@@ -158,6 +158,7 @@ export class FalconAPIClient {
     filter?: string;
   }): Promise<PaginationState | ScrollOffsetPaginationState> {
     const invocationTime = Date.now();
+
     if (pagination?.expiresAt && pagination.expiresAt < invocationTime) {
       const expiredAgo = invocationTime - pagination.expiresAt;
       throw new Error(
