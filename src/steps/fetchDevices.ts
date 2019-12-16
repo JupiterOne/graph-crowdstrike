@@ -26,8 +26,10 @@ export default {
     const falconAPI = new FalconAPIClient(executionContext.instance.config);
 
     const iterationState = getIterationState(executionContext);
+    const filter =
+      iterationState.state.filter || `last_seen:>='${lastSeenSince()}'`;
 
-    const newState = await falconAPI.iterateDevices({
+    const pagination = await falconAPI.iterateDevices({
       cb: async devices => {
         const sensorEntities: EntityFromIntegration[] = [];
         const accountSensorRelationships: IntegrationRelationship[] = [];
@@ -43,17 +45,19 @@ export default {
           cache.putRelationships(accountSensorRelationships),
         ]);
       },
-      pagination: {
-        ...iterationState.state,
-        filter:
-          iterationState.state.filter || `last_seen:>='${lastSeenSince()}'`,
+      pagination: iterationState.state.pagination,
+      query: {
+        filter,
       },
     });
 
     return {
       ...iterationState,
-      finished: newState.finished,
-      state: newState,
+      finished: pagination.finished,
+      state: {
+        pagination,
+        filter: "",
+      },
     };
   },
 };

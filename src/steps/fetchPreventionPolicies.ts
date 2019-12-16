@@ -17,38 +17,39 @@ export default {
   executionHandler: async (
     executionContext: IntegrationStepExecutionContext,
   ): Promise<IntegrationStepIterationState> => {
-    const cache = new ProviderGraphObjectCache(
-      executionContext.clients.getCache(),
-    );
+    const cache = executionContext.clients.getCache();
+    const objectCache = new ProviderGraphObjectCache(cache);
+    const policyIds =
+      (await cache.getEntry("prevention-policy-ids")).data || [];
+
     const falconAPI = new FalconAPIClient(executionContext.instance.config);
 
     const iterationState = getIterationState(executionContext);
 
-    const newState = await falconAPI.iteratePreventionPolicies({
+    const pagination = await falconAPI.iteratePreventionPolicies({
       cb: async policies => {
         const policyEntities: EntityFromIntegration[] = [];
         const hostPolicyRelationships: IntegrationRelationship[] = [];
         for (const policy of policies) {
           const entity = createPreventionPolicyEntity(policy);
           policyEntities.push(entity);
+          policyIds.push(policy.id);
           // TODO relate to crowdstrike_endpoint_protection Service
-          // TODO look up related host ids, build relationships to hosts
-          // hostPolicyRelationships.push(
-          //   createIntegrationRelationship("HAS", entity, hostEntity),
-          // );
         }
-        await Promise.all([
-          cache.putEntities(policyEntities),
-          cache.putRelationships(hostPolicyRelationships),
-        ]);
+        await objectCache.putEntities(policyEntities);
+        await objectCache.putRelationships(hostPolicyRelationships);
+        await cache.putEntry({
+          key: "prevention-policy-ids",
+          data: policyIds,
+        });
       },
       pagination: iterationState.state,
     });
 
     return {
       ...iterationState,
-      finished: newState.finished,
-      state: newState,
+      finished: pagination.finished,
+      state: pagination,
     };
   },
 };

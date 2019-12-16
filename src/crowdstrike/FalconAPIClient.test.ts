@@ -313,7 +313,8 @@ describe("iterateDevices", () => {
     // This is likely to fail when a new account is used with new host seen dates
     const paginationState = await client.iterateDevices({
       cb: cbSpy,
-      pagination: { limit: 1, filter: "last_seen:>='2019-12-02T15:54:40Z'" },
+      pagination: { limit: 1 },
+      query: { filter: "last_seen:>='2019-12-02T15:54:40Z'" },
     });
 
     expect(paginationState).toEqual({
@@ -324,7 +325,6 @@ describe("iterateDevices", () => {
       total: 2,
       expiresAt: expect.any(Number),
       offset: expect.any(String),
-      filter: "last_seen:>='2019-12-02T15:54:40Z'",
     });
 
     expect(cbSpy).toHaveBeenCalledTimes(1);
@@ -335,6 +335,7 @@ describe("iterateDevices", () => {
     const finalPaginationState = await client.iterateDevices({
       cb: cbSpy,
       pagination: paginationState,
+      query: { filter: "last_seen:>='2019-12-02T15:54:40Z'" },
     });
 
     expect(finalPaginationState).toEqual({
@@ -504,7 +505,8 @@ describe("iteratePreventionPolicies", () => {
     // This is likely to fail when a new account is used with new host seen dates
     const paginationState = await client.iteratePreventionPolicies({
       cb: cbSpy,
-      pagination: { limit: 1, filter: "platform_name:'Windows'" },
+      pagination: { limit: 1 },
+      query: { filter: "platform_name:'Windows'" },
     });
 
     expect(paginationState).toEqual({
@@ -514,7 +516,6 @@ describe("iteratePreventionPolicies", () => {
       seen: 1,
       total: 2,
       offset: 1,
-      filter: "platform_name:'Windows'",
     });
 
     expect(cbSpy).toHaveBeenCalledTimes(1);
@@ -525,6 +526,7 @@ describe("iteratePreventionPolicies", () => {
     const finalPaginationState = await client.iteratePreventionPolicies({
       cb: cbSpy,
       pagination: paginationState,
+      query: { filter: "platform_name:'Windows'" },
     });
 
     expect(finalPaginationState).toEqual({
@@ -539,5 +541,59 @@ describe("iteratePreventionPolicies", () => {
     expect(cbSpy.mock.calls[1]).toEqual([
       [expect.objectContaining({ id: expect.any(String) })],
     ]);
+  }, 20000);
+});
+
+describe("iteratePreventionPolicyMemberIds", () => {
+  test("complete set in single callback", async () => {
+    p = polly(__dirname, "iteratePreventionPolicyMemberIdsSinglePage");
+    const client = new FalconAPIClient(config);
+    const cbSpy = jest.fn();
+
+    const paginationState = await client.iteratePreventionPolicyMemberIds({
+      cb: cbSpy,
+      policyId: "40bb0ba06b9f4a10a4330fccecc01f84",
+    });
+
+    expect(paginationState).toEqual({
+      finished: true,
+      pages: 1,
+      seen: 3,
+      total: 3,
+    });
+
+    expect(cbSpy).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.any(String),
+        expect.any(String),
+        expect.any(String),
+      ]),
+    );
+  }, 20000);
+
+  test("partial set in multiple callbacks", async () => {
+    p = polly(__dirname, "iteratePreventionPolicyMemberIdsCompletes");
+    const client = new FalconAPIClient(config);
+    const cbSpy = jest.fn();
+
+    const paginationState = await client.iteratePreventionPolicyMemberIds({
+      cb: cbSpy,
+      pagination: { limit: 1 },
+      policyId: "40bb0ba06b9f4a10a4330fccecc01f84",
+    });
+
+    expect(paginationState).toEqual({
+      finished: true,
+      limit: 1,
+      pages: 3,
+      seen: 3,
+      total: 3,
+    });
+
+    expect(cbSpy).toHaveBeenCalledTimes(3);
+
+    expect(cbSpy.mock.calls[0]).toEqual([[expect.any(String)]]);
+    expect(cbSpy.mock.calls[1]).toEqual([[expect.any(String)]]);
+    expect(cbSpy.mock.calls[2]).toEqual([[expect.any(String)]]);
   }, 20000);
 });

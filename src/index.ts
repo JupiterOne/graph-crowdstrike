@@ -1,10 +1,11 @@
 import { IntegrationInvocationConfig } from "@jupiterone/jupiter-managed-integration-sdk";
 
 import invocationValidator from "./invocationValidator";
+import fetchDevicePolicyRelationships from "./steps/fetchDevicePolicyRelationships";
 import fetchDevices from "./steps/fetchDevices";
+import fetchPreventionPolicies from "./steps/fetchPreventionPolicies";
 import prepareAccount from "./steps/prepareAccount";
 import synchronize from "./steps/synchronize";
-import fetchPreventionPolicies from "./steps/fetchPreventionPolicies";
 
 /**
  * A multi-step integration:
@@ -45,6 +46,9 @@ export const invocationConfig: IntegrationInvocationConfig = {
     },
     {
       steps: [fetchPreventionPolicies],
+    },
+    {
+      steps: [fetchDevicePolicyRelationships],
     },
     {
       steps: [synchronize],

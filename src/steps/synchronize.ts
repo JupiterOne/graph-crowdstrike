@@ -11,7 +11,8 @@ import {
 import {
   ACCOUNT_ENTITY_TYPE,
   DEVICE_ENTITY_TYPE,
-  PREVENTION_POLICY_ENTITY,
+  PREVENTION_POLICY_ENTITY_TYPE,
+  DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE,
 } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
 
@@ -34,7 +35,7 @@ export default {
       ] = await Promise.all([
         graph.findEntitiesByType(ACCOUNT_ENTITY_TYPE),
         graph.findEntitiesByType(DEVICE_ENTITY_TYPE),
-        graph.findEntitiesByType(PREVENTION_POLICY_ENTITY),
+        graph.findEntitiesByType(PREVENTION_POLICY_ENTITY_TYPE),
       ]);
 
       const entityOperations: EntityOperation[] = [];
@@ -76,13 +77,26 @@ export default {
     const synchronizeRelationships = async (): Promise<PersisterOperationsResult> => {
       const relationshipOperations: RelationshipOperation[] = [];
 
-      const oldRelationships = await graph.findRelationshipsByType(
-        generateRelationshipType(
-          "HAS",
-          ACCOUNT_ENTITY_TYPE,
-          DEVICE_ENTITY_TYPE,
+      const [
+        oldAccountDeviceRelationships,
+        oldDevicePolicyRelationships,
+      ] = await Promise.all([
+        graph.findRelationshipsByType(
+          generateRelationshipType(
+            "HAS",
+            ACCOUNT_ENTITY_TYPE,
+            DEVICE_ENTITY_TYPE,
+          ),
         ),
-      );
+        graph.findRelationshipsByType(
+          DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE,
+        ),
+      ]);
+
+      const oldRelationships = [
+        ...oldAccountDeviceRelationships,
+        ...oldDevicePolicyRelationships,
+      ];
 
       const processedRelationshipKeys: string[] = [];
 

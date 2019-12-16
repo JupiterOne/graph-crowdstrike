@@ -4,128 +4,20 @@ import fetch, { RequestInfo, RequestInit, Response } from "node-fetch";
 import {
   Device,
   DeviceIdentifier,
+  NumericOffsetPaginationParams,
+  NumericOffsetPaginationState,
+  OAuth2ClientCredentials,
+  OAuth2Token,
   OAuth2TokenResponse,
   PaginationMeta,
+  PaginationParams,
+  PaginationState,
   PreventionPolicy,
+  QueryParams,
+  RateLimitConfig,
+  RateLimitState,
   ResourcesResponse,
 } from "./types";
-
-type OAuth2Token = {
-  token: string;
-  expiresAt: number;
-};
-
-type PaginationState = {
-  /**
-   * Fetch limit, will be URL encoded as value of `limit` GET parameter.
-   */
-  limit?: number;
-
-  /**
-   * Total number of objects reported in API response. The number is affected by
-   * the filter, if any.
-   */
-  total?: number;
-
-  /**
-   * Fetch offset, a number to start from or a cursor, depending on API.
-   */
-  offset?: number | string;
-
-  /**
-   * Offset cursor expiration time, only present for cursor based API.
-   */
-  expiresAt?: number;
-
-  /**
-   * FQL property filter string, will be URL encoded as value of `filter` GET
-   * parameter.
-   */
-  filter?: string;
-
-  /**
-   * Number of resources returned through pagination to the point of offset.
-   */
-  seen: number;
-
-  /**
-   * Number of pages returned through pagination to the point of offset.
-   */
-  pages: number;
-
-  /**
-   * Pagination has completed according to provided pagination parameters.
-   */
-  finished: boolean;
-};
-
-type PaginationParams = Partial<PaginationState>;
-
-type NumericOffsetPaginationParams = Omit<PaginationParams, "expiresAt"> & {
-  offset?: number;
-  filter?: string;
-};
-
-type NumericOffsetPaginationState = Omit<PaginationState, "expiresAt"> & {
-  offset?: number;
-  filter?: string;
-};
-
-type RateLimitConfig = {
-  /**
-   * The limit remaining value at which the client should slow down. This
-   * prevents the client from consuming all available requests.
-   */
-  reserveLimit: number;
-
-  /**
-   * A recommended period of time in milliseconds to wait between requests when
-   * the `reserveLimit` is reached.
-   *
-   * This can be a value representing the refill rate of a "leaky bucket" or
-   * just a guess about how soon another request can be made. Ideally there will
-   * be enough information in the response headers to calculate a better value.
-   */
-  cooldownPeriod: number;
-
-  /**
-   * Maximum number of times to retry a request that continues to receive 429
-   * responses.
-   *
-   * The client will respect `x-ratelimit-retryafter`, but should it end up in a
-   * battle to get the next allowed request, it will give up after this many
-   * tries.
-   */
-  maxAttempts: number;
-};
-
-/**
- * The last seen values from rate limit response headers.
- */
-type RateLimitState = {
-  /**
-   * Maximum number of requests per minute that can be made by all API clients
-   * in a customer account. Initial value assumes the published default of 100.
-   */
-  perMinuteLimit: number;
-
-  /**
-   * Number of requests that remain in the account's rate limiting pool. The
-   * total number available is not known.
-   */
-  limitRemaining: number;
-
-  /**
-   * The next time when an account's rate limit pool will have at least one
-   * request available.
-   */
-  retryAfter: number;
-};
-
-type OAuth2ClientCredentials = {
-  clientId: string;
-  clientSecret: string;
-};
 
 type APIRequest = {
   exec: () => Promise<Response>;
@@ -191,6 +83,7 @@ export class FalconAPIClient {
   public async iterateDevices(input: {
     cb: FalconAPIResourceIterationCallback<Device>;
     pagination?: PaginationParams;
+    query?: QueryParams;
   }): Promise<PaginationState> {
     return this.paginateResources<DeviceIdentifier>({
       ...input,
@@ -207,17 +100,29 @@ export class FalconAPIClient {
    *
    * @param cb iteration callback function to handle batches of policies
    * @param pagination optional pagination parameters
-   * @param filter FQL property filter string, will be URL encoded as value of
-   * `filter` GET parameter
    * @returns pagination state for use in subsequent pagination
    */
   public async iteratePreventionPolicies(input: {
     cb: FalconAPIResourceIterationCallback<PreventionPolicy>;
     pagination?: NumericOffsetPaginationParams;
+    query?: QueryParams;
   }): Promise<NumericOffsetPaginationState> {
     return this.paginateResources<PreventionPolicy>({
       ...input,
       resourcePath: "/policy/combined/prevention/v1",
+    }) as Promise<NumericOffsetPaginationState>;
+  }
+
+  public async iteratePreventionPolicyMemberIds(input: {
+    cb: FalconAPIResourceIterationCallback<DeviceIdentifier>;
+    policyId: string;
+    pagination?: NumericOffsetPaginationParams;
+    query?: QueryParams;
+  }): Promise<NumericOffsetPaginationState> {
+    return this.paginateResources<DeviceIdentifier>({
+      ...input,
+      resourcePath: "/policy/queries/prevention-members/v1",
+      query: { ...input.query, id: input.policyId },
     }) as Promise<NumericOffsetPaginationState>;
   }
 
@@ -243,10 +148,12 @@ export class FalconAPIClient {
     cb,
     resourcePath,
     pagination,
+    query,
   }: {
     cb: FalconAPIResourceIterationCallback<ResourceType>;
     resourcePath: string;
     pagination?: PaginationParams;
+    query?: QueryParams;
   }): Promise<PaginationState> {
     if (pagination?.expiresAt) {
       const invocationTime = Date.now();
@@ -271,8 +178,9 @@ export class FalconAPIClient {
       const response: ResourcesResponse<ResourceType> = await this.executeAuthenticatedAPIRequest<
         ResourcesResponse<ResourceType>
       >(
-        `https://api.crowdstrike.com${resourcePath}?${toURLSearchParams(
+        `https://api.crowdstrike.com${resourcePath}?${toQueryString(
           paginationParams,
+          query,
         )}`,
         {
           method: "GET",
@@ -303,7 +211,6 @@ export class FalconAPIClient {
     if (!finished) {
       paginationState.offset = paginationMeta?.offset;
       paginationState.expiresAt = paginationMeta?.expires_at;
-      paginationState.filter = pagination?.filter;
     }
 
     return paginationState;
@@ -422,22 +329,27 @@ function isValidToken(token: OAuth2Token): boolean {
   return !!(token && token.expiresAt > Date.now());
 }
 
-function toURLSearchParams(pagination?: {
-  limit?: number;
-  offset?: number | string;
-  filter?: string;
-}): URLSearchParams {
+function toQueryString(
+  pagination?: {
+    limit?: number;
+    offset?: number | string;
+  },
+  queryParams?: object,
+): URLSearchParams {
   const params = new URLSearchParams();
 
   if (pagination) {
-    if (pagination.filter) {
-      params.append("filter", pagination.filter);
-    }
     if (typeof pagination.limit === "number") {
       params.append("limit", String(pagination.limit));
     }
     if (pagination.offset !== undefined) {
       params.append("offset", String(pagination.offset));
+    }
+  }
+
+  if (queryParams) {
+    for (const e of Object.entries(queryParams)) {
+      params.append(e[0], String(e[1]));
     }
   }
 

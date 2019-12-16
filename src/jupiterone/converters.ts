@@ -1,8 +1,10 @@
 import {
   createIntegrationEntity,
   EntityFromIntegration,
+  generateRelationshipType,
   IntegrationInstance,
 } from "@jupiterone/jupiter-managed-integration-sdk";
+
 import { Device, PreventionPolicy } from "../crowdstrike/types";
 
 export const ACCOUNT_ENTITY_TYPE = "crowdstrike_account";
@@ -42,7 +44,7 @@ export function createDeviceHostAgentEntity(
   });
 }
 
-export const PREVENTION_POLICY_ENTITY = "crowdstrike_sensor_policy";
+export const PREVENTION_POLICY_ENTITY_TYPE = "crowdstrike_sensor_policy";
 
 export function createPreventionPolicyEntity(
   source: PreventionPolicy,
@@ -52,7 +54,7 @@ export function createPreventionPolicyEntity(
       source,
       assign: {
         _class: "ControlPolicy",
-        _type: PREVENTION_POLICY_ENTITY,
+        _type: PREVENTION_POLICY_ENTITY_TYPE,
         createdOn: Date.parse(source.created_timestamp),
         updatedOn: Date.parse(source.modified_timestamp),
         createdBy: source.created_by,
@@ -62,3 +64,9 @@ export function createPreventionPolicyEntity(
     },
   });
 }
+
+export const DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE = generateRelationshipType(
+  "ASSIGNED",
+  DEVICE_ENTITY_TYPE,
+  PREVENTION_POLICY_ENTITY_TYPE,
+);
