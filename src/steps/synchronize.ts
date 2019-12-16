@@ -11,6 +11,7 @@ import {
 import {
   ACCOUNT_ENTITY_TYPE,
   DEVICE_ENTITY_TYPE,
+  PREVENTION_POLICY_ENTITY,
 } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
 
@@ -26,14 +27,23 @@ export default {
     );
 
     const synchronizeEntities = async (): Promise<PersisterOperationsResult> => {
-      const [oldAccountEntities, oldDeviceEntities] = await Promise.all([
+      const [
+        oldAccountEntities,
+        oldDeviceEntities,
+        oldPolicyEntities,
+      ] = await Promise.all([
         graph.findEntitiesByType(ACCOUNT_ENTITY_TYPE),
         graph.findEntitiesByType(DEVICE_ENTITY_TYPE),
+        graph.findEntitiesByType(PREVENTION_POLICY_ENTITY),
       ]);
 
       const entityOperations: EntityOperation[] = [];
 
-      const oldEntities = [...oldAccountEntities, ...oldDeviceEntities];
+      const oldEntities = [
+        ...oldAccountEntities,
+        ...oldDeviceEntities,
+        ...oldPolicyEntities,
+      ];
 
       const processedEntityKeys: string[] = [];
 

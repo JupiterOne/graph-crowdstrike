@@ -5,8 +5,12 @@ import {
   IntegrationInstance,
 } from "@jupiterone/jupiter-managed-integration-sdk";
 
-import { Device } from "../crowdstrike/types";
-import { createAccountEntity, createDeviceHostAgentEntity } from "./converters";
+import { Device, PreventionPolicy } from "../crowdstrike/types";
+import {
+  createAccountEntity,
+  createDeviceHostAgentEntity,
+  createPreventionPolicyEntity,
+} from "./converters";
 
 describe("createAccountEntity", () => {
   let instance: IntegrationInstance;
@@ -119,6 +123,66 @@ describe("createDeviceHostAgentEntity", () => {
       displayName: "Sample-Detect-2",
       status: "normal",
       function: ["anti-malware"],
+    });
+  });
+});
+
+describe("createPreventionPolicyEntity", () => {
+  test("properties transferred", () => {
+    const source: PreventionPolicy = {
+      id: "438ad82d1f584eb99d7ec24e333be231",
+      name: "platform_default",
+      description: "Platform default policy",
+      platform_name: "iOS",
+      groups: [],
+      enabled: true,
+      created_by: "CS Salesforce",
+      created_timestamp: "2019-12-02T15:39:34.443152466Z",
+      modified_by: "CS Salesforce",
+      modified_timestamp: "2019-12-02T15:39:34.443152466Z",
+      prevention_settings: [
+        {
+          name: "Mobile",
+          settings: [
+            {
+              id: "MobileWiFiReportingFunctionality",
+              name: "Connected Wi-Fi networks",
+              type: "toggle",
+              description:
+                "See Wi-Fi networks the device is connected to. This can include location information, which might be deemed private data in some countries.",
+              value: {
+                enabled: false,
+              },
+            },
+            {
+              id: "MobileBluetoothReportingFunctionality",
+              name: "Connected Bluetooth devices",
+              type: "toggle",
+              description:
+                "See Bluetooth devices that the mobile device is connected to, including Bluetooth MAC addresses. These addresses can identify device type, which could be personal in nature.",
+              value: {
+                enabled: false,
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(createPreventionPolicyEntity(source)).toEqual({
+      _class: ["ControlPolicy"],
+      _type: "crowdstrike_sensor_policy",
+      _scope: "crowdstrike_sensor_policy",
+      _key: "438ad82d1f584eb99d7ec24e333be231",
+      _rawData: [{ name: "default", rawData: source }],
+      name: "platform_default",
+      displayName: "platform_default",
+      description: "Platform default policy",
+      createdOn: 1575301174443,
+      updatedOn: 1575301174443,
+      createdBy: "CS Salesforce",
+      updatedBy: "CS Salesforce",
+      active: true,
     });
   });
 });

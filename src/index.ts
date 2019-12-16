@@ -4,6 +4,7 @@ import invocationValidator from "./invocationValidator";
 import fetchDevices from "./steps/fetchDevices";
 import prepareAccount from "./steps/prepareAccount";
 import synchronize from "./steps/synchronize";
+import fetchPreventionPolicies from "./steps/fetchPreventionPolicies";
 
 /**
  * A multi-step integration:
@@ -41,6 +42,9 @@ export const invocationConfig: IntegrationInvocationConfig = {
     },
     {
       steps: [fetchDevices],
+    },
+    {
+      steps: [fetchPreventionPolicies],
     },
     {
       steps: [synchronize],

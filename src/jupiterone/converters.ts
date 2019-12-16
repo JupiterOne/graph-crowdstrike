@@ -3,7 +3,7 @@ import {
   EntityFromIntegration,
   IntegrationInstance,
 } from "@jupiterone/jupiter-managed-integration-sdk";
-import { Device } from "../crowdstrike/types";
+import { Device, PreventionPolicy } from "../crowdstrike/types";
 
 export const ACCOUNT_ENTITY_TYPE = "crowdstrike_account";
 
@@ -37,6 +37,27 @@ export function createDeviceHostAgentEntity(
         _key: source.device_id,
         name: source.hostname,
         function: ["anti-malware"],
+      },
+    },
+  });
+}
+
+export const PREVENTION_POLICY_ENTITY = "crowdstrike_sensor_policy";
+
+export function createPreventionPolicyEntity(
+  source: PreventionPolicy,
+): EntityFromIntegration {
+  return createIntegrationEntity({
+    entityData: {
+      source,
+      assign: {
+        _class: "ControlPolicy",
+        _type: PREVENTION_POLICY_ENTITY,
+        createdOn: Date.parse(source.created_timestamp),
+        updatedOn: Date.parse(source.modified_timestamp),
+        createdBy: source.created_by,
+        updatedBy: source.modified_by,
+        active: source.enabled,
       },
     },
   });

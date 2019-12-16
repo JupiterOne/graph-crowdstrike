@@ -43,11 +43,11 @@ export default {
           cache.putRelationships(accountSensorRelationships),
         ]);
       },
-      pagination: iterationState.state,
-      filter:
-        iterationState.iteration === 0
-          ? `last_seen:>='${lastSeenSince()}'`
-          : undefined,
+      pagination: {
+        ...iterationState.state,
+        filter:
+          iterationState.state.filter || `last_seen:>='${lastSeenSince()}'`,
+      },
     });
 
     return {

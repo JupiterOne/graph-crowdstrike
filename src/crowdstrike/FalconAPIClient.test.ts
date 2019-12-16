@@ -248,7 +248,7 @@ describe("iterateDevices", () => {
     ]);
   }, 20000);
 
-  test("partial set in multiple callbacks", async () => {
+  test("partial set", async () => {
     p = polly(__dirname, "iterateDevicesInterrupted");
     const client = new FalconAPIClient(config);
     const cbSpy = jest.fn().mockResolvedValue(false);
@@ -303,7 +303,7 @@ describe("iterateDevices", () => {
       total: 3,
     });
     expect(cbSpy).toHaveBeenCalledTimes(3);
-  });
+  }, 20000);
 
   test("pagination with filter", async () => {
     p = polly(__dirname, "iterateDevicesFilter");
@@ -313,8 +313,7 @@ describe("iterateDevices", () => {
     // This is likely to fail when a new account is used with new host seen dates
     const paginationState = await client.iterateDevices({
       cb: cbSpy,
-      pagination: { limit: 1 },
-      filter: "last_seen:>='2019-12-02T15:54:40Z'",
+      pagination: { limit: 1, filter: "last_seen:>='2019-12-02T15:54:40Z'" },
     });
 
     expect(paginationState).toEqual({
@@ -325,6 +324,7 @@ describe("iterateDevices", () => {
       total: 2,
       expiresAt: expect.any(Number),
       offset: expect.any(String),
+      filter: "last_seen:>='2019-12-02T15:54:40Z'",
     });
 
     expect(cbSpy).toHaveBeenCalledTimes(1);
@@ -369,4 +369,175 @@ describe("iterateDevices", () => {
       }),
     ).rejects.toThrowError(/expired/);
   });
+});
+
+describe("iteratePreventionPolicies", () => {
+  test("complete set in single callback", async () => {
+    p = polly(__dirname, "iteratePreventionPoliciesSinglePage");
+    const client = new FalconAPIClient(config);
+    const cbSpy = jest.fn();
+
+    const paginationState = await client.iteratePreventionPolicies({
+      cb: cbSpy,
+    });
+
+    expect(paginationState).toEqual({
+      finished: true,
+      limit: undefined,
+      pages: 1,
+      seen: 6,
+      total: 6,
+    });
+
+    expect(cbSpy).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ id: expect.any(String) }),
+        expect.objectContaining({ id: expect.any(String) }),
+        expect.objectContaining({ id: expect.any(String) }),
+        expect.objectContaining({ id: expect.any(String) }),
+        expect.objectContaining({ id: expect.any(String) }),
+        expect.objectContaining({ id: expect.any(String) }),
+      ]),
+    );
+  }, 20000);
+
+  test("partial set in multiple callbacks", async () => {
+    p = polly(__dirname, "iteratePreventionPoliciesCompletes");
+    const client = new FalconAPIClient(config);
+    const cbSpy = jest.fn();
+
+    const paginationState = await client.iteratePreventionPolicies({
+      cb: cbSpy,
+      pagination: { limit: 1 },
+    });
+
+    expect(paginationState).toEqual({
+      finished: true,
+      limit: 1,
+      pages: 6,
+      seen: 6,
+      total: 6,
+    });
+
+    expect(cbSpy).toHaveBeenCalledTimes(6);
+
+    expect(cbSpy.mock.calls[0]).toEqual([
+      [expect.objectContaining({ id: expect.any(String) })],
+    ]);
+    expect(cbSpy.mock.calls[1]).toEqual([
+      [expect.objectContaining({ id: expect.any(String) })],
+    ]);
+    expect(cbSpy.mock.calls[2]).toEqual([
+      [expect.objectContaining({ id: expect.any(String) })],
+    ]);
+    expect(cbSpy.mock.calls[3]).toEqual([
+      [expect.objectContaining({ id: expect.any(String) })],
+    ]);
+    expect(cbSpy.mock.calls[4]).toEqual([
+      [expect.objectContaining({ id: expect.any(String) })],
+    ]);
+    expect(cbSpy.mock.calls[5]).toEqual([
+      [expect.objectContaining({ id: expect.any(String) })],
+    ]);
+  }, 20000);
+
+  test("partial set", async () => {
+    p = polly(__dirname, "iteratePreventionPoliciesInterrupted");
+    const client = new FalconAPIClient(config);
+    const cbSpy = jest.fn().mockResolvedValue(false);
+
+    const paginationState = await client.iteratePreventionPolicies({
+      cb: cbSpy,
+      pagination: { limit: 1 },
+    });
+
+    expect(paginationState).toEqual({
+      finished: false,
+      pages: 1,
+      limit: 1,
+      seen: 1,
+      total: 6,
+      offset: 1,
+    });
+
+    expect(cbSpy).toHaveBeenCalledTimes(1);
+    expect(cbSpy.mock.calls[0]).toEqual([
+      [expect.objectContaining({ id: expect.any(String) })],
+    ]);
+  }, 20000);
+
+  test("resumes from pagination state", async () => {
+    p = polly(__dirname, "iteratePreventionPoliciesResumes");
+    const client = new FalconAPIClient(config);
+    const cbSpy = jest.fn().mockResolvedValueOnce(false);
+    const paginationState = await client.iteratePreventionPolicies({
+      cb: cbSpy,
+      pagination: { limit: 1 },
+    });
+    expect(paginationState).toEqual({
+      finished: false,
+      pages: 1,
+      limit: 1,
+      seen: 1,
+      total: 6,
+      offset: 1,
+    });
+    const finalPaginationState = await client.iteratePreventionPolicies({
+      cb: cbSpy,
+      pagination: paginationState,
+    });
+    expect(finalPaginationState).toEqual({
+      finished: true,
+      pages: 6,
+      limit: 1,
+      seen: 6,
+      total: 6,
+    });
+    expect(cbSpy).toHaveBeenCalledTimes(6);
+  }, 20000);
+
+  test("pagination with filter", async () => {
+    p = polly(__dirname, "iteratePreventionPoliciesFilter");
+    const client = new FalconAPIClient(config);
+    const cbSpy = jest.fn().mockResolvedValueOnce(false);
+
+    // This is likely to fail when a new account is used with new host seen dates
+    const paginationState = await client.iteratePreventionPolicies({
+      cb: cbSpy,
+      pagination: { limit: 1, filter: "platform_name:'Windows'" },
+    });
+
+    expect(paginationState).toEqual({
+      finished: false,
+      pages: 1,
+      limit: 1,
+      seen: 1,
+      total: 2,
+      offset: 1,
+      filter: "platform_name:'Windows'",
+    });
+
+    expect(cbSpy).toHaveBeenCalledTimes(1);
+    expect(cbSpy.mock.calls[0]).toEqual([
+      [expect.objectContaining({ id: expect.any(String) })],
+    ]);
+
+    const finalPaginationState = await client.iteratePreventionPolicies({
+      cb: cbSpy,
+      pagination: paginationState,
+    });
+
+    expect(finalPaginationState).toEqual({
+      finished: true,
+      limit: 1,
+      pages: 2,
+      seen: 2,
+      total: 2,
+    });
+
+    expect(cbSpy).toHaveBeenCalledTimes(2);
+    expect(cbSpy.mock.calls[1]).toEqual([
+      [expect.objectContaining({ id: expect.any(String) })],
+    ]);
+  }, 20000);
 });

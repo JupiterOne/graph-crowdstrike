@@ -3,25 +3,19 @@ export type OAuth2TokenResponse = {
   expires_in: number;
 };
 
-export type LimitOffsetPaginationMeta = {
-  limit: number;
-  offset: number;
-  total: number;
-};
-
 /**
  * Metadata in API responses indicating the pagination state.
  */
-export type ScrollOffsetPaginationMeta = {
+export type PaginationMeta = {
   limit: number;
-  offset: string;
-  expires_at: number;
   total: number;
+  offset: number | string;
+  expires_at?: number;
 };
 
 export type ResponseMeta = {
   trace_id: string;
-  pagination?: LimitOffsetPaginationMeta | ScrollOffsetPaginationMeta;
+  pagination?: PaginationMeta;
 };
 
 export type ResponseError = {
@@ -42,5 +36,16 @@ export type DeviceIdentifier = string;
 
 export type Device = {
   device_id: DeviceIdentifier;
-  [camelProperty: string]: string | object | Array<string | object>;
+  [property: string]: string | boolean | object | Array<string | object>;
+};
+
+export type PreventionPolicyIdentifier = string;
+
+export type PreventionPolicy = {
+  id: PreventionPolicyIdentifier;
+  created_by: string;
+  created_timestamp: string;
+  modified_by: string;
+  modified_timestamp: string;
+  [property: string]: string | boolean | object | Array<string | object>;
 };
