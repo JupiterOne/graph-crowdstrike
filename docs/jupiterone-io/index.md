@@ -17,12 +17,12 @@ credentials][1].
 
 These entities are ingested when the integration runs:
 
-| Example Entity Resource | \_type : \_class of the Entity                |
-| ----------------------- | --------------------------------------------- |
-| Account                 | `crowdstrike_account` : `Account`             |
-| Service                 | `crowdstrike_endpoint_protection` : `Service` |
-| Device Sensor Agent     | `crowdstrike_sensor` : `HostAgent`            |
-| Sensor Policy           | `crowdstrike_sensor_policy` : `ControlPolicy` |
+| Example Entity Resource | \_type : \_class of the Entity                    |
+| ----------------------- | ------------------------------------------------- |
+| Account                 | `crowdstrike_account` : `Account`                 |
+| Service                 | `crowdstrike_endpoint_protection` : `Service`     |
+| Device Sensor Agent     | `crowdstrike_sensor` : `HostAgent`                |
+| Prevention Policy       | `crowdstrike_prevention_policy` : `ControlPolicy` |
 
 Only hosts that have been seen within past 30 days are maintained.
 
@@ -30,11 +30,11 @@ Only hosts that have been seen within past 30 days are maintained.
 
 The following relationships are created/mapped:
 
-| Relationships                                                               |
-| --------------------------------------------------------------------------- |
-| `crowdstrike_account` **HAS** `crowdstrike_sensor`                          |
-| `crowdstrike_account` **HAS** `crowdstrike_endpoint_protection`             |
-| `crowdstrike_prevent_policy` **ENFORCES** `crowdstrike_endpoint_protection` |
-| `crowdstrike_sensor` **ASSIGNED** `crowdstrike_prevent_policy`              |
+| Relationships                                                                  |
+| ------------------------------------------------------------------------------ |
+| `crowdstrike_account` **HAS** `crowdstrike_sensor`                             |
+| `crowdstrike_account` **HAS** `crowdstrike_endpoint_protection`                |
+| `crowdstrike_prevention_policy` **ENFORCES** `crowdstrike_endpoint_protection` |
+| `crowdstrike_sensor` **ASSIGNED** `crowdstrike_prevention_policy`              |
 
 [1]: https://www.crowdstrike.com/blog/tech-center/get-access-falcon-apis/

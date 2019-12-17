@@ -32,6 +32,8 @@ export default {
 
     const iterationState = getIterationState(executionContext);
 
+    logger.info({ iterationState }, "Iterating policy members...");
+
     const policyIds: string[] =
       (await cache.getEntry("prevention-policy-ids")).data || [];
 
@@ -47,21 +49,17 @@ export default {
 
     let policyIndex = policyPagination.offset || 0;
 
-    logger.trace({ policyPagination }, "Processing policies");
-
     let membersPagination: NumericOffsetPaginationParams = iterationState.state
       .membersPagination || { ...MEMBERS_PAGINATION };
 
     do {
       const policyId = policyIds[policyIndex];
-
+      const loggerInfo = { policyPagination, membersPagination };
       membersPagination = await falconAPI.iteratePreventionPolicyMemberIds({
         cb: async memberIds => {
+          logger.trace(loggerInfo, "Processing page of member ids");
+
           const relationships: RelationshipFromIntegration[] = [];
-          logger.trace(
-            { memberIds: memberIds.length },
-            "Processing page of member ids",
-          );
           for (const deviceId of memberIds) {
             // TODO look up the device from our local storage/cache of entities!
             relationships.push({
@@ -90,7 +88,7 @@ export default {
           finished: policyIndex === policyIds.length - 1,
         };
 
-        logger.trace(
+        logger.info(
           { policyPagination, membersPagination },
           "Finished paging policy members",
         );

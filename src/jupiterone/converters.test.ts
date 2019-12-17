@@ -10,6 +10,7 @@ import {
   createAccountEntity,
   createDeviceHostAgentEntity,
   createPreventionPolicyEntity,
+  createProtectionServiceEntity,
 } from "./converters";
 
 describe("createAccountEntity", () => {
@@ -27,10 +28,34 @@ describe("createAccountEntity", () => {
       _class: ["Account"],
       _type: "crowdstrike_account",
       _scope: "crowdstrike_account",
-      _key: "instance-123",
+      _key: "crowdstrike_account|instance-123",
       _rawData: [],
       name: "My CrowdStrike",
       displayName: "My CrowdStrike",
+    });
+  });
+});
+
+describe("createProtectionServiceEntity", () => {
+  let instance: IntegrationInstance;
+
+  beforeEach(() => {
+    instance = createTestIntegrationData().instance;
+  });
+
+  test("properties transferred", () => {
+    instance.id = "instance-123";
+
+    expect(createProtectionServiceEntity(instance)).toEqual({
+      _class: ["Service"],
+      _type: "crowdstrike_endpoint_protection",
+      _scope: "crowdstrike_endpoint_protection",
+      _key: "crowdstrike_endpoint_protection|instance-123",
+      _rawData: [],
+      name: "CrowdStrike Endpoint Protection Service",
+      displayName: "CrowdStrike Endpoint Protection Service",
+      category: ["software", "other"],
+      endpoints: ["https://falcon.crowdstrike.com/"],
     });
   });
 });
@@ -171,8 +196,8 @@ describe("createPreventionPolicyEntity", () => {
 
     expect(createPreventionPolicyEntity(source)).toEqual({
       _class: ["ControlPolicy"],
-      _type: "crowdstrike_sensor_policy",
-      _scope: "crowdstrike_sensor_policy",
+      _type: "crowdstrike_prevention_policy",
+      _scope: "crowdstrike_prevention_policy",
       _key: "438ad82d1f584eb99d7ec24e333be231",
       _rawData: [{ name: "default", rawData: source }],
       name: "platform_default",

@@ -10,6 +10,7 @@ import { FalconAPIClient } from "../crowdstrike";
 import getIterationState from "../getIterationState";
 import { createDeviceHostAgentEntity } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
+import { PaginationState } from "../crowdstrike/types";
 
 export default {
   id: "fetch-devices",
@@ -18,19 +19,35 @@ export default {
   executionHandler: async (
     executionContext: IntegrationStepExecutionContext,
   ): Promise<IntegrationStepIterationState> => {
+    const { logger } = executionContext;
+
     const cache = new ProviderGraphObjectCache(
       executionContext.clients.getCache(),
     );
+
     const accountEntity = await cache.getAccount();
 
     const falconAPI = new FalconAPIClient(executionContext.instance.config);
 
     const iterationState = getIterationState(executionContext);
-    const filter =
-      iterationState.state.filter || `last_seen:>='${lastSeenSince()}'`;
 
-    const pagination = await falconAPI.iterateDevices({
+    logger.info({ iterationState }, "Iterating devices...");
+
+    const filter =
+      iterationState.iteration === 0
+        ? `last_seen:>='${lastSeenSince()}'`
+        : undefined;
+
+    let pagination: PaginationState | undefined =
+      iterationState.state.pagination;
+
+    pagination = await falconAPI.iterateDevices({
       cb: async devices => {
+        logger.info(
+          { pagination },
+          "Creating device entities and relationships...",
+        );
+
         const sensorEntities: EntityFromIntegration[] = [];
         const accountSensorRelationships: IntegrationRelationship[] = [];
         for (const device of devices) {
@@ -56,7 +73,7 @@ export default {
       finished: pagination.finished,
       state: {
         pagination,
-        filter: "",
+        filter,
       },
     };
   },
