@@ -32,9 +32,6 @@ export default class ProviderGraphObjectCache {
   /**
    * Stores the account entity for easy access through `getAccount` and places
    * in the set of entities to synchronize.
-   *
-   * @param entity the entity of class `Account` to which other resources will
-   * be related
    */
   public async putAccount(entity: EntityFromIntegration): Promise<number> {
     await this.resourceCache.putEntry({ key: "account", data: entity });
@@ -57,9 +54,6 @@ export default class ProviderGraphObjectCache {
     return entry.data;
   }
 
-  // TODO Upload RawData and ensure entities have temp uris for it?
-  // The cached object will have _rawData too if we don't, though that may not
-  // be a problem. Perhaps we can upload it later as normal?
   public putEntities(entities: EntityFromIntegration[]): Promise<number> {
     return this.resourceCache.iterableCache("entities").putEntries(
       entities.map(e => ({

@@ -40,9 +40,6 @@ export type ResourcesResponse<T> = {
  */
 export type DeviceIdentifier = string;
 
-/**
- * A detected device.
- */
 export type Device = {
   device_id: DeviceIdentifier;
   [camelProperty: string]: string | object | Array<string | object>;
