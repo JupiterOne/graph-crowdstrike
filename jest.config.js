@@ -1,12 +1,20 @@
 const { defaults } = require("jest-config");
 
 module.exports = {
-  transform: {
-    "^.+\\.ts$": "ts-jest",
+  globals: {
+    "ts-jest": {
+      babelConfig: true,
+    },
   },
   testMatch: ["<rootDir>/src/**/*.test.{js,ts}"],
   setupFiles: ["dotenv/config"],
-  collectCoverageFrom: ["src/**/*.ts", "!src/**/index.ts"],
+  collectCoverageFrom: [
+    "src/**/*.ts",
+    "!src/ProviderGraphObjectCache.ts",
+    "!src/getIterationState.ts",
+    "!src/**/index.ts",
+    "!src/steps/**/*.ts",
+  ],
   moduleFileExtensions: [...defaults.moduleFileExtensions, "ts"],
   testEnvironment: "node",
   clearMocks: true,
