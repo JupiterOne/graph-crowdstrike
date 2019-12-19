@@ -52,15 +52,13 @@ export default {
       }
 
       // Identify new provider data to create objects in the graph
-      await providerCache.iterateEntityKeys(
-        async (newEntityKey, _index, _qty, getResource) => {
-          if (!processedEntityKeys.includes(newEntityKey)) {
-            const newEntity = await getResource();
-            const operations = persister.processEntities([], [newEntity]);
-            entityOperations.push(...operations);
-          }
-        },
-      );
+      await providerCache.iterateEntityKeys(async e => {
+        if (!processedEntityKeys.includes(e.key)) {
+          const newEntity = await e.getResource();
+          const operations = persister.processEntities([], [newEntity]);
+          entityOperations.push(...operations);
+        }
+      });
 
       return persister.publishEntityOperations(entityOperations);
     };
@@ -100,16 +98,14 @@ export default {
       }
 
       // Identify new provider data to create objects in the graph
-      await providerCache.iterateRelationshipKeys(
-        async (key, _index, _qty, getResource) => {
-          if (!processedRelationshipKeys.includes(key)) {
-            const resource = await getResource();
-            relationshipOperations.push(
-              ...persister.processRelationships([], [resource]),
-            );
-          }
-        },
-      );
+      await providerCache.iterateRelationshipKeys(async e => {
+        if (!processedRelationshipKeys.includes(e.key)) {
+          const resource = await e.getResource();
+          relationshipOperations.push(
+            ...persister.processRelationships([], [resource]),
+          );
+        }
+      });
 
       return persister.publishRelationshipOperations(relationshipOperations);
     };

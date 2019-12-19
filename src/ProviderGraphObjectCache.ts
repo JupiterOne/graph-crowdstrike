@@ -6,12 +6,12 @@ import {
 } from "@jupiterone/jupiter-managed-integration-sdk";
 
 interface KeyIteratorCallback<EntryType> {
-  (
-    key: string,
-    index: number,
-    qty: number,
-    getResource: () => Promise<EntryType>,
-  ): Promise<void>;
+  (each: {
+    key: string;
+    keyIndex: number;
+    totalKeys: number;
+    getResource: () => Promise<EntryType>;
+  }): Promise<void>;
 }
 
 /**
@@ -114,15 +114,18 @@ export default class ProviderGraphObjectCache {
   ): Promise<void> {
     return this.resourceCache
       .iterableCache(resourceType)
-      .forEachKey(async (key, index, qty, getEntry) => {
-        await cb(key, index, qty, async () => {
-          const resource = (await getEntry()).data;
-          if (!resource) {
-            throw new IntegrationError(
-              "Cache has a key listed for which there is no entry in the cache!",
-            );
-          }
-          return resource;
+      .forEachKey(async e => {
+        await cb({
+          ...e,
+          getResource: async () => {
+            const resource = (await e.getEntry()).data;
+            if (!resource) {
+              throw new IntegrationError(
+                "Cache has a key listed for which there is no entry in the cache!",
+              );
+            }
+            return resource;
+          },
         });
       });
   }
