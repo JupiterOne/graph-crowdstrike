@@ -56,7 +56,7 @@ export default {
       const policyId = policyIds[policyIndex];
       const loggerInfo = { policyPagination, membersPagination };
       membersPagination = await falconAPI.iteratePreventionPolicyMemberIds({
-        cb: async memberIds => {
+        callback: async memberIds => {
           logger.trace(loggerInfo, "Processing page of member ids");
 
           const relationships: RelationshipFromIntegration[] = [];

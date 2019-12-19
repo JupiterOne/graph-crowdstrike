@@ -76,19 +76,17 @@ export class FalconAPIClient {
    * 2 minutes. The device details request time combined with the callback
    * processing time, per page, must be less.
    *
-   * @param cb iteration callback function to handle batches of devices
-   * @param pagination optional pagination parameters
    * @returns pagination state for use in subsequent pagination
    */
   public async iterateDevices(input: {
-    cb: FalconAPIResourceIterationCallback<Device>;
+    callback: FalconAPIResourceIterationCallback<Device>;
     pagination?: PaginationParams;
     query?: QueryParams;
   }): Promise<PaginationState> {
     return this.paginateResources<DeviceIdentifier>({
       ...input,
-      cb: async deviceIds => {
-        return await input.cb(await this.fetchDevices(deviceIds));
+      callback: async deviceIds => {
+        return await input.callback(await this.fetchDevices(deviceIds));
       },
       resourcePath: "/devices/queries/devices-scroll/v1",
     });
@@ -98,12 +96,10 @@ export class FalconAPIClient {
    * Iterates prevention policies using the "combined" API, providing pages of
    * the collection to the provided callback.
    *
-   * @param cb iteration callback function to handle batches of policies
-   * @param pagination optional pagination parameters
    * @returns pagination state for use in subsequent pagination
    */
   public async iteratePreventionPolicies(input: {
-    cb: FalconAPIResourceIterationCallback<PreventionPolicy>;
+    callback: FalconAPIResourceIterationCallback<PreventionPolicy>;
     pagination?: NumericOffsetPaginationParams;
     query?: QueryParams;
   }): Promise<NumericOffsetPaginationState> {
@@ -114,7 +110,7 @@ export class FalconAPIClient {
   }
 
   public async iteratePreventionPolicyMemberIds(input: {
-    cb: FalconAPIResourceIterationCallback<DeviceIdentifier>;
+    callback: FalconAPIResourceIterationCallback<DeviceIdentifier>;
     policyId: string;
     pagination?: NumericOffsetPaginationParams;
     query?: QueryParams;
@@ -145,12 +141,12 @@ export class FalconAPIClient {
   }
 
   private async paginateResources<ResourceType>({
-    cb,
+    callback,
     resourcePath,
     pagination,
     query,
   }: {
-    cb: FalconAPIResourceIterationCallback<ResourceType>;
+    callback: FalconAPIResourceIterationCallback<ResourceType>;
     resourcePath: string;
     pagination?: PaginationParams;
     query?: QueryParams;
@@ -190,7 +186,7 @@ export class FalconAPIClient {
         },
       );
 
-      continuePagination = await cb(response.resources);
+      continuePagination = await callback(response.resources);
 
       paginationParams = paginationMeta = response.meta
         .pagination as PaginationMeta;

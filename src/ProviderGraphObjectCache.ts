@@ -64,15 +64,15 @@ export default class ProviderGraphObjectCache {
   }
 
   public iterateEntityKeys(
-    cb: KeyIteratorCallback<EntityFromIntegration>,
+    callback: KeyIteratorCallback<EntityFromIntegration>,
   ): Promise<void> {
-    return this.iterateKeys("entities", cb);
+    return this.iterateKeys("entities", callback);
   }
 
   public iterateRelationshipKeys(
-    cb: KeyIteratorCallback<IntegrationRelationship>,
+    callback: KeyIteratorCallback<IntegrationRelationship>,
   ): Promise<void> {
-    return this.iterateKeys("relationships", cb);
+    return this.iterateKeys("relationships", callback);
   }
 
   public putRelationships(
@@ -104,12 +104,12 @@ export default class ProviderGraphObjectCache {
 
   private iterateKeys<EntryType>(
     resourceType: "entities" | "relationships",
-    cb: KeyIteratorCallback<EntryType>,
+    callback: KeyIteratorCallback<EntryType>,
   ): Promise<void> {
     return this.resourceCache
       .iterableCache(resourceType)
       .forEachKey(async e => {
-        await cb({
+        await callback({
           ...e,
           getResource: async () => {
             const resource = (await e.getEntry()).data;

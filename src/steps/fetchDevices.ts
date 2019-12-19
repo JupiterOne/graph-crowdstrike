@@ -42,7 +42,7 @@ export default {
       iterationState.state.pagination;
 
     pagination = await falconAPI.iterateDevices({
-      cb: async devices => {
+      callback: async devices => {
         logger.info(
           { pagination },
           "Creating device entities and relationships...",

@@ -41,7 +41,7 @@ export default {
       iterationState.state.pagination;
 
     pagination = await falconAPI.iteratePreventionPolicies({
-      cb: async policies => {
+      callback: async policies => {
         logger.info(
           { pagination },
           "Creating protection policy entities and relationships...",
