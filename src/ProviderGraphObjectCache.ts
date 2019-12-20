@@ -15,6 +15,30 @@ interface KeyIteratorCallback<EntryType> {
 }
 
 /**
+ * The state of collecting a set of resources from the data provider. Complete
+ * synchronization relies on seeing indication of success for each type of
+ * resource.
+ */
+type ProviderResourceCollectionState = {
+  /**
+   * The `_type` of the resources assigned through conversion of provider data
+   * to graph objects.
+   */
+  type: string;
+
+  /**
+   * Indicates fetching the collection from the provider completed successfully.
+   */
+  success: boolean;
+};
+
+type ProviderResourceCollectionStateTypeMap = {
+  [type: string]: ProviderResourceCollectionState;
+};
+
+const COLLECTION_STATES_MAP_ENTRY_KEY = "collection-states-map";
+
+/**
  * A cache of provider data, already converted to `EntityFromIntegration` and
  * `IntegrationRelationship` objects.
  */
@@ -45,7 +69,7 @@ export default class ProviderGraphObjectCache {
    * @returns undefined when the provider does not have data representing the
    * key
    */
-  public async getEntity(
+  public async getEntityByKey(
     key: string,
   ): Promise<EntityFromIntegration | undefined> {
     const entry = await this.resourceCache
@@ -63,16 +87,38 @@ export default class ProviderGraphObjectCache {
     );
   }
 
-  public iterateEntityKeys(
-    cb: KeyIteratorCallback<EntityFromIntegration>,
+  public async getCollectionStatesMap(): Promise<
+    ProviderResourceCollectionStateTypeMap
+  > {
+    return (
+      (await this.resourceCache.getEntry(COLLECTION_STATES_MAP_ENTRY_KEY))
+        .data || {}
+    );
+  }
+
+  public async putCollectionStates(
+    ...states: ProviderResourceCollectionState[]
   ): Promise<void> {
-    return this.iterateKeys("entities", cb);
+    const statesMap = await this.getCollectionStatesMap();
+    for (const state of states) {
+      statesMap[state.type] = state;
+    }
+    return this.resourceCache.putEntry({
+      key: COLLECTION_STATES_MAP_ENTRY_KEY,
+      data: statesMap,
+    });
+  }
+
+  public iterateEntityKeys(
+    callback: KeyIteratorCallback<EntityFromIntegration>,
+  ): Promise<void> {
+    return this.iterateKeys("entities", callback);
   }
 
   public iterateRelationshipKeys(
-    cb: KeyIteratorCallback<IntegrationRelationship>,
+    callback: KeyIteratorCallback<IntegrationRelationship>,
   ): Promise<void> {
-    return this.iterateKeys("relationships", cb);
+    return this.iterateKeys("relationships", callback);
   }
 
   public putRelationships(
@@ -93,7 +139,7 @@ export default class ProviderGraphObjectCache {
    * @returns undefined when the provider does not have data representing the
    * key
    */
-  public async getRelationship(
+  public async getRelationshipByKey(
     key: string,
   ): Promise<IntegrationRelationship | undefined> {
     const entry = await this.resourceCache
@@ -104,12 +150,12 @@ export default class ProviderGraphObjectCache {
 
   private iterateKeys<EntryType>(
     resourceType: "entities" | "relationships",
-    cb: KeyIteratorCallback<EntryType>,
+    callback: KeyIteratorCallback<EntryType>,
   ): Promise<void> {
     return this.resourceCache
       .iterableCache(resourceType)
       .forEachKey(async e => {
-        await cb({
+        await callback({
           ...e,
           getResource: async () => {
             const resource = (await e.getEntry()).data;

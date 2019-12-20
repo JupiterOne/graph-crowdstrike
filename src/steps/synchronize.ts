@@ -11,6 +11,10 @@ import {
 import {
   ACCOUNT_ENTITY_TYPE,
   DEVICE_ENTITY_TYPE,
+  DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE,
+  PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE,
+  PREVENTION_POLICY_ENTITY_TYPE,
+  PROTECTION_SERVICE_ENTITY_TYPE,
 } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
 
@@ -20,41 +24,76 @@ export default {
   executionHandler: async (
     executionContext: IntegrationStepExecutionContext,
   ): Promise<IntegrationStepExecutionResult> => {
+    const { logger } = executionContext;
     const { graph, persister } = executionContext.clients.getClients();
+
     const providerCache = new ProviderGraphObjectCache(
       executionContext.clients.getCache(),
     );
 
+    const collectionStates = await providerCache.getCollectionStatesMap();
+
     const synchronizeEntities = async (): Promise<PersisterOperationsResult> => {
-      const [oldAccountEntities, oldDeviceEntities] = await Promise.all([
+      logger.info("Fetching old entities...");
+
+      const [
+        oldAccountEntities,
+        oldServiceEntities,
+        oldDeviceEntities,
+        oldPolicyEntities,
+      ] = await Promise.all([
         graph.findEntitiesByType(ACCOUNT_ENTITY_TYPE),
+        graph.findEntitiesByType(PROTECTION_SERVICE_ENTITY_TYPE),
         graph.findEntitiesByType(DEVICE_ENTITY_TYPE),
+        graph.findEntitiesByType(PREVENTION_POLICY_ENTITY_TYPE),
       ]);
 
       const entityOperations: EntityOperation[] = [];
 
-      const oldEntities = [...oldAccountEntities, ...oldDeviceEntities];
+      const oldEntities = [
+        ...oldAccountEntities,
+        ...oldServiceEntities,
+        ...oldDeviceEntities,
+        ...oldPolicyEntities,
+      ];
 
-      const processedEntityKeys: string[] = [];
+      const processedEntityKeys = new Set<string>();
+
+      logger.info(
+        { entityCount: oldEntities.length },
+        "Iterating old entities to produce update and delete operations...",
+      );
 
       for (const oldEntity of oldEntities) {
-        const providerEntity = await providerCache.getEntity(oldEntity._key);
+        const providerEntity = await providerCache.getEntityByKey(
+          oldEntity._key,
+        );
         if (providerEntity) {
           // Update graph object with latest provider data
           entityOperations.push(
             ...persister.processEntities([oldEntity], [providerEntity]),
           );
         } else {
-          // Delete graph object not found in the provider data set
-          entityOperations.push(...persister.processEntities([oldEntity], []));
+          // Delete graph object not found in the provider, if the set was fully collected
+          if (collectionStates[oldEntity._type]?.success) {
+            entityOperations.push(
+              ...persister.processEntities([oldEntity], []),
+            );
+          } else {
+            logger.warn(
+              { _type: oldEntity._type, _key: oldEntity._key },
+              "Data from provider is incomplete, deletion will not be performed",
+            );
+          }
         }
-        processedEntityKeys.push(oldEntity._key);
+        processedEntityKeys.add(oldEntity._key);
       }
 
-      // Identify new provider data to create objects in the graph
-      await providerCache.iterateEntityKeys(async e => {
-        if (!processedEntityKeys.includes(e.key)) {
-          const newEntity = await e.getResource();
+      logger.info("Iterating new entities to produce create operations...");
+
+      await providerCache.iterateEntityKeys(async each => {
+        if (!processedEntityKeys.has(each.key)) {
+          const newEntity = await each.getResource();
           const operations = persister.processEntities([], [newEntity]);
           entityOperations.push(...operations);
         }
@@ -64,20 +103,53 @@ export default {
     };
 
     const synchronizeRelationships = async (): Promise<PersisterOperationsResult> => {
-      const relationshipOperations: RelationshipOperation[] = [];
+      logger.info("Fetching old relationships...");
 
-      const oldRelationships = await graph.findRelationshipsByType(
-        generateRelationshipType(
-          "HAS",
-          ACCOUNT_ENTITY_TYPE,
-          DEVICE_ENTITY_TYPE,
+      const [
+        oldAccountDeviceRelationships,
+        oldAccountServiceRelationships,
+        oldPolicyServiceRelationships,
+        oldDevicePolicyRelationships,
+      ] = await Promise.all([
+        graph.findRelationshipsByType(
+          generateRelationshipType(
+            "HAS",
+            ACCOUNT_ENTITY_TYPE,
+            DEVICE_ENTITY_TYPE,
+          ),
         ),
+        graph.findRelationshipsByType(
+          generateRelationshipType(
+            "HAS",
+            ACCOUNT_ENTITY_TYPE,
+            PROTECTION_SERVICE_ENTITY_TYPE,
+          ),
+        ),
+        graph.findRelationshipsByType(
+          PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE,
+        ),
+        graph.findRelationshipsByType(
+          DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE,
+        ),
+      ]);
+
+      const oldRelationships = [
+        ...oldAccountDeviceRelationships,
+        ...oldAccountServiceRelationships,
+        ...oldPolicyServiceRelationships,
+        ...oldDevicePolicyRelationships,
+      ];
+
+      const relationshipOperations: RelationshipOperation[] = [];
+      const processedRelationshipKeys = new Set<string>();
+
+      logger.info(
+        { relationshipCount: oldRelationships.length },
+        "Iterating old relationships to produce update and delete operations...",
       );
 
-      const processedRelationshipKeys: string[] = [];
-
       for (const oldRelationship of oldRelationships) {
-        const providerRelationship = await providerCache.getRelationship(
+        const providerRelationship = await providerCache.getRelationshipByKey(
           oldRelationship._key,
         );
         if (providerRelationship) {
@@ -89,17 +161,27 @@ export default {
             ),
           );
         } else {
-          // Delete graph object not found in the provider data set
-          relationshipOperations.push(
-            ...persister.processRelationships([oldRelationship], []),
-          );
+          // Delete graph object not found in the provider, if the set was fully collected
+          if (collectionStates[oldRelationship._type]?.success) {
+            relationshipOperations.push(
+              ...persister.processRelationships([oldRelationship], []),
+            );
+          } else {
+            logger.warn(
+              { _type: oldRelationship._type, _key: oldRelationship._key },
+              "Data from provider is incomplete, deletion will not be performed",
+            );
+          }
         }
-        processedRelationshipKeys.push(oldRelationship._key);
+        processedRelationshipKeys.add(oldRelationship._key);
       }
 
-      // Identify new provider data to create objects in the graph
+      logger.info(
+        "Iterating new relationships to produce create operations...",
+      );
+
       await providerCache.iterateRelationshipKeys(async e => {
-        if (!processedRelationshipKeys.includes(e.key)) {
+        if (!processedRelationshipKeys.has(e.key)) {
           const resource = await e.getResource();
           relationshipOperations.push(
             ...persister.processRelationships([], [resource]),

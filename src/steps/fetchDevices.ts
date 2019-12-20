@@ -8,7 +8,11 @@ import {
 
 import { FalconAPIClient } from "../crowdstrike";
 import getIterationState from "../getIterationState";
-import { createDeviceHostAgentEntity } from "../jupiterone/converters";
+import {
+  createDeviceHostAgentEntity,
+  DEVICE_ENTITY_TYPE,
+  ACCOUNT_DEVICE_RELATIONSHIP_TYPE,
+} from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
 
 export default {
@@ -18,17 +22,32 @@ export default {
   executionHandler: async (
     executionContext: IntegrationStepExecutionContext,
   ): Promise<IntegrationStepIterationState> => {
-    const cache = new ProviderGraphObjectCache(
-      executionContext.clients.getCache(),
-    );
-    const accountEntity = await cache.getAccount();
+    const { logger } = executionContext;
+
+    const cache = executionContext.clients.getCache();
+    const objectCache = new ProviderGraphObjectCache(cache);
+
+    const accountEntity = await objectCache.getAccount();
+    const deviceIds = (await cache.getEntry("device-ids")).data || [];
 
     const falconAPI = new FalconAPIClient(executionContext.instance.config);
 
     const iterationState = getIterationState(executionContext);
 
-    const newState = await falconAPI.iterateDevices({
-      cb: async devices => {
+    logger.info({ iterationState }, "Iterating devices...");
+
+    const filter =
+      iterationState.iteration === 0
+        ? `last_seen:>='${lastSeenSince()}'`
+        : undefined;
+
+    const pagination = await falconAPI.iterateDevices({
+      callback: async devices => {
+        logger.info(
+          { deviceCount: devices.length },
+          "Creating device entities and relationships...",
+        );
+
         const sensorEntities: EntityFromIntegration[] = [];
         const accountSensorRelationships: IntegrationRelationship[] = [];
         for (const device of devices) {
@@ -39,21 +58,29 @@ export default {
           );
         }
         await Promise.all([
-          cache.putEntities(sensorEntities),
-          cache.putRelationships(accountSensorRelationships),
+          objectCache.putEntities(sensorEntities),
+          objectCache.putRelationships(accountSensorRelationships),
         ]);
       },
-      pagination: iterationState.state,
-      filter:
-        iterationState.iteration === 0
-          ? `last_seen:>='${lastSeenSince()}'`
-          : undefined,
+      pagination: iterationState.state.pagination,
+      query: {
+        filter,
+      },
     });
+
+    await cache.putEntry({ key: "device-ids", data: deviceIds });
+
+    await objectCache.putCollectionStates(
+      { type: DEVICE_ENTITY_TYPE, success: pagination.finished },
+      { type: ACCOUNT_DEVICE_RELATIONSHIP_TYPE, success: pagination.finished },
+    );
 
     return {
       ...iterationState,
-      finished: newState.finished,
-      state: newState,
+      finished: pagination.finished,
+      state: {
+        pagination,
+      },
     };
   },
 };
