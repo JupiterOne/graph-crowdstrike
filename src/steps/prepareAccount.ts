@@ -43,6 +43,12 @@ export default {
       }),
     ]);
 
+    await objectCache.putCollectionStates(
+      { type: account._type, success: true },
+      { type: protectionService._type, success: true },
+      { type: accountService._type, success: true },
+    );
+
     return {};
   },
 };

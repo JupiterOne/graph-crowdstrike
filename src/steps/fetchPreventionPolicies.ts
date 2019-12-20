@@ -1,16 +1,19 @@
 import {
+  createIntegrationRelationship,
   EntityFromIntegration,
   IntegrationRelationship,
   IntegrationStepExecutionContext,
   IntegrationStepIterationState,
-  createIntegrationRelationship,
 } from "@jupiterone/jupiter-managed-integration-sdk";
 
 import { FalconAPIClient } from "../crowdstrike";
 import getIterationState from "../getIterationState";
-import { createPreventionPolicyEntity } from "../jupiterone/converters";
+import {
+  createPreventionPolicyEntity,
+  PREVENTION_POLICY_ENTITY_TYPE,
+  PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE,
+} from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
-import { PaginationState } from "../crowdstrike/types";
 
 export default {
   id: "fetch-prevention-policies",
@@ -37,13 +40,10 @@ export default {
 
     logger.info({ iterationState }, "Iterating protection policies...");
 
-    let pagination: PaginationState | undefined =
-      iterationState.state.pagination;
-
-    pagination = await falconAPI.iteratePreventionPolicies({
+    const pagination = await falconAPI.iteratePreventionPolicies({
       callback: async policies => {
         logger.info(
-          { pagination },
+          { policyCount: policies.length },
           "Creating protection policy entities and relationships...",
         );
 
@@ -69,10 +69,18 @@ export default {
       pagination: iterationState.state.pagination,
     });
 
-    await cache.putEntry({
-      key: "prevention-policy-ids",
-      data: policyIds,
-    });
+    await cache.putEntry({ key: "prevention-policy-ids", data: policyIds });
+
+    await objectCache.putCollectionStates(
+      {
+        type: PREVENTION_POLICY_ENTITY_TYPE,
+        success: pagination.finished,
+      },
+      {
+        type: PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE,
+        success: pagination.finished,
+      },
+    );
 
     return {
       ...iterationState,

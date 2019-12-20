@@ -65,11 +65,6 @@ export function createDeviceHostAgentEntity(
 }
 
 export const PREVENTION_POLICY_ENTITY_TYPE = "crowdstrike_prevention_policy";
-export const PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE = generateRelationshipType(
-  "ENFORCES",
-  PREVENTION_POLICY_ENTITY_TYPE,
-  PROTECTION_SERVICE_ENTITY_TYPE,
-);
 
 export function createPreventionPolicyEntity(
   source: PreventionPolicy,
@@ -90,8 +85,20 @@ export function createPreventionPolicyEntity(
   });
 }
 
+export const ACCOUNT_DEVICE_RELATIONSHIP_TYPE = generateRelationshipType(
+  "HAS",
+  ACCOUNT_ENTITY_TYPE,
+  DEVICE_ENTITY_TYPE,
+);
+
 export const DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE = generateRelationshipType(
   "ASSIGNED",
   DEVICE_ENTITY_TYPE,
   PREVENTION_POLICY_ENTITY_TYPE,
+);
+
+export const PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE = generateRelationshipType(
+  "ENFORCES",
+  PREVENTION_POLICY_ENTITY_TYPE,
+  PROTECTION_SERVICE_ENTITY_TYPE,
 );

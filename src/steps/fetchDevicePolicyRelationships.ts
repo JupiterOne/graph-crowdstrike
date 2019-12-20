@@ -34,6 +34,9 @@ export default {
 
     logger.info({ iterationState }, "Iterating policy members...");
 
+    const deviceIds = new Set<string>(
+      (await cache.getEntry("device-ids")).data || [],
+    );
     const policyIds: string[] =
       (await cache.getEntry("prevention-policy-ids")).data || [];
 
@@ -55,22 +58,25 @@ export default {
     do {
       const policyId = policyIds[policyIndex];
       const loggerInfo = { policyPagination, membersPagination };
+
       membersPagination = await falconAPI.iteratePreventionPolicyMemberIds({
         callback: async memberIds => {
           logger.trace(loggerInfo, "Processing page of member ids");
 
           const relationships: RelationshipFromIntegration[] = [];
+
           for (const deviceId of memberIds) {
-            // TODO look up the device from our local storage/cache of entities!
-            relationships.push({
-              _key: `${deviceId}|assigned|${policyId}`,
-              _type: DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE,
-              _scope: DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE,
-              _class: "ASSIGNED",
-              _fromEntityKey: deviceId,
-              _toEntityKey: policyId,
-              displayName: "ASSIGNED",
-            });
+            if (deviceIds.has(deviceId)) {
+              relationships.push({
+                _key: `${deviceId}|assigned|${policyId}`,
+                _type: DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE,
+                _scope: DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE,
+                _class: "ASSIGNED",
+                _fromEntityKey: deviceId,
+                _toEntityKey: policyId,
+                displayName: "ASSIGNED",
+              });
+            }
           }
           await objectCache.putRelationships(relationships);
         },
@@ -96,6 +102,11 @@ export default {
         policyIndex += 1;
       }
     } while (!policyPagination.finished);
+
+    await objectCache.putCollectionStates({
+      type: DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE,
+      success: policyPagination.finished && !!membersPagination.finished,
+    });
 
     return {
       ...iterationState,

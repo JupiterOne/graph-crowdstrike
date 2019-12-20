@@ -8,9 +8,12 @@ import {
 
 import { FalconAPIClient } from "../crowdstrike";
 import getIterationState from "../getIterationState";
-import { createDeviceHostAgentEntity } from "../jupiterone/converters";
+import {
+  createDeviceHostAgentEntity,
+  DEVICE_ENTITY_TYPE,
+  ACCOUNT_DEVICE_RELATIONSHIP_TYPE,
+} from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
-import { PaginationState } from "../crowdstrike/types";
 
 export default {
   id: "fetch-devices",
@@ -21,11 +24,11 @@ export default {
   ): Promise<IntegrationStepIterationState> => {
     const { logger } = executionContext;
 
-    const cache = new ProviderGraphObjectCache(
-      executionContext.clients.getCache(),
-    );
+    const cache = executionContext.clients.getCache();
+    const objectCache = new ProviderGraphObjectCache(cache);
 
-    const accountEntity = await cache.getAccount();
+    const accountEntity = await objectCache.getAccount();
+    const deviceIds = (await cache.getEntry("device-ids")).data || [];
 
     const falconAPI = new FalconAPIClient(executionContext.instance.config);
 
@@ -38,13 +41,10 @@ export default {
         ? `last_seen:>='${lastSeenSince()}'`
         : undefined;
 
-    let pagination: PaginationState | undefined =
-      iterationState.state.pagination;
-
-    pagination = await falconAPI.iterateDevices({
+    const pagination = await falconAPI.iterateDevices({
       callback: async devices => {
         logger.info(
-          { pagination },
+          { deviceCount: devices.length },
           "Creating device entities and relationships...",
         );
 
@@ -58,8 +58,8 @@ export default {
           );
         }
         await Promise.all([
-          cache.putEntities(sensorEntities),
-          cache.putRelationships(accountSensorRelationships),
+          objectCache.putEntities(sensorEntities),
+          objectCache.putRelationships(accountSensorRelationships),
         ]);
       },
       pagination: iterationState.state.pagination,
@@ -68,12 +68,18 @@ export default {
       },
     });
 
+    await cache.putEntry({ key: "device-ids", data: deviceIds });
+
+    await objectCache.putCollectionStates(
+      { type: DEVICE_ENTITY_TYPE, success: pagination.finished },
+      { type: ACCOUNT_DEVICE_RELATIONSHIP_TYPE, success: pagination.finished },
+    );
+
     return {
       ...iterationState,
       finished: pagination.finished,
       state: {
         pagination,
-        filter,
       },
     };
   },

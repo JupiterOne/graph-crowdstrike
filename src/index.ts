@@ -10,14 +10,13 @@ import synchronize from "./steps/synchronize";
 /**
  * A multi-step integration:
  *
- * 1. Create an Account entity using the integration instance name, storing in
- *    provider entities cache
- * 2. Iterates recently seen devices from CrowdStrike API, converting to
- *    entities and building relationships to the Account, storing entities and
- *    relationships in provider cache
- * 3. Iterates entities in J1, updating or deleting them depending on their
- *    presence in the provider entity/relationship cache
- * 4. Iterates provider entities/relationships, creating any that were no found
+ * 1. Create Account and Service entities, storing in provider cache
+ * 2. Iterate recently seen devices and all prevention policies from CrowdStrike
+ *    API, converting to entities and building relationships to the Account and
+ *    Service, storing entities and relationships in provider cache
+ * 3. Iterate all integration entities in J1, updating or deleting them
+ *    depending on their presence in the provider entity/relationship cache
+ * 4. Iterate provider entities/relationships, creating any that were not found
  *    in J1
  *
  * Note that devices not seen since `LAST_SEEN_DAYS_BACK` will be deleted! This
