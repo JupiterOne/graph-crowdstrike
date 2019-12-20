@@ -9,9 +9,11 @@ import {
 import { FalconAPIClient } from "../crowdstrike";
 import getIterationState from "../getIterationState";
 import {
-  createDeviceHostAgentEntity,
-  DEVICE_ENTITY_TYPE,
-  ACCOUNT_DEVICE_RELATIONSHIP_TYPE,
+  createSensorAgentEntity,
+  SENSOR_AGENT_ENTITY_TYPE,
+  ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE,
+  createSensorAgentDeviceMappedRelationship,
+  SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE,
 } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
 
@@ -49,17 +51,20 @@ export default {
         );
 
         const sensorEntities: EntityFromIntegration[] = [];
-        const accountSensorRelationships: IntegrationRelationship[] = [];
+        const sensorRelationships: IntegrationRelationship[] = [];
         for (const device of devices) {
-          const entity = createDeviceHostAgentEntity(device);
+          const entity = createSensorAgentEntity(device);
           sensorEntities.push(entity);
-          accountSensorRelationships.push(
+          sensorRelationships.push(
             createIntegrationRelationship("HAS", accountEntity, entity),
+          );
+          sensorRelationships.push(
+            createSensorAgentDeviceMappedRelationship(device, entity),
           );
         }
         await Promise.all([
           objectCache.putEntities(sensorEntities),
-          objectCache.putRelationships(accountSensorRelationships),
+          objectCache.putRelationships(sensorRelationships),
         ]);
       },
       pagination: iterationState.state.pagination,
@@ -71,8 +76,15 @@ export default {
     await cache.putEntry({ key: "device-ids", data: deviceIds });
 
     await objectCache.putCollectionStates(
-      { type: DEVICE_ENTITY_TYPE, success: pagination.finished },
-      { type: ACCOUNT_DEVICE_RELATIONSHIP_TYPE, success: pagination.finished },
+      { type: SENSOR_AGENT_ENTITY_TYPE, success: pagination.finished },
+      {
+        type: ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE,
+        success: pagination.finished,
+      },
+      {
+        type: SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE,
+        success: pagination.finished,
+      },
     );
 
     return {

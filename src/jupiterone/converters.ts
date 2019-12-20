@@ -3,6 +3,8 @@ import {
   EntityFromIntegration,
   generateRelationshipType,
   IntegrationInstance,
+  MappedRelationshipFromIntegration,
+  RelationshipDirection,
 } from "@jupiterone/jupiter-managed-integration-sdk";
 
 import { Device, PreventionPolicy } from "../crowdstrike/types";
@@ -45,23 +47,52 @@ export function createProtectionServiceEntity(
   });
 }
 
-export const DEVICE_ENTITY_TYPE = "crowdstrike_sensor";
+export const SENSOR_AGENT_ENTITY_TYPE = "crowdstrike_sensor";
 
-export function createDeviceHostAgentEntity(
-  source: Device,
-): EntityFromIntegration {
+export function createSensorAgentEntity(source: Device): EntityFromIntegration {
   return createIntegrationEntity({
     entityData: {
       source,
       assign: {
         _class: "HostAgent",
-        _type: DEVICE_ENTITY_TYPE,
+        _type: SENSOR_AGENT_ENTITY_TYPE,
         _key: source.device_id,
         name: source.hostname,
         function: ["anti-malware"],
       },
     },
   });
+}
+
+export const SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE =
+  "crowdstrike_sensor_protects_device";
+
+export const DEVICE_ENTITY_TYPE = "user_endpoint";
+export const DEVICE_ENTITY_CLASS = ["Device", "Host"];
+
+export function createSensorAgentDeviceMappedRelationship(
+  device: Device,
+  deviceEntity: EntityFromIntegration,
+): MappedRelationshipFromIntegration {
+  const hostname = device.hostname as string;
+
+  return {
+    _key: `${deviceEntity._key}|protects|device-${hostname}`,
+    _type: SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE,
+    _scope: SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE,
+    _class: "PROTECTS",
+    _mapping: {
+      relationshipDirection: RelationshipDirection.FORWARD,
+      sourceEntityKey: deviceEntity._key,
+      targetFilterKeys: [["_type", "hostname"]],
+      targetEntity: {
+        _type: DEVICE_ENTITY_TYPE,
+        _class: DEVICE_ENTITY_CLASS,
+        displayName: hostname,
+        hostname,
+      },
+    },
+  };
 }
 
 export const PREVENTION_POLICY_ENTITY_TYPE = "crowdstrike_prevention_policy";
@@ -85,15 +116,15 @@ export function createPreventionPolicyEntity(
   });
 }
 
-export const ACCOUNT_DEVICE_RELATIONSHIP_TYPE = generateRelationshipType(
+export const ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE = generateRelationshipType(
   "HAS",
   ACCOUNT_ENTITY_TYPE,
-  DEVICE_ENTITY_TYPE,
+  SENSOR_AGENT_ENTITY_TYPE,
 );
 
-export const DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE = generateRelationshipType(
+export const SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE = generateRelationshipType(
   "ASSIGNED",
-  DEVICE_ENTITY_TYPE,
+  SENSOR_AGENT_ENTITY_TYPE,
   PREVENTION_POLICY_ENTITY_TYPE,
 );
 

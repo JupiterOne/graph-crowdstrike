@@ -10,7 +10,7 @@ import {
   NumericOffsetPaginationState,
 } from "../crowdstrike/types";
 import getIterationState from "../getIterationState";
-import { DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE } from "../jupiterone/converters";
+import { SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
 
 const MEMBERS_PAGINATION: NumericOffsetPaginationParams = {
@@ -69,8 +69,8 @@ export default {
             if (deviceIds.has(deviceId)) {
               relationships.push({
                 _key: `${deviceId}|assigned|${policyId}`,
-                _type: DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE,
-                _scope: DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE,
+                _type: SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE,
+                _scope: SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE,
                 _class: "ASSIGNED",
                 _fromEntityKey: deviceId,
                 _toEntityKey: policyId,
@@ -104,7 +104,7 @@ export default {
     } while (!policyPagination.finished);
 
     await objectCache.putCollectionStates({
-      type: DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE,
+      type: SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE,
       success: policyPagination.finished && !!membersPagination.finished,
     });
 

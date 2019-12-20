@@ -36,5 +36,6 @@ The following relationships are created/mapped:
 | `crowdstrike_account` **HAS** `crowdstrike_endpoint_protection`                |
 | `crowdstrike_prevention_policy` **ENFORCES** `crowdstrike_endpoint_protection` |
 | `crowdstrike_sensor` **ASSIGNED** `crowdstrike_prevention_policy`              |
+| `crowdstrike_sensor` **PROTECTS** `user_endpoint`                              |
 
 [1]: https://www.crowdstrike.com/blog/tech-center/get-access-falcon-apis/

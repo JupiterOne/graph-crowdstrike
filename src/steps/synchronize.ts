@@ -10,11 +10,12 @@ import {
 
 import {
   ACCOUNT_ENTITY_TYPE,
-  DEVICE_ENTITY_TYPE,
-  DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE,
+  SENSOR_AGENT_ENTITY_TYPE,
+  SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE,
   PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE,
   PREVENTION_POLICY_ENTITY_TYPE,
   PROTECTION_SERVICE_ENTITY_TYPE,
+  SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE,
 } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
 
@@ -44,7 +45,7 @@ export default {
       ] = await Promise.all([
         graph.findEntitiesByType(ACCOUNT_ENTITY_TYPE),
         graph.findEntitiesByType(PROTECTION_SERVICE_ENTITY_TYPE),
-        graph.findEntitiesByType(DEVICE_ENTITY_TYPE),
+        graph.findEntitiesByType(SENSOR_AGENT_ENTITY_TYPE),
         graph.findEntitiesByType(PREVENTION_POLICY_ENTITY_TYPE),
       ]);
 
@@ -106,16 +107,17 @@ export default {
       logger.info("Fetching old relationships...");
 
       const [
-        oldAccountDeviceRelationships,
+        oldAccountSensorAgentRelationships,
         oldAccountServiceRelationships,
         oldPolicyServiceRelationships,
-        oldDevicePolicyRelationships,
+        oldSensorAgentPolicyRelationships,
+        oldSensorAgentDeviceMappedRelationships,
       ] = await Promise.all([
         graph.findRelationshipsByType(
           generateRelationshipType(
             "HAS",
             ACCOUNT_ENTITY_TYPE,
-            DEVICE_ENTITY_TYPE,
+            SENSOR_AGENT_ENTITY_TYPE,
           ),
         ),
         graph.findRelationshipsByType(
@@ -129,15 +131,19 @@ export default {
           PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE,
         ),
         graph.findRelationshipsByType(
-          DEVICE_PREVENTION_POLICY_RELATIONSHIP_TYPE,
+          SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE,
+        ),
+        graph.findRelationshipsByType(
+          SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE,
         ),
       ]);
 
       const oldRelationships = [
-        ...oldAccountDeviceRelationships,
+        ...oldAccountSensorAgentRelationships,
         ...oldAccountServiceRelationships,
         ...oldPolicyServiceRelationships,
-        ...oldDevicePolicyRelationships,
+        ...oldSensorAgentPolicyRelationships,
+        ...oldSensorAgentDeviceMappedRelationships,
       ];
 
       const relationshipOperations: RelationshipOperation[] = [];
