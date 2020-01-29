@@ -22,7 +22,7 @@ import synchronize from "./steps/synchronize";
  * Note that devices not seen since `LAST_SEEN_DAYS_BACK` will be deleted! This
  * maintains a "last 30 days" view of hosts.
  */
-export const invocationConfig: IntegrationInvocationConfig = {
+export const stepFunctionsInvocationConfig: IntegrationInvocationConfig = {
   instanceConfigFields: {
     clientId: {
       type: "string",

@@ -23,11 +23,11 @@ export default {
     const protectionService = createProtectionServiceEntity(
       executionContext.instance,
     );
-    const accountService = createIntegrationRelationship(
-      "HAS",
-      account,
-      protectionService,
-    );
+    const accountService = createIntegrationRelationship({
+      _class: "HAS",
+      from: account,
+      to: protectionService,
+    });
 
     // Be sure to complete cache key file update before adding other entities.
     // This is a problem with the objectCache, there is no mutex on the key file

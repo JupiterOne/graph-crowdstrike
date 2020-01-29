@@ -56,7 +56,11 @@ export default {
           const entity = createSensorAgentEntity(device);
           sensorEntities.push(entity);
           sensorRelationships.push(
-            createIntegrationRelationship("HAS", accountEntity, entity),
+            createIntegrationRelationship({
+              _class: "HAS",
+              from: accountEntity,
+              to: entity,
+            }),
           );
           sensorRelationships.push(
             createSensorAgentDeviceMappedRelationship(device, entity),

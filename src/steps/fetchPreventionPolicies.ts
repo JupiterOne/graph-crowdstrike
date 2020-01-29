@@ -53,11 +53,11 @@ export default {
           const entity = createPreventionPolicyEntity(policy);
           entities.push(entity);
           relationships.push(
-            createIntegrationRelationship(
-              "ENFORCES",
-              entity,
-              protectionService,
-            ),
+            createIntegrationRelationship({
+              _class: "ENFORCES",
+              from: entity,
+              to: protectionService,
+            }),
           );
           policyIds.push(policy.id);
         }
