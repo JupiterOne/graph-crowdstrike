@@ -79,7 +79,6 @@ export function createSensorAgentDeviceMappedRelationship(
   return {
     _key: `${deviceEntity._key}|protects|device-${hostname}`,
     _type: SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE,
-    _scope: SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE,
     _class: "PROTECTS",
     _mapping: {
       relationshipDirection: RelationshipDirection.FORWARD,

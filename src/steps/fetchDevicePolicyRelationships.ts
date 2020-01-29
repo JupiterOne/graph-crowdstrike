@@ -70,7 +70,6 @@ export default {
               relationships.push({
                 _key: `${deviceId}|assigned|${policyId}`,
                 _type: SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE,
-                _scope: SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE,
                 _class: "ASSIGNED",
                 _fromEntityKey: deviceId,
                 _toEntityKey: policyId,

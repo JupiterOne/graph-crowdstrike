@@ -29,7 +29,6 @@ describe("createAccountEntity", () => {
     expect(createAccountEntity(instance)).toEqual({
       _class: ["Account"],
       _type: "crowdstrike_account",
-      _scope: "crowdstrike_account",
       _key: "crowdstrike_account|instance-123",
       _rawData: [],
       name: "My CrowdStrike",
@@ -51,7 +50,6 @@ describe("createProtectionServiceEntity", () => {
     expect(createProtectionServiceEntity(instance)).toEqual({
       _class: ["Service"],
       _type: "crowdstrike_endpoint_protection",
-      _scope: "crowdstrike_endpoint_protection",
       _key: "crowdstrike_endpoint_protection|instance-123",
       _rawData: [],
       name: "CrowdStrike Endpoint Protection Service",
@@ -143,7 +141,6 @@ describe("createSensorAgent*", () => {
     expect(createSensorAgentEntity(source)).toEqual({
       _class: ["HostAgent"],
       _type: "crowdstrike_sensor",
-      _scope: "crowdstrike_sensor",
       _key: "b7bbf18d26b344225072b1be2ae8b9e4",
       _rawData: [{ name: "default", rawData: source }],
       name: "Sample-Detect-2",
@@ -160,7 +157,6 @@ describe("createSensorAgent*", () => {
     ).toEqual({
       _key: "b7bbf18d26b344225072b1be2ae8b9e4|protects|device-Sample-Detect-2",
       _type: "crowdstrike_sensor_protects_device",
-      _scope: "crowdstrike_sensor_protects_device",
       _class: "PROTECTS",
       _mapping: {
         relationshipDirection: RelationshipDirection.FORWARD,
@@ -222,7 +218,6 @@ describe("createPreventionPolicyEntity", () => {
     expect(createPreventionPolicyEntity(source)).toEqual({
       _class: ["ControlPolicy"],
       _type: "crowdstrike_prevention_policy",
-      _scope: "crowdstrike_prevention_policy",
       _key: "438ad82d1f584eb99d7ec24e333be231",
       _rawData: [{ name: "default", rawData: source }],
       name: "platform_default",
