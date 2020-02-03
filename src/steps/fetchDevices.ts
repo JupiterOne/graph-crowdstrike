@@ -32,7 +32,9 @@ export default {
     const accountEntity = await objectCache.getAccount();
     const deviceIds = (await cache.getEntry("device-ids")).data || [];
 
-    const falconAPI = new FalconAPIClient(executionContext.instance.config);
+    const falconAPI = new FalconAPIClient({
+      credentials: executionContext.instance.config,
+    });
 
     const iterationState = getIterationState(executionContext);
 

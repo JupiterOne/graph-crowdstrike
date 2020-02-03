@@ -12,6 +12,7 @@ module.exports = {
     "src/**/*.ts",
     "!src/ProviderGraphObjectCache.ts",
     "!src/getIterationState.ts",
+    "!src/crowdstrike/pagination.ts",
     "!src/**/index.ts",
     "!src/steps/**/*.ts",
   ],
