@@ -6,6 +6,10 @@ import { FalconAPIClient } from "./FalconAPIClient";
 
 let p: Polly;
 
+const createClient = (): FalconAPIClient => {
+  return new FalconAPIClient({ credentials: config });
+};
+
 afterEach(async () => {
   await p.stop();
 });
@@ -19,8 +23,7 @@ describe("authenticate", () => {
       requests++;
     });
 
-    const client = new FalconAPIClient(config);
-    await expect(client.authenticate()).resolves.toEqual({
+    await expect(createClient().authenticate()).resolves.toEqual({
       token: expect.any(String),
       expiresAt: expect.any(Number),
     });
@@ -36,7 +39,7 @@ describe("authenticate", () => {
       requests++;
     });
 
-    const client = new FalconAPIClient(config);
+    const client = createClient();
     const access = await client.authenticate();
     await expect(client.authenticate()).resolves.toBe(access);
 
@@ -51,7 +54,7 @@ describe("authenticate", () => {
       requests++;
     });
 
-    const client = new FalconAPIClient(config);
+    const client = createClient();
     const access = await client.authenticate();
 
     const realNow = Date.now; // eslint-disable-line @typescript-eslint/unbound-method
@@ -72,8 +75,10 @@ describe("authenticate", () => {
   test("throws errors", async () => {
     p = polly(__dirname, "authenticateError", { recordFailedRequests: true });
     const client = new FalconAPIClient({
-      ...config,
-      clientSecret: "test-error-handling",
+      credentials: {
+        ...config,
+        clientSecret: "test-error-handling",
+      },
     });
     try {
       await client.authenticate();
@@ -114,8 +119,7 @@ describe("executeAPIRequest", () => {
           });
       });
 
-    const client = new FalconAPIClient(config);
-    await client.authenticate();
+    await createClient().authenticate();
 
     expect(requestTimes.length).toBe(2);
     expect(requestTimes[1]).toBeGreaterThan(retryAfter);
@@ -145,8 +149,11 @@ describe("executeAPIRequest", () => {
         });
     });
 
-    const client = new FalconAPIClient(config, {
-      maxAttempts: 2,
+    const client = new FalconAPIClient({
+      credentials: config,
+      rateLimitConfig: {
+        maxAttempts: 2,
+      },
     });
 
     await expect(client.authenticate()).rejects.toThrowError(/2/);
@@ -177,9 +184,12 @@ describe("executeAPIRequest", () => {
         });
     });
 
-    const client = new FalconAPIClient(config, {
-      reserveLimit: 8,
-      cooldownPeriod: 1000,
+    const client = new FalconAPIClient({
+      credentials: config,
+      rateLimitConfig: {
+        reserveLimit: 8,
+        cooldownPeriod: 1000,
+      },
     });
 
     const startTime = Date.now();
@@ -195,10 +205,11 @@ describe("executeAPIRequest", () => {
 describe("iterateDevices", () => {
   test("complete set in single callback", async () => {
     p = polly(__dirname, "iterateDevicesSinglePage");
-    const client = new FalconAPIClient(config);
     const cbSpy = jest.fn();
 
-    const paginationState = await client.iterateDevices({ callback: cbSpy });
+    const paginationState = await createClient().iterateDevices({
+      callback: cbSpy,
+    });
 
     expect(paginationState).toEqual({
       finished: true,
@@ -219,10 +230,9 @@ describe("iterateDevices", () => {
 
   test("partial set in multiple callbacks", async () => {
     p = polly(__dirname, "iterateDevicesCompletes");
-    const client = new FalconAPIClient(config);
     const cbSpy = jest.fn();
 
-    const paginationState = await client.iterateDevices({
+    const paginationState = await createClient().iterateDevices({
       callback: cbSpy,
       pagination: { limit: 1 },
     });
@@ -250,10 +260,9 @@ describe("iterateDevices", () => {
 
   test("partial set", async () => {
     p = polly(__dirname, "iterateDevicesInterrupted");
-    const client = new FalconAPIClient(config);
     const cbSpy = jest.fn().mockResolvedValue(false);
 
-    const paginationState = await client.iterateDevices({
+    const paginationState = await createClient().iterateDevices({
       callback: cbSpy,
       pagination: { limit: 1 },
     });
@@ -276,7 +285,7 @@ describe("iterateDevices", () => {
 
   test("resumes from pagination state", async () => {
     p = polly(__dirname, "iterateDevicesResumes");
-    const client = new FalconAPIClient(config);
+    const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
     const paginationState = await client.iterateDevices({
       callback: cbSpy,
@@ -307,7 +316,7 @@ describe("iterateDevices", () => {
 
   test("pagination with filter", async () => {
     p = polly(__dirname, "iterateDevicesFilter");
-    const client = new FalconAPIClient(config);
+    const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
 
     // This is likely to fail when a new account is used with new host seen dates
@@ -356,10 +365,9 @@ describe("iterateDevices", () => {
     p = polly(__dirname, "iterateDevicesExpiredOffsetCursor", {
       recordFailedRequests: true,
     });
-    const client = new FalconAPIClient(config);
     const cbSpy = jest.fn();
     await expect(
-      client.iterateDevices({
+      createClient().iterateDevices({
         callback: cbSpy,
         pagination: {
           limit: 1,
@@ -375,10 +383,9 @@ describe("iterateDevices", () => {
 describe("iteratePreventionPolicies", () => {
   test("complete set in single callback", async () => {
     p = polly(__dirname, "iteratePreventionPoliciesSinglePage");
-    const client = new FalconAPIClient(config);
     const cbSpy = jest.fn();
 
-    const paginationState = await client.iteratePreventionPolicies({
+    const paginationState = await createClient().iteratePreventionPolicies({
       callback: cbSpy,
     });
 
@@ -404,10 +411,9 @@ describe("iteratePreventionPolicies", () => {
 
   test("partial set in multiple callbacks", async () => {
     p = polly(__dirname, "iteratePreventionPoliciesCompletes");
-    const client = new FalconAPIClient(config);
     const cbSpy = jest.fn();
 
-    const paginationState = await client.iteratePreventionPolicies({
+    const paginationState = await createClient().iteratePreventionPolicies({
       callback: cbSpy,
       pagination: { limit: 1 },
     });
@@ -444,10 +450,9 @@ describe("iteratePreventionPolicies", () => {
 
   test("partial set", async () => {
     p = polly(__dirname, "iteratePreventionPoliciesInterrupted");
-    const client = new FalconAPIClient(config);
     const cbSpy = jest.fn().mockResolvedValue(false);
 
-    const paginationState = await client.iteratePreventionPolicies({
+    const paginationState = await createClient().iteratePreventionPolicies({
       callback: cbSpy,
       pagination: { limit: 1 },
     });
@@ -469,7 +474,7 @@ describe("iteratePreventionPolicies", () => {
 
   test("resumes from pagination state", async () => {
     p = polly(__dirname, "iteratePreventionPoliciesResumes");
-    const client = new FalconAPIClient(config);
+    const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
     const paginationState = await client.iteratePreventionPolicies({
       callback: cbSpy,
@@ -499,7 +504,7 @@ describe("iteratePreventionPolicies", () => {
 
   test("pagination with filter", async () => {
     p = polly(__dirname, "iteratePreventionPoliciesFilter");
-    const client = new FalconAPIClient(config);
+    const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
 
     // This is likely to fail when a new account is used with new host seen dates
@@ -547,13 +552,14 @@ describe("iteratePreventionPolicies", () => {
 describe("iteratePreventionPolicyMemberIds", () => {
   test("complete set in single callback", async () => {
     p = polly(__dirname, "iteratePreventionPolicyMemberIdsSinglePage");
-    const client = new FalconAPIClient(config);
     const cbSpy = jest.fn();
 
-    const paginationState = await client.iteratePreventionPolicyMemberIds({
-      callback: cbSpy,
-      policyId: "40bb0ba06b9f4a10a4330fccecc01f84",
-    });
+    const paginationState = await createClient().iteratePreventionPolicyMemberIds(
+      {
+        callback: cbSpy,
+        policyId: "40bb0ba06b9f4a10a4330fccecc01f84",
+      },
+    );
 
     expect(paginationState).toEqual({
       finished: true,
@@ -573,14 +579,15 @@ describe("iteratePreventionPolicyMemberIds", () => {
 
   test("partial set in multiple callbacks", async () => {
     p = polly(__dirname, "iteratePreventionPolicyMemberIdsCompletes");
-    const client = new FalconAPIClient(config);
     const cbSpy = jest.fn();
 
-    const paginationState = await client.iteratePreventionPolicyMemberIds({
-      callback: cbSpy,
-      pagination: { limit: 1 },
-      policyId: "40bb0ba06b9f4a10a4330fccecc01f84",
-    });
+    const paginationState = await createClient().iteratePreventionPolicyMemberIds(
+      {
+        callback: cbSpy,
+        pagination: { limit: 1 },
+        policyId: "40bb0ba06b9f4a10a4330fccecc01f84",
+      },
+    );
 
     expect(paginationState).toEqual({
       finished: true,

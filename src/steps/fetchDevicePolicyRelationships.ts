@@ -12,9 +12,11 @@ import {
 import getIterationState from "../getIterationState";
 import { SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
+import { ClientEvents } from "../crowdstrike/FalconAPIClient";
+import { getPageLimit } from "../crowdstrike/pagination";
 
 const MEMBERS_PAGINATION: NumericOffsetPaginationParams = {
-  limit: 1,
+  limit: getPageLimit("policy-members", 100),
 };
 
 export default {
@@ -28,7 +30,13 @@ export default {
 
     const cache = executionContext.clients.getCache();
     const objectCache = new ProviderGraphObjectCache(cache);
-    const falconAPI = new FalconAPIClient(executionContext.instance.config);
+    const falconAPI = new FalconAPIClient({
+      credentials: executionContext.instance.config,
+    });
+
+    falconAPI.events.on(ClientEvents.REQUEST, ([event]) => {
+      logger.trace(event, "Sending Falcon API request...");
+    });
 
     const iterationState = getIterationState(executionContext);
 
@@ -42,12 +50,10 @@ export default {
 
     let policyPagination: NumericOffsetPaginationState = iterationState.state
       .policyPagination || {
-      limit: 1,
-      offset: 0,
       total: policyIds.length,
-      finished: false,
       seen: 0,
-      pages: 1,
+      offset: 0,
+      finished: false,
     };
 
     let policyIndex = policyPagination.offset || 0;

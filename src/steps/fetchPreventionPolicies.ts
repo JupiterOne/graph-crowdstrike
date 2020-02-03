@@ -34,7 +34,9 @@ export default {
     const policyIds =
       (await cache.getEntry("prevention-policy-ids")).data || [];
 
-    const falconAPI = new FalconAPIClient(executionContext.instance.config);
+    const falconAPI = new FalconAPIClient({
+      credentials: executionContext.instance.config,
+    });
 
     const iterationState = getIterationState(executionContext);
 
