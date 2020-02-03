@@ -213,7 +213,7 @@ export class FalconAPIClient {
       seen += response.resources.length;
       total = paginationMeta.total;
       pages += 1;
-      finished = seen >= total;
+      finished = seen === 0 || seen >= total;
     } while (!finished && continuePagination !== false);
 
     const paginationState: PaginationState = {
