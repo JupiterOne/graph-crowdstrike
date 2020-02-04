@@ -4,7 +4,8 @@ import {
   RelationshipFromIntegration,
 } from "@jupiterone/jupiter-managed-integration-sdk";
 
-import { FalconAPIClient } from "../crowdstrike";
+import createFalconAPIClient from "../crowdstrike/createFalconAPIClient";
+import { getPageLimit } from "../crowdstrike/pagination";
 import {
   NumericOffsetPaginationParams,
   NumericOffsetPaginationState,
@@ -12,8 +13,6 @@ import {
 import getIterationState from "../getIterationState";
 import { SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
-import { ClientEvents } from "../crowdstrike/FalconAPIClient";
-import { getPageLimit } from "../crowdstrike/pagination";
 
 const MEMBERS_PAGINATION: NumericOffsetPaginationParams = {
   limit: getPageLimit("policy-members", 100),
@@ -30,13 +29,7 @@ export default {
 
     const cache = executionContext.clients.getCache();
     const objectCache = new ProviderGraphObjectCache(cache);
-    const falconAPI = new FalconAPIClient({
-      credentials: executionContext.instance.config,
-    });
-
-    falconAPI.events.on(ClientEvents.REQUEST, ([event]) => {
-      logger.trace(event, "Sending Falcon API request...");
-    });
+    const falconAPI = createFalconAPIClient(executionContext);
 
     const iterationState = getIterationState(executionContext);
 

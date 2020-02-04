@@ -6,12 +6,12 @@ import {
   IntegrationStepIterationState,
 } from "@jupiterone/jupiter-managed-integration-sdk";
 
-import { FalconAPIClient } from "../crowdstrike";
+import createFalconAPIClient from "../crowdstrike/createFalconAPIClient";
 import getIterationState from "../getIterationState";
 import {
   createPreventionPolicyEntity,
-  PREVENTION_POLICY_ENTITY_TYPE,
   PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE,
+  PREVENTION_POLICY_ENTITY_TYPE,
 } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
 
@@ -34,9 +34,7 @@ export default {
     const policyIds =
       (await cache.getEntry("prevention-policy-ids")).data || [];
 
-    const falconAPI = new FalconAPIClient({
-      credentials: executionContext.instance.config,
-    });
+    const falconAPI = createFalconAPIClient(executionContext);
 
     const iterationState = getIterationState(executionContext);
 
