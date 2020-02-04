@@ -6,14 +6,14 @@ import {
   IntegrationStepIterationState,
 } from "@jupiterone/jupiter-managed-integration-sdk";
 
-import { FalconAPIClient } from "../crowdstrike";
+import createFalconAPIClient from "../crowdstrike/createFalconAPIClient";
 import getIterationState from "../getIterationState";
 import {
-  createSensorAgentEntity,
-  SENSOR_AGENT_ENTITY_TYPE,
   ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE,
   createSensorAgentDeviceMappedRelationship,
+  createSensorAgentEntity,
   SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE,
+  SENSOR_AGENT_ENTITY_TYPE,
 } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
 
@@ -32,9 +32,7 @@ export default {
     const accountEntity = await objectCache.getAccount();
     const deviceIds = (await cache.getEntry("device-ids")).data || [];
 
-    const falconAPI = new FalconAPIClient({
-      credentials: executionContext.instance.config,
-    });
+    const falconAPI = createFalconAPIClient(executionContext);
 
     const iterationState = getIterationState(executionContext);
 
