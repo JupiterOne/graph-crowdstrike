@@ -174,6 +174,8 @@ describe("createSensorAgent*", () => {
           hostname: "Sample-Detect-2",
           deviceId: "b7bbf18d26b344225072b1be2ae8b9e4",
           macAddress: "08-00-27-51-56-d8",
+          osVersion: "Windows 7",
+          platform: "Windows",
           publicIp: "54.183.25.1",
           publicIpAddress: "54.183.25.1",
           firstSeenOn: 1575302080000,
