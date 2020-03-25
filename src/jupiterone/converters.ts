@@ -97,6 +97,8 @@ export function createSensorAgentDeviceMappedRelationship(
         hostname,
         deviceId: device.device_id,
         macAddress: (deviceEntity as any).macAddress,
+        osVersion: (deviceEntity as any).osVersion,
+        platform: (deviceEntity as any).platformName,
         publicIp: (deviceEntity as any).externalIp,
         publicIpAddress: (deviceEntity as any).externalIp,
         firstSeenOn: (deviceEntity as any).firstSeenOn,
