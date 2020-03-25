@@ -100,7 +100,7 @@ export function createSensorAgentDeviceMappedRelationship(
         publicIp: (deviceEntity as any).externalIp,
         publicIpAddress: (deviceEntity as any).externalIp,
         firstSeenOn: (deviceEntity as any).firstSeenOn,
-        lastSeenOn: (deviceEntity as any).firstSeenOn,
+        lastSeenOn: (deviceEntity as any).lastSeenOn,
       },
     },
   };
