@@ -64,6 +64,7 @@ export function createSensorAgentEntity(source: Device): EntityFromIntegration {
         function: ["anti-malware", "activity-monitor"],
         firstSeenOn: getTime(source.first_seen),
         lastSeenOn: getTime(source.last_seen),
+        active: source.status === "normal",
       },
     },
   });

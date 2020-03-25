@@ -4,6 +4,7 @@ import {
   createTestIntegrationData,
   IntegrationInstance,
   RelationshipDirection,
+  convertProperties,
 } from "@jupiterone/jupiter-managed-integration-sdk";
 
 import { Device, PreventionPolicy } from "../crowdstrike/types";
@@ -139,6 +140,7 @@ describe("createSensorAgent*", () => {
 
   test("createSensorAgentEntity", () => {
     expect(createSensorAgentEntity(source)).toEqual({
+      ...convertProperties(source),
       _class: ["HostAgent"],
       _type: "crowdstrike_sensor",
       _key: "b7bbf18d26b344225072b1be2ae8b9e4",
@@ -146,7 +148,10 @@ describe("createSensorAgent*", () => {
       name: "Sample-Detect-2",
       displayName: "Sample-Detect-2",
       status: "normal",
-      function: ["anti-malware"],
+      function: ["anti-malware", "activity-monitor"],
+      firstSeenOn: new Date(source.first_seen).getTime(),
+      lastSeenOn: new Date(source.last_seen).getTime(),
+      active: true,
     });
   });
 
@@ -167,6 +172,12 @@ describe("createSensorAgent*", () => {
           _class: ["Device", "Host"],
           displayName: "Sample-Detect-2",
           hostname: "Sample-Detect-2",
+          deviceId: "b7bbf18d26b344225072b1be2ae8b9e4",
+          macAddress: "08-00-27-51-56-d8",
+          publicIp: "54.183.25.1",
+          publicIpAddress: "54.183.25.1",
+          firstSeenOn: 1575302080000,
+          lastSeenOn: 1575302080000,
         },
       },
     });
