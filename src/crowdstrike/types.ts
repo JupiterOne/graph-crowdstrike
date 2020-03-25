@@ -156,6 +156,8 @@ export type DeviceIdentifier = string;
 
 export type Device = {
   device_id: DeviceIdentifier;
+  first_seen: string;
+  last_seen: string;
   [property: string]: string | boolean | object | Array<string | object>;
 };
 

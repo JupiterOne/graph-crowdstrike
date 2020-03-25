@@ -1,10 +1,12 @@
 import {
+  convertProperties,
   createIntegrationEntity,
   EntityFromIntegration,
   generateRelationshipType,
   IntegrationInstance,
   MappedRelationshipFromIntegration,
   RelationshipDirection,
+  getTime,
 } from "@jupiterone/jupiter-managed-integration-sdk";
 
 import { Device, PreventionPolicy } from "../crowdstrike/types";
@@ -54,11 +56,14 @@ export function createSensorAgentEntity(source: Device): EntityFromIntegration {
     entityData: {
       source,
       assign: {
+        ...convertProperties(source),
         _class: "HostAgent",
         _type: SENSOR_AGENT_ENTITY_TYPE,
         _key: source.device_id,
         name: source.hostname,
-        function: ["anti-malware"],
+        function: ["anti-malware", "activity-monitor"],
+        firstSeenOn: getTime(source.first_seen),
+        lastSeenOn: getTime(source.last_seen),
       },
     },
   });
@@ -89,6 +94,12 @@ export function createSensorAgentDeviceMappedRelationship(
         _class: DEVICE_ENTITY_CLASS,
         displayName: hostname,
         hostname,
+        deviceId: device.device_id,
+        macAddress: (deviceEntity as any).macAddress,
+        publicIp: (deviceEntity as any).externalIp,
+        publicIpAddress: (deviceEntity as any).externalIp,
+        firstSeenOn: (deviceEntity as any).firstSeenOn,
+        lastSeenOn: (deviceEntity as any).firstSeenOn,
       },
     },
   };
