@@ -233,6 +233,7 @@ describe("createPreventionPolicyEntity", () => {
       _type: "crowdstrike_prevention_policy",
       _key: "438ad82d1f584eb99d7ec24e333be231",
       _rawData: [{ name: "default", rawData: source }],
+      id: "438ad82d1f584eb99d7ec24e333be231",
       name: "platform_default",
       displayName: "platform_default",
       description: "Platform default policy",
