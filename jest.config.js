@@ -1,6 +1,7 @@
 const { defaults } = require("jest-config");
 
 module.exports = {
+  globalSetup: "./jest.globalSetup.js",
   globals: {
     "ts-jest": {
       babelConfig: true,

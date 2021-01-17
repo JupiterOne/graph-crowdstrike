@@ -29,7 +29,7 @@ export default {
 
     const protectionService = (
       await cache.getEntry("endpoint-protection-service")
-    ).data as EntityFromIntegration;
+    ).data;
 
     const policyIds =
       (await cache.getEntry("prevention-policy-ids")).data || [];
