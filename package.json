@@ -29,7 +29,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@jupiterone/jupiter-managed-integration-sdk": "^36.0.0",
+    "@jupiterone/jupiter-managed-integration-sdk": "^36.0.1",
     "await-timeout": "^1.0.1",
     "aws-sdk": "^2.828.0",
     "node-fetch": "^2.6.0"

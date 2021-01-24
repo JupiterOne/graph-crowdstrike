@@ -881,10 +881,10 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
-"@jupiterone/jupiter-managed-integration-sdk@^36.0.0":
-  version "36.0.0"
-  resolved "https://registry.yarnpkg.com/@jupiterone/jupiter-managed-integration-sdk/-/jupiter-managed-integration-sdk-36.0.0.tgz#ae3849f256a773e53a5f889ddffdf076ac8806e9"
-  integrity sha512-AVjQtcpEbS+BgC5xKaYDKWoCb5RjaeU+Z2WB2WjJL+lYo5WQj675LfKh7KRrN+m+5OQv0oLX92/ZfcqznHJnHg==
+"@jupiterone/jupiter-managed-integration-sdk@^36.0.1":
+  version "36.0.1"
+  resolved "https://registry.yarnpkg.com/@jupiterone/jupiter-managed-integration-sdk/-/jupiter-managed-integration-sdk-36.0.1.tgz#f11c6d76994909727501cf4f3749d40c57b50fd2"
+  integrity sha512-mzYDYoxI3QS0RJvC0stX/d9czX/odX4ksR4J8l/V2V2XR/MVcJFObt7ycVkuWTtJgXrOteWgObg6pQ1l6vwkXg==
 
 "@nodelib/fs.scandir@2.1.3":
   version "2.1.3"
