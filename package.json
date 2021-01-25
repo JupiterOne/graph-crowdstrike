@@ -1,6 +1,6 @@
 {
   "name": "@jupiterone/graph-crowdstrike",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "A template for JupiterOne graph converters.",
   "main": "dist/index.js",
   "repository": "https://github.com/JupiterOne/graph-crowdstrike",
@@ -26,6 +26,7 @@
     "lint:md": "remark .",
     "lint:es": "eslint . --ext .ts --ignore-pattern dist",
     "format": "yarn prettier --write '**/*.{ts,js,json,md}'",
+    "prepack": "yarn build",
     "test": "jest"
   },
   "dependencies": {
