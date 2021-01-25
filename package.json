@@ -26,6 +26,7 @@
     "lint:md": "remark .",
     "lint:es": "eslint . --ext .ts --ignore-pattern dist",
     "format": "yarn prettier --write '**/*.{ts,js,json,md}'",
+    "prepack": "yarn build",
     "test": "jest"
   },
   "dependencies": {
