@@ -3,7 +3,6 @@ import {
   createIntegrationEntity,
   EntityFromIntegration,
   generateRelationshipType,
-  IntegrationInstance,
   MappedRelationshipFromIntegration,
   RelationshipDirection,
   getTime,
@@ -13,9 +12,10 @@ import { Device, PreventionPolicy } from "../crowdstrike/types";
 
 export const ACCOUNT_ENTITY_TYPE = "crowdstrike_account";
 
-export function createAccountEntity(
-  integrationInstance: IntegrationInstance,
-): EntityFromIntegration {
+export function createAccountEntity(integrationInstance: {
+  id: string;
+  name: string;
+}): EntityFromIntegration {
   return createIntegrationEntity({
     entityData: {
       source: {},
@@ -31,9 +31,9 @@ export function createAccountEntity(
 
 export const PROTECTION_SERVICE_ENTITY_TYPE = "crowdstrike_endpoint_protection";
 
-export function createProtectionServiceEntity(
-  integrationInstance: IntegrationInstance,
-): EntityFromIntegration {
+export function createProtectionServiceEntity(integrationInstance: {
+  id: string;
+}): EntityFromIntegration {
   return createIntegrationEntity({
     entityData: {
       source: {},
@@ -96,13 +96,13 @@ export function createSensorAgentDeviceMappedRelationship(
         displayName: hostname,
         hostname,
         deviceId: device.device_id,
-        macAddress: (deviceEntity as any).macAddress,
-        osVersion: (deviceEntity as any).osVersion,
-        platform: (deviceEntity as any).platformName,
-        publicIp: (deviceEntity as any).externalIp,
-        publicIpAddress: (deviceEntity as any).externalIp,
-        firstSeenOn: (deviceEntity as any).firstSeenOn,
-        lastSeenOn: (deviceEntity as any).lastSeenOn,
+        macAddress: deviceEntity.macAddress,
+        osVersion: deviceEntity.osVersion,
+        platform: deviceEntity.platformName,
+        publicIp: deviceEntity.externalIp,
+        publicIpAddress: deviceEntity.externalIp,
+        firstSeenOn: deviceEntity.firstSeenOn,
+        lastSeenOn: deviceEntity.lastSeenOn,
       },
     },
   };

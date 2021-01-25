@@ -3,6 +3,7 @@
   "include": ["src/**/*"],
   "exclude": ["src/**/*.test.ts", "test", "tools"],
   "compilerOptions": {
+    "skipLibCheck": true,
     "outDir": "dist"
   }
 }

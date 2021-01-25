@@ -72,13 +72,19 @@ export default {
         if (providerEntity) {
           // Update graph object with latest provider data
           entityOperations.push(
-            ...persister.processEntities([oldEntity], [providerEntity]),
+            ...persister.processEntities({
+              oldEntities: [oldEntity],
+              newEntities: [providerEntity],
+            }),
           );
         } else {
           // Delete graph object not found in the provider, if the set was fully collected
           if (collectionStates[oldEntity._type]?.success) {
             entityOperations.push(
-              ...persister.processEntities([oldEntity], []),
+              ...persister.processEntities({
+                oldEntities: [oldEntity],
+                newEntities: [],
+              }),
             );
           } else {
             logger.warn(
@@ -95,7 +101,10 @@ export default {
       await providerCache.iterateEntityKeys(async each => {
         if (!processedEntityKeys.has(each.key)) {
           const newEntity = await each.getResource();
-          const operations = persister.processEntities([], [newEntity]);
+          const operations = persister.processEntities({
+            oldEntities: [],
+            newEntities: [newEntity],
+          });
           entityOperations.push(...operations);
         }
       });
@@ -161,16 +170,19 @@ export default {
         if (providerRelationship) {
           // Update graph object with latest provider data
           relationshipOperations.push(
-            ...persister.processRelationships(
-              [oldRelationship],
-              [providerRelationship],
-            ),
+            ...persister.processRelationships({
+              oldRelationships: [oldRelationship],
+              newRelationships: [providerRelationship],
+            }),
           );
         } else {
           // Delete graph object not found in the provider, if the set was fully collected
           if (collectionStates[oldRelationship._type]?.success) {
             relationshipOperations.push(
-              ...persister.processRelationships([oldRelationship], []),
+              ...persister.processRelationships({
+                oldRelationships: [oldRelationship],
+                newRelationships: [],
+              }),
             );
           } else {
             logger.warn(
@@ -190,7 +202,10 @@ export default {
         if (!processedRelationshipKeys.has(e.key)) {
           const resource = await e.getResource();
           relationshipOperations.push(
-            ...persister.processRelationships([], [resource]),
+            ...persister.processRelationships({
+              oldRelationships: [],
+              newRelationships: [resource],
+            }),
           );
         }
       });
