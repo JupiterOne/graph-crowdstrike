@@ -17,15 +17,13 @@ JupiterOne.
 
 ## How it Works
 
-- JupiterOne periodically fetches CrowdStrike agents and devices to update the
-  graph.
+- JupiterOne periodically fetches CrowdStrike agents and devices to update the graph.
 - Write JupiterOne queries to review and monitor updates to the graph.
 - Configure alerts to take action when the JupiterOne graph changes.
 
 ## Requirements
 
-- JupiterOne requires an API client ID and client secret configured in your
-  CrowdStrike account with the appropriate permissions. 
+- JupiterOne requires an API client ID and client secret configured in your CrowdStrike account with the appropriate permissions. 
 - You must have permission in JupiterOne to install new integrations.
 
 ## API Authentication
@@ -50,14 +48,12 @@ Only hosts that have been seen within past 30 days are maintained.
 
 The following relationships are created/mapped:
 
-| Relationships
-|
+| Relationships                                                                  |
 | ------------------------------------------------------------------------------ |
-| `crowdstrike_account` **HAS** `crowdstrike_sensor`
-| | `crowdstrike_account` **HAS** `crowdstrike_endpoint_protection`
-| | `crowdstrike_prevention_policy` **ENFORCES**
-`crowdstrike_endpoint_protection` | | `crowdstrike_sensor` **ASSIGNED**
-`crowdstrike_prevention_policy`              | | `crowdstrike_sensor`
-**PROTECTS** `user_endpoint`                              |
+| `crowdstrike_account` **HAS** `crowdstrike_sensor`                             |
+| `crowdstrike_account` **HAS** `crowdstrike_endpoint_protection`                |
+| `crowdstrike_prevention_policy` **ENFORCES** `crowdstrike_endpoint_protection` |
+| `crowdstrike_sensor` **ASSIGNED** `crowdstrike_prevention_policy`              |
+| `crowdstrike_sensor` **PROTECTS** `user_endpoint`                              |
 
 [1]: https://www.crowdstrike.com/blog/tech-center/get-access-falcon-apis/
