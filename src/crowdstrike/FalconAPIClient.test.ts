@@ -1,13 +1,29 @@
+import { IntegrationLogger } from "@jupiterone/jupiter-managed-integration-sdk";
 import { Polly } from "@pollyjs/core";
 
 import polly from "../../test/helpers/polly";
 import config from "../../test/integrationInstanceConfig";
 import { FalconAPIClient } from "./FalconAPIClient";
 
+function createTestLogger(): IntegrationLogger {
+  return {
+    trace: () => undefined,
+    debug: () => undefined,
+    info: () => undefined,
+    warn: () => undefined,
+    error: () => undefined,
+    fatal: () => undefined,
+    child: () => createTestLogger(),
+  };
+}
+
 let p: Polly;
 
 const createClient = (): FalconAPIClient => {
-  return new FalconAPIClient({ credentials: config });
+  return new FalconAPIClient({
+    credentials: config,
+    logger: createTestLogger(),
+  });
 };
 
 afterEach(async () => {
@@ -79,6 +95,7 @@ describe("authenticate", () => {
         ...config,
         clientSecret: "test-error-handling",
       },
+      logger: createTestLogger(),
     });
     try {
       await client.authenticate();
@@ -154,6 +171,7 @@ describe("executeAPIRequest", () => {
       rateLimitConfig: {
         maxAttempts: 2,
       },
+      logger: createTestLogger(),
     });
 
     await expect(client.authenticate()).rejects.toThrowError(/2/);
@@ -190,6 +208,7 @@ describe("executeAPIRequest", () => {
         reserveLimit: 8,
         cooldownPeriod: 1000,
       },
+      logger: createTestLogger(),
     });
 
     const startTime = Date.now();

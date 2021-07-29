@@ -8,6 +8,7 @@ export default function createFalconAPIClient(
 
   const falconAPI = new FalconAPIClient({
     credentials: instance.config,
+    logger,
   });
 
   falconAPI.events.on(ClientEvents.REQUEST, event => {
