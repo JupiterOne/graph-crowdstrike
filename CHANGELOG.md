@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.1.6 - 2021-07-29
+
 ### Added
 
 - Added logging to Crowdstrike Client for 429 responses
