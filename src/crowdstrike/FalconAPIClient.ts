@@ -19,6 +19,7 @@ import {
   RateLimitState,
   ResourcesResponse,
 } from "./types";
+import { IntegrationLogger } from "@jupiterone/jupiter-managed-integration-sdk";
 
 type APIRequest = {
   url: string;
@@ -55,6 +56,7 @@ export type FalconAPIClientConfig = {
   credentials: OAuth2ClientCredentials;
   rateLimitConfig?: Partial<RateLimitConfig>;
   rateLimitState?: RateLimitState;
+  logger: IntegrationLogger;
 };
 
 export type FalconAPIResourceIterationCallback<T> = (
@@ -66,6 +68,7 @@ export class FalconAPIClient {
   private token: OAuth2Token | undefined;
   private rateLimitConfig: RateLimitConfig;
   private rateLimitState: RateLimitState;
+  private logger: IntegrationLogger;
 
   public events: EventEmitter;
 
@@ -73,11 +76,13 @@ export class FalconAPIClient {
     credentials,
     rateLimitConfig,
     rateLimitState,
+    logger,
   }: FalconAPIClientConfig) {
     this.credentials = credentials;
     this.rateLimitConfig = { ...DEFAULT_RATE_LIMIT_CONFIG, ...rateLimitConfig };
     this.rateLimitState = rateLimitState || INITIAL_RATE_LIMIT_STATE;
     this.events = new EventEmitter();
+    this.logger = logger;
   }
 
   public async authenticate(): Promise<OAuth2Token> {
@@ -269,7 +274,7 @@ export class FalconAPIClient {
     info: RequestInfo,
     init: RequestInit,
   ): Promise<ResponseType> {
-    const apiResponse = await executeAPIRequest(
+    const apiResponse = await this.executeAPIRequestWithRateLimitRetries(
       {
         url: info as string,
         exec: () => fetch(info, init),
@@ -291,66 +296,74 @@ export class FalconAPIClient {
 
     return apiResponse.response.json();
   }
-}
 
-async function executeAPIRequest<T>(
-  request: APIRequest,
-  events: EventEmitter,
-): Promise<APIResponse> {
-  const config = request.rateLimitConfig;
+  private async executeAPIRequestWithRateLimitRetries<T>(
+    request: APIRequest,
+    events: EventEmitter,
+  ): Promise<APIResponse> {
+    const config = request.rateLimitConfig;
 
-  let attempts = 0;
-  let rateLimitState = request.rateLimitState;
+    let attempts = 0;
+    let rateLimitState = request.rateLimitState;
 
-  do {
-    const tryAfterCooldown =
-      rateLimitState.limitRemaining <= config.reserveLimit
-        ? Date.now() + config.cooldownPeriod
-        : 0;
+    do {
+      const tryAfterCooldown =
+        rateLimitState.limitRemaining <= config.reserveLimit
+          ? Date.now() + config.cooldownPeriod
+          : 0;
 
-    const tryAfter = Math.max(rateLimitState.retryAfter, tryAfterCooldown);
+      const tryAfter = Math.max(rateLimitState.retryAfter, tryAfterCooldown);
 
-    events.emit(ClientEvents.REQUEST, {
-      url: request.url,
-      rateLimitConfig: request.rateLimitConfig,
-      rateLimitState: request.rateLimitState,
-      tryAfter,
-      attempts,
-    });
+      events.emit(ClientEvents.REQUEST, {
+        url: request.url,
+        rateLimitConfig: request.rateLimitConfig,
+        rateLimitState: request.rateLimitState,
+        tryAfter,
+        attempts,
+      });
 
-    const response = await tryAPIRequest(request.exec, tryAfter);
+      const response = await tryAPIRequest(request.exec, tryAfter);
 
-    rateLimitState = {
-      limitRemaining:
-        Number(response.headers.get("x-ratelimit-remaining")) ||
-        rateLimitState.limitRemaining,
-      perMinuteLimit:
-        Number(response.headers.get("x-ratelimit-limit")) ||
-        rateLimitState.perMinuteLimit,
-      retryAfter: Number(response.headers.get("x-ratelimit-retryafter") || 0),
-    };
-
-    events.emit(ClientEvents.RESPONSE, {
-      url: request.url,
-      rateLimitConfig: request.rateLimitConfig,
-      rateLimitState: request.rateLimitState,
-      tryAfter,
-      attempts,
-    });
-
-    if (response.status !== 429) {
-      return {
-        response,
-        rateLimitState,
-        status: response.status,
-        statusText: response.statusText,
+      rateLimitState = {
+        limitRemaining:
+          Number(response.headers.get("x-ratelimit-remaining")) ||
+          rateLimitState.limitRemaining,
+        perMinuteLimit:
+          Number(response.headers.get("x-ratelimit-limit")) ||
+          rateLimitState.perMinuteLimit,
+        retryAfter: Number(response.headers.get("x-ratelimit-retryafter") || 0),
       };
-    }
 
-    attempts += 1;
-  } while (attempts < request.rateLimitConfig.maxAttempts);
+      events.emit(ClientEvents.RESPONSE, {
+        url: request.url,
+        rateLimitConfig: request.rateLimitConfig,
+        rateLimitState: request.rateLimitState,
+        tryAfter,
+        attempts,
+      });
 
-  throw new Error(`Could not complete request within ${attempts} attempts!`);
+      if (response.status !== 429) {
+        return {
+          response,
+          rateLimitState,
+          status: response.status,
+          statusText: response.statusText,
+        };
+      }
+
+      attempts += 1;
+      this.logger.warn(
+        {
+          rateLimitState,
+          attempts,
+          url: request.url,
+        },
+        "Encountered 429 from Crowdstrike API",
+      );
+    } while (attempts < request.rateLimitConfig.maxAttempts);
+
+    throw new Error(`Could not complete request within ${attempts} attempts!`);
+  }
 }
 
 async function tryAPIRequest(
