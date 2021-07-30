@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.2.0 - 2021-07-30
+
 ### Added
 
 - Add normalized `macAddress` target filter key for building
