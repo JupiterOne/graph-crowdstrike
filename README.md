@@ -1,7 +1,5 @@
 # graph-crowdstrike
 
-[![Build Status](https://travis-ci.org/JupiterOne/graph-crowdstrike.svg?branch=master)](https://travis-ci.org/JupiterOne/graph-crowdstrike)
-
 Integrations are responsible for connecting to data provider APIs to collect
 current state and maintain a graph database representing the entities and
 relationships managed by the provider.
@@ -102,9 +100,9 @@ integration NPM package. The package will be published by the JupiterOne team.
 #### Publishing to NPM
 
 Create a PR with changes and request review. Once approved, the branch will be
-merged into `master`. An administrator of the GitHub project should:
+merged into `main`. An administrator of the GitHub project should:
 
-1. Pull the latest from `master`
+1. Pull the latest from `main`
 1. Determine the new semantic version number
 1. Create the version and tag with `yarn version [--major] [--minor] [--patch]`
 1. Push the commit and tag with `git push --follow-tags`

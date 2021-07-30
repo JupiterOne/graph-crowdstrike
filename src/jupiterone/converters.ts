@@ -76,11 +76,20 @@ export const SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE =
 export const DEVICE_ENTITY_TYPE = "user_endpoint";
 export const DEVICE_ENTITY_CLASS = ["Device", "Host"];
 
+function normalizeMacAddress(macAddress: string) {
+  return macAddress.replace(/-/g, ":").toLowerCase();
+}
+
 export function createSensorAgentDeviceMappedRelationship(
   device: Device,
   deviceEntity: EntityFromIntegration,
 ): MappedRelationshipFromIntegration {
   const hostname = device.hostname as string;
+
+  const macAddresses: string[] | undefined = deviceEntity.macAddress && [
+    deviceEntity.macAddress,
+    normalizeMacAddress(deviceEntity.macAddress),
+  ];
 
   return {
     _key: `${deviceEntity._key}|protects|device-${hostname}`,
@@ -89,14 +98,17 @@ export function createSensorAgentDeviceMappedRelationship(
     _mapping: {
       relationshipDirection: RelationshipDirection.FORWARD,
       sourceEntityKey: deviceEntity._key,
-      targetFilterKeys: [["_type", "hostname"]],
+      targetFilterKeys: [
+        ["_type", "hostname"],
+        ["_type", "macAddress"],
+      ],
       targetEntity: {
         _type: DEVICE_ENTITY_TYPE,
         _class: DEVICE_ENTITY_CLASS,
         displayName: hostname,
         hostname,
         deviceId: device.device_id,
-        macAddress: deviceEntity.macAddress,
+        macAddress: macAddresses,
         osVersion: deviceEntity.osVersion,
         platform: deviceEntity.platformName,
         publicIp: deviceEntity.externalIp,

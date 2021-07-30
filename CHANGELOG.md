@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Add normalized `macAddress` target filter key for building
+  `crowdstrike_sensor` **PROTECTS** `user_endpoint` mapped relationship
+
 ## 1.1.6 - 2021-07-29
 
 ### Added
