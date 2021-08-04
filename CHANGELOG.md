@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Remove `crowdstrike_sensor` **PROTECTS** `user_endpoint` relationship in favor
+  of a managed mapping rule
+
 ## 1.2.0 - 2021-07-30
 
 ### Added

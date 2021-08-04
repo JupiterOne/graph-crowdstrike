@@ -3,7 +3,6 @@
 import {
   createTestIntegrationData,
   IntegrationInstance,
-  RelationshipDirection,
   convertProperties,
 } from "@jupiterone/jupiter-managed-integration-sdk";
 
@@ -13,7 +12,6 @@ import {
   createSensorAgentEntity,
   createPreventionPolicyEntity,
   createProtectionServiceEntity,
-  createSensorAgentDeviceMappedRelationship,
 } from "./converters";
 
 describe("createAccountEntity", () => {
@@ -152,39 +150,8 @@ describe("createSensorAgent*", () => {
       firstSeenOn: new Date(source.first_seen).getTime(),
       lastSeenOn: new Date(source.last_seen).getTime(),
       active: true,
-    });
-  });
-
-  test("createSensorAgentDeviceMappedRelationship", () => {
-    const deviceEntity = createSensorAgentEntity(source);
-    expect(
-      createSensorAgentDeviceMappedRelationship(source, deviceEntity),
-    ).toEqual({
-      _key: "b7bbf18d26b344225072b1be2ae8b9e4|protects|device-Sample-Detect-2",
-      _type: "crowdstrike_sensor_protects_device",
-      _class: "PROTECTS",
-      _mapping: {
-        relationshipDirection: RelationshipDirection.FORWARD,
-        sourceEntityKey: "b7bbf18d26b344225072b1be2ae8b9e4",
-        targetFilterKeys: [
-          ["_type", "hostname"],
-          ["_type", "macAddress"],
-        ],
-        targetEntity: {
-          _type: "user_endpoint",
-          _class: ["Device", "Host"],
-          displayName: "Sample-Detect-2",
-          hostname: "Sample-Detect-2",
-          deviceId: "b7bbf18d26b344225072b1be2ae8b9e4",
-          macAddress: ["08-00-27-51-56-d8", "08:00:27:51:56:d8"],
-          osVersion: "Windows 7",
-          platform: "Windows",
-          publicIp: "54.183.25.1",
-          publicIpAddress: "54.183.25.1",
-          firstSeenOn: 1575302080000,
-          lastSeenOn: 1575302080000,
-        },
-      },
+      macAddress: "08:00:27:51:56:d8",
+      originalMacAddress: "08-00-27-51-56-d8",
     });
   });
 });
