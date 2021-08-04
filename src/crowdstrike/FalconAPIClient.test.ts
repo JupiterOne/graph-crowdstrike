@@ -108,6 +108,26 @@ describe("authenticate", () => {
 });
 
 describe("executeAPIRequest", () => {
+  test("waits until retryafter on 500 response", async () => {
+    p = polly(__dirname, "executeAPIRequest429");
+
+    const requestTimes: number[] = [];
+    p.server.any().on("request", (_req, _event) => {
+      requestTimes.push(Date.now());
+    });
+
+    p.server
+      .any()
+      .times(1)
+      .intercept((_req, res) => {
+        res.status(500);
+      });
+
+    await createClient().authenticate();
+
+    expect(requestTimes.length).toBe(2);
+  });
+
   test("waits until retryafter on 429 response", async () => {
     p = polly(__dirname, "executeAPIRequest429");
 
