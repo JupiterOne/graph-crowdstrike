@@ -10,7 +10,6 @@ import createFalconAPIClient from "../crowdstrike/createFalconAPIClient";
 import getIterationState from "../getIterationState";
 import {
   ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE,
-  createSensorAgentDeviceMappedRelationship,
   createSensorAgentEntity,
   SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE,
   SENSOR_AGENT_ENTITY_TYPE,
@@ -61,9 +60,6 @@ export default {
               from: accountEntity,
               to: entity,
             }),
-          );
-          sensorRelationships.push(
-            createSensorAgentDeviceMappedRelationship(device, entity),
           );
         }
         await Promise.all([
