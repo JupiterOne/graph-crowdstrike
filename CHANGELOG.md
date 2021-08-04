@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.3.2 - 2021-08-04
+
+### Fixed
+
+- Retry API requests that respond with a `500` status code
+
 ## 1.3.0 - 2021-08-04
 
 ### Changed

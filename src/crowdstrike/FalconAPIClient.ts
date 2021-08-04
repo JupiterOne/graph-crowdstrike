@@ -331,7 +331,9 @@ export class FalconAPIClient {
         perMinuteLimit:
           Number(response.headers.get("x-ratelimit-limit")) ||
           rateLimitState.perMinuteLimit,
-        retryAfter: Number(response.headers.get("x-ratelimit-retryafter") || 0),
+        retryAfter: Number(
+          response.headers.get("x-ratelimit-retryafter") || 1000,
+        ),
       };
 
       events.emit(ClientEvents.RESPONSE, {
@@ -342,7 +344,7 @@ export class FalconAPIClient {
         attempts,
       });
 
-      if (response.status !== 429) {
+      if (response.status !== 429 && response.status !== 500) {
         return {
           response,
           rateLimitState,
@@ -357,8 +359,9 @@ export class FalconAPIClient {
           rateLimitState,
           attempts,
           url: request.url,
+          status: response.status,
         },
-        "Encountered 429 from Crowdstrike API",
+        "Encountered retryable status code from Crowdstrike API",
       );
     } while (attempts < request.rateLimitConfig.maxAttempts);
 
