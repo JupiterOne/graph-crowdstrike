@@ -152,6 +152,7 @@ describe("createSensorAgent*", () => {
       active: true,
       macAddress: "08:00:27:51:56:d8",
       originalMacAddress: "08-00-27-51-56-d8",
+      ingestedOn: expect.any(Number),
     });
   });
 });

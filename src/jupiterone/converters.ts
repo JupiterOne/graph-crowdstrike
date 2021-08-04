@@ -74,6 +74,8 @@ export function createSensorAgentEntity(source: Device): EntityFromIntegration {
           source.mac_address &&
           normalizeMacAddress(source.mac_address as string),
         originalMacAddress: source.mac_address,
+        // HACK: Always push HostAgent updates to stimulate mapper updates
+        ingestedOn: Date.now(),
       },
     },
   });
