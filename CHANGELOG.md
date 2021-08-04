@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.3.0 - 2021-08-04
+
 ### Changed
 
 - Remove `crowdstrike_sensor` **PROTECTS** `user_endpoint` relationship in favor
