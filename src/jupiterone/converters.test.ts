@@ -155,6 +155,41 @@ describe("createSensorAgent*", () => {
       ingestedOn: expect.any(Number),
     });
   });
+
+  test("createSensorAgentEntity EC2 data", () => {
+    const device: Device = {
+      ...source,
+      service_provider: "AWS_EC2",
+      service_provider_account_id: "123456789",
+      zone_group: "us-east-1d",
+      instance_id: "i-1234567",
+    };
+
+    expect(createSensorAgentEntity(device)).toEqual({
+      ...convertProperties(device),
+      _class: ["HostAgent"],
+      _type: "crowdstrike_sensor",
+      _key: "b7bbf18d26b344225072b1be2ae8b9e4",
+      _rawData: [{ name: "default", rawData: device }],
+      name: "Sample-Detect-2",
+      displayName: "Sample-Detect-2",
+      status: "normal",
+      function: ["anti-malware", "activity-monitor"],
+      firstSeenOn: new Date(device.first_seen).getTime(),
+      lastSeenOn: new Date(device.last_seen).getTime(),
+      active: true,
+      macAddress: "08:00:27:51:56:d8",
+      originalMacAddress: "08-00-27-51-56-d8",
+      ingestedOn: expect.any(Number),
+
+      // EC2-specific properties
+      serviceProvider: "AWS_EC2",
+      serviceProviderAccountId: "123456789",
+      zoneGroup: "us-east-1d",
+      instanceId: "i-1234567",
+      ec2InstanceArn: "arn:aws:ec2:us-east-1:123456789:instance/i-1234567",
+    });
+  });
 });
 
 describe("createPreventionPolicyEntity", () => {

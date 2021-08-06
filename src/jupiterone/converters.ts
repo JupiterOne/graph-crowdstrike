@@ -53,6 +53,36 @@ export function createProtectionServiceEntity(integrationInstance: {
 
 export const SENSOR_AGENT_ENTITY_TYPE = "crowdstrike_sensor";
 
+/**
+ * @param zoneGroup {String} - `us-east-1d`
+ * @returns {String} - `us-east-1`
+ */
+function zoneGroupToRegion(zoneGroup: string): string {
+  return zoneGroup.substr(0, zoneGroup.length - 1);
+}
+
+export function buildEc2InstanceArn(source: Device): string | undefined {
+  const {
+    service_provider: serviceProvider, // Ex. AWS_EC2
+    service_provider_account_id: serviceProviderAccountId, // Ex. 123456789
+    zone_group: zoneGroup, // Ex. us-east-1d
+    instance_id: instanceId, // i-1234567
+  } = source;
+
+  if (
+    serviceProvider !== "AWS_EC2" ||
+    !serviceProviderAccountId ||
+    !zoneGroup
+  ) {
+    return;
+  }
+
+  const region = zoneGroupToRegion(zoneGroup as string);
+
+  // arn:aws:ec2:us-east-1:123456789:instance/i-1234567
+  return `arn:aws:ec2:${region}:${serviceProviderAccountId}:instance/${instanceId}`;
+}
+
 export function createSensorAgentEntity(source: Device): EntityFromIntegration {
   return createIntegrationEntity({
     entityData: {
@@ -74,6 +104,9 @@ export function createSensorAgentEntity(source: Device): EntityFromIntegration {
           source.mac_address &&
           normalizeMacAddress(source.mac_address as string),
         originalMacAddress: source.mac_address,
+
+        ec2InstanceArn: buildEc2InstanceArn(source),
+
         // HACK: Always push HostAgent updates to stimulate mapper updates
         ingestedOn: Date.now(),
       },
