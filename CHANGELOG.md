@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.4.0 - 2021-08-06
+
 ### Added
 
 - Add `ec2InstanceArn` property on `crowdstrike_sensor`
