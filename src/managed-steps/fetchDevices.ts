@@ -5,13 +5,13 @@ import {
   IntegrationStepExecutionContext,
   IntegrationStepIterationState,
 } from "@jupiterone/jupiter-managed-integration-sdk";
+import { Entities } from "../constants";
 
 import createFalconAPIClient from "../crowdstrike/createFalconAPIClient";
 import getIterationState from "../getIterationState";
 import {
   ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE,
   createSensorAgentEntity,
-  SENSOR_AGENT_ENTITY_TYPE,
 } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
 
@@ -75,7 +75,7 @@ export default {
     await cache.putEntry({ key: "device-ids", data: deviceIds });
 
     await objectCache.putCollectionStates(
-      { type: SENSOR_AGENT_ENTITY_TYPE, success: pagination.finished },
+      { type: Entities.SENSOR._type, success: pagination.finished },
       {
         type: ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE,
         success: pagination.finished,

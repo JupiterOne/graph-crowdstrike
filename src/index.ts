@@ -7,6 +7,7 @@ import fetchDevices from "./managed-steps/fetchDevices";
 import fetchPreventionPolicies from "./managed-steps/fetchPreventionPolicies";
 import prepareAccount from "./managed-steps/prepareAccount";
 import synchronize from "./managed-steps/synchronize";
+import { fetchDevicesStep } from "./steps/fetchDevices";
 import { getAccountStep } from "./steps/getAccount";
 import { CrowdStrikeIntegrationInstanceConfig } from "./types";
 
@@ -29,7 +30,7 @@ export const invocationConfig: IntegrationInvocationConfig<CrowdStrikeIntegratio
    */
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   validateInvocation: () => {},
-  integrationSteps: [getAccountStep],
+  integrationSteps: [getAccountStep, fetchDevicesStep],
 };
 
 /**

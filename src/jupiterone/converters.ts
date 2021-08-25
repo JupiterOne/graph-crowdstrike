@@ -48,8 +48,6 @@ export function createProtectionServiceEntity(integrationInstance: {
   });
 }
 
-export const SENSOR_AGENT_ENTITY_TYPE = "crowdstrike_sensor";
-
 /**
  * @param zoneGroup {String} - `us-east-1d`
  * @returns {String} - `us-east-1`
@@ -86,8 +84,8 @@ export function createSensorAgentEntity(source: Device): EntityFromIntegration {
       source,
       assign: {
         ...convertProperties(source),
-        _class: "HostAgent",
-        _type: SENSOR_AGENT_ENTITY_TYPE,
+        _class: Entities.SENSOR._class,
+        _type: Entities.SENSOR._type,
         _key: source.device_id,
         name: source.hostname,
         function: ["anti-malware", "activity-monitor"],
@@ -137,12 +135,12 @@ export function createPreventionPolicyEntity(
 export const ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE = generateRelationshipType(
   "HAS",
   Entities.ACCOUNT._type,
-  SENSOR_AGENT_ENTITY_TYPE,
+  Entities.SENSOR._type,
 );
 
 export const SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE = generateRelationshipType(
   "ASSIGNED",
-  SENSOR_AGENT_ENTITY_TYPE,
+  Entities.SENSOR._type,
   PREVENTION_POLICY_ENTITY_TYPE,
 );
 

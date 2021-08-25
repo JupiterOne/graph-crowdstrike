@@ -10,7 +10,6 @@ import {
 import { Entities } from "../constants";
 
 import {
-  SENSOR_AGENT_ENTITY_TYPE,
   SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE,
   PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE,
   PREVENTION_POLICY_ENTITY_TYPE,
@@ -43,7 +42,7 @@ export default {
       ] = await Promise.all([
         graph.findEntitiesByType(Entities.ACCOUNT._type),
         graph.findEntitiesByType(Entities.PROTECTION_SERVICE._type),
-        graph.findEntitiesByType(SENSOR_AGENT_ENTITY_TYPE),
+        graph.findEntitiesByType(Entities.SENSOR._type),
         graph.findEntitiesByType(PREVENTION_POLICY_ENTITY_TYPE),
       ]);
 
@@ -123,7 +122,7 @@ export default {
           generateRelationshipType(
             "HAS",
             Entities.ACCOUNT._type,
-            SENSOR_AGENT_ENTITY_TYPE,
+            Entities.SENSOR._type,
           ),
         ),
         graph.findRelationshipsByType(

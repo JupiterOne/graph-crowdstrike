@@ -6,6 +6,7 @@ export const SetDataKeys = {
 
 export const StepIds = {
   ACCOUNT: "get-account",
+  DEVICES: "fetch-devices",
 };
 
 export const Entities = {
@@ -19,6 +20,11 @@ export const Entities = {
     _type: "crowdstrike_endpoint_protection",
     _class: "Service",
   },
+  SENSOR: {
+    resourceName: "Device Sensor Agent",
+    _type: "crowdstrike_sensor",
+    _class: "HostAgent",
+  },
 };
 
 export const Relationships = {
@@ -27,5 +33,11 @@ export const Relationships = {
     sourceType: Entities.ACCOUNT._type,
     _class: RelationshipClass.HAS,
     targetType: Entities.PROTECTION_SERVICE._type,
+  },
+  ACCOUNT_HAS_SENSOR: {
+    _type: "crowdstrike_account_has_sensor",
+    sourceType: Entities.ACCOUNT._type,
+    _class: RelationshipClass.HAS,
+    targetType: Entities.SENSOR._type,
   },
 };
