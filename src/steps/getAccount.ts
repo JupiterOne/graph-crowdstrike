@@ -28,6 +28,22 @@ export async function getAccountEntityFromJobState(
   return accountEntity;
 }
 
+export async function getProtectionServiceEntityFromJobState(
+  jobState: JobState,
+): Promise<Entity> {
+  const protectionServiceEntity = await jobState.findEntity(
+    SetDataKeys.PROTECTION_SERVICE_ENTITY,
+  );
+
+  if (!protectionServiceEntity) {
+    throw new IntegrationError({
+      code: "MISSING_PROTECTION_SERVICE_ENTITY",
+      message: `The ${Entities.PROTECTION_SERVICE._type} entity could not be found in the job state.`,
+    });
+  }
+  return protectionServiceEntity;
+}
+
 export async function getAccount(
   context: IntegrationStepExecutionContext<
     CrowdStrikeIntegrationInstanceConfig

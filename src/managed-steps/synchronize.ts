@@ -12,7 +12,6 @@ import { Entities } from "../constants";
 import {
   SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE,
   PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE,
-  PREVENTION_POLICY_ENTITY_TYPE,
 } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
 
@@ -43,7 +42,7 @@ export default {
         graph.findEntitiesByType(Entities.ACCOUNT._type),
         graph.findEntitiesByType(Entities.PROTECTION_SERVICE._type),
         graph.findEntitiesByType(Entities.SENSOR._type),
-        graph.findEntitiesByType(PREVENTION_POLICY_ENTITY_TYPE),
+        graph.findEntitiesByType(Entities.PREVENTION_POLICY._type),
       ]);
 
       const entityOperations: EntityOperation[] = [];

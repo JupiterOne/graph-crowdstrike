@@ -2,11 +2,13 @@ import { RelationshipClass } from "@jupiterone/integration-sdk-core";
 
 export const SetDataKeys = {
   ACCOUNT_ENTITY: "ACCOUNT_ENTITY",
+  PROTECTION_SERVICE_ENTITY: "PROTECTION_SERVICE_ENTITY",
 };
 
 export const StepIds = {
   ACCOUNT: "get-account",
   DEVICES: "fetch-devices",
+  PREVENTION_POLICIES: "fetch-prevention-policies",
 };
 
 export const Entities = {
@@ -25,6 +27,11 @@ export const Entities = {
     _type: "crowdstrike_sensor",
     _class: "HostAgent",
   },
+  PREVENTION_POLICY: {
+    resourceName: "Prevention Policy",
+    _type: "crowdstrike_prevention_policy",
+    _class: "ControlPolicy",
+  },
 };
 
 export const Relationships = {
@@ -39,5 +46,12 @@ export const Relationships = {
     sourceType: Entities.ACCOUNT._type,
     _class: RelationshipClass.HAS,
     targetType: Entities.SENSOR._type,
+  },
+  PREVENTION_POLICY_ENFORCES_PROTECTION_SERVICE: {
+    _type: "crowdstrike_prevention_policy_enforces_protection_service",
+    sourceType: Entities.PREVENTION_POLICY._type,
+    // TODO add ENFORCES to RelationshipClass
+    _class: "ENFORCES" as RelationshipClass,
+    targetType: Entities.PROTECTION_SERVICE._type,
   },
 };

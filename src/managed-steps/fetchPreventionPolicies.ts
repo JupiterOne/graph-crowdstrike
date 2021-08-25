@@ -5,13 +5,13 @@ import {
   IntegrationStepExecutionContext,
   IntegrationStepIterationState,
 } from "@jupiterone/jupiter-managed-integration-sdk";
+import { Entities } from "../constants";
 
 import createFalconAPIClient from "../crowdstrike/createFalconAPIClient";
 import getIterationState from "../getIterationState";
 import {
   createPreventionPolicyEntity,
   PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE,
-  PREVENTION_POLICY_ENTITY_TYPE,
 } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
 
@@ -73,7 +73,7 @@ export default {
 
     await objectCache.putCollectionStates(
       {
-        type: PREVENTION_POLICY_ENTITY_TYPE,
+        type: Entities.PREVENTION_POLICY._type,
         success: pagination.finished,
       },
       {

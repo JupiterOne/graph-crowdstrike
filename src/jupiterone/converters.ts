@@ -111,7 +111,6 @@ export function createSensorAgentEntity(source: Device): EntityFromIntegration {
 
 export const DEVICE_ENTITY_TYPE = "user_endpoint";
 export const DEVICE_ENTITY_CLASS = ["Device", "Host"];
-export const PREVENTION_POLICY_ENTITY_TYPE = "crowdstrike_prevention_policy";
 
 export function createPreventionPolicyEntity(
   source: PreventionPolicy,
@@ -120,8 +119,8 @@ export function createPreventionPolicyEntity(
     entityData: {
       source,
       assign: {
-        _class: "ControlPolicy",
-        _type: PREVENTION_POLICY_ENTITY_TYPE,
+        _class: Entities.PREVENTION_POLICY._class,
+        _type: Entities.PREVENTION_POLICY._type,
         createdOn: Date.parse(source.created_timestamp),
         updatedOn: Date.parse(source.modified_timestamp),
         createdBy: source.created_by,
@@ -141,11 +140,11 @@ export const ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE = generateRelationshipType(
 export const SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE = generateRelationshipType(
   "ASSIGNED",
   Entities.SENSOR._type,
-  PREVENTION_POLICY_ENTITY_TYPE,
+  Entities.PREVENTION_POLICY._type,
 );
 
 export const PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE = generateRelationshipType(
   "ENFORCES",
-  PREVENTION_POLICY_ENTITY_TYPE,
+  Entities.PREVENTION_POLICY._type,
   Entities.PROTECTION_SERVICE._type,
 );
