@@ -5,10 +5,9 @@ import {
   generateRelationshipType,
   getTime,
 } from "@jupiterone/jupiter-managed-integration-sdk";
+import { Entities } from "../constants";
 
 import { Device, PreventionPolicy } from "../crowdstrike/types";
-
-export const ACCOUNT_ENTITY_TYPE = "crowdstrike_account";
 
 function normalizeMacAddress(macAddress: string): string {
   return macAddress.replace(/-/g, ":").toLowerCase();
@@ -22,16 +21,14 @@ export function createAccountEntity(integrationInstance: {
     entityData: {
       source: {},
       assign: {
-        _class: "Account",
-        _type: ACCOUNT_ENTITY_TYPE,
-        _key: `${ACCOUNT_ENTITY_TYPE}|${integrationInstance.id}`,
+        _class: Entities.ACCOUNT._class,
+        _type: Entities.ACCOUNT._type,
+        _key: `${Entities.ACCOUNT._type}|${integrationInstance.id}`,
         name: integrationInstance.name,
       },
     },
   });
 }
-
-export const PROTECTION_SERVICE_ENTITY_TYPE = "crowdstrike_endpoint_protection";
 
 export function createProtectionServiceEntity(integrationInstance: {
   id: string;
@@ -40,9 +37,9 @@ export function createProtectionServiceEntity(integrationInstance: {
     entityData: {
       source: {},
       assign: {
-        _class: "Service",
-        _type: PROTECTION_SERVICE_ENTITY_TYPE,
-        _key: `${PROTECTION_SERVICE_ENTITY_TYPE}|${integrationInstance.id}`,
+        _class: Entities.PROTECTION_SERVICE._class,
+        _type: Entities.PROTECTION_SERVICE._type,
+        _key: `${Entities.PROTECTION_SERVICE._type}|${integrationInstance.id}`,
         name: "CrowdStrike Endpoint Protection Service",
         category: ["software", "other"],
         endpoints: ["https://falcon.crowdstrike.com/"],
@@ -139,7 +136,7 @@ export function createPreventionPolicyEntity(
 
 export const ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE = generateRelationshipType(
   "HAS",
-  ACCOUNT_ENTITY_TYPE,
+  Entities.ACCOUNT._type,
   SENSOR_AGENT_ENTITY_TYPE,
 );
 
@@ -152,5 +149,5 @@ export const SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE = generateRelation
 export const PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE = generateRelationshipType(
   "ENFORCES",
   PREVENTION_POLICY_ENTITY_TYPE,
-  PROTECTION_SERVICE_ENTITY_TYPE,
+  Entities.PROTECTION_SERVICE._type,
 );

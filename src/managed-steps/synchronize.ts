@@ -7,14 +7,13 @@ import {
   RelationshipOperation,
   summarizePersisterOperationsResults,
 } from "@jupiterone/jupiter-managed-integration-sdk";
+import { Entities } from "../constants";
 
 import {
-  ACCOUNT_ENTITY_TYPE,
   SENSOR_AGENT_ENTITY_TYPE,
   SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE,
   PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE,
   PREVENTION_POLICY_ENTITY_TYPE,
-  PROTECTION_SERVICE_ENTITY_TYPE,
 } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
 
@@ -42,8 +41,8 @@ export default {
         oldDeviceEntities,
         oldPolicyEntities,
       ] = await Promise.all([
-        graph.findEntitiesByType(ACCOUNT_ENTITY_TYPE),
-        graph.findEntitiesByType(PROTECTION_SERVICE_ENTITY_TYPE),
+        graph.findEntitiesByType(Entities.ACCOUNT._type),
+        graph.findEntitiesByType(Entities.PROTECTION_SERVICE._type),
         graph.findEntitiesByType(SENSOR_AGENT_ENTITY_TYPE),
         graph.findEntitiesByType(PREVENTION_POLICY_ENTITY_TYPE),
       ]);
@@ -123,15 +122,15 @@ export default {
         graph.findRelationshipsByType(
           generateRelationshipType(
             "HAS",
-            ACCOUNT_ENTITY_TYPE,
+            Entities.ACCOUNT._type,
             SENSOR_AGENT_ENTITY_TYPE,
           ),
         ),
         graph.findRelationshipsByType(
           generateRelationshipType(
             "HAS",
-            ACCOUNT_ENTITY_TYPE,
-            PROTECTION_SERVICE_ENTITY_TYPE,
+            Entities.ACCOUNT._type,
+            Entities.PROTECTION_SERVICE._type,
           ),
         ),
         graph.findRelationshipsByType(

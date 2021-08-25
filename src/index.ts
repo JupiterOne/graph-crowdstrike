@@ -1,4 +1,5 @@
-import { IntegrationInvocationConfig } from "@jupiterone/jupiter-managed-integration-sdk";
+import { IntegrationInvocationConfig } from "@jupiterone/integration-sdk-core";
+import { IntegrationInvocationConfig as ManagedIntegrationInvocationConfig } from "@jupiterone/jupiter-managed-integration-sdk";
 
 import invocationValidator from "./invocationValidator";
 import fetchDevicePolicyRelationships from "./managed-steps/fetchDevicePolicyRelationships";
@@ -6,6 +7,30 @@ import fetchDevices from "./managed-steps/fetchDevices";
 import fetchPreventionPolicies from "./managed-steps/fetchPreventionPolicies";
 import prepareAccount from "./managed-steps/prepareAccount";
 import synchronize from "./managed-steps/synchronize";
+import { getAccountStep } from "./steps/getAccount";
+import { CrowdStrikeIntegrationInstanceConfig } from "./types";
+
+export const invocationConfig: IntegrationInvocationConfig<CrowdStrikeIntegrationInstanceConfig> = {
+  instanceConfigFields: {
+    clientId: {
+      type: "string",
+      mask: false,
+    },
+    clientSecret: {
+      type: "string",
+      mask: true,
+    },
+  },
+  /**
+   * At the time of converting from the managed SDK to the open-source SDK, the implemented
+   * `invocationValidator` is an empty function.
+   *
+   * TODO implement validateInvocation()
+   */
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  validateInvocation: () => {},
+  integrationSteps: [getAccountStep],
+};
 
 /**
  * A multi-step integration:
@@ -22,7 +47,7 @@ import synchronize from "./managed-steps/synchronize";
  * Note that devices not seen since `LAST_SEEN_DAYS_BACK` will be deleted! This
  * maintains a "last 30 days" view of hosts.
  */
-export const stepFunctionsInvocationConfig: IntegrationInvocationConfig = {
+export const stepFunctionsInvocationConfig: ManagedIntegrationInvocationConfig = {
   instanceConfigFields: {
     clientId: {
       type: "string",
