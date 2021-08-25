@@ -1,11 +1,11 @@
 import { IntegrationInvocationConfig } from "@jupiterone/jupiter-managed-integration-sdk";
 
 import invocationValidator from "./invocationValidator";
-import fetchDevicePolicyRelationships from "./steps/fetchDevicePolicyRelationships";
-import fetchDevices from "./steps/fetchDevices";
-import fetchPreventionPolicies from "./steps/fetchPreventionPolicies";
-import prepareAccount from "./steps/prepareAccount";
-import synchronize from "./steps/synchronize";
+import fetchDevicePolicyRelationships from "./managed-steps/fetchDevicePolicyRelationships";
+import fetchDevices from "./managed-steps/fetchDevices";
+import fetchPreventionPolicies from "./managed-steps/fetchPreventionPolicies";
+import prepareAccount from "./managed-steps/prepareAccount";
+import synchronize from "./managed-steps/synchronize";
 
 /**
  * A multi-step integration:
