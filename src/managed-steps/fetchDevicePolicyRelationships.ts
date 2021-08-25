@@ -25,11 +25,11 @@ export default {
   executionHandler: async (
     executionContext: IntegrationStepExecutionContext,
   ): Promise<IntegrationStepIterationState> => {
-    const { logger } = executionContext;
+    const { instance, logger } = executionContext;
 
     const cache = executionContext.clients.getCache();
     const objectCache = new ProviderGraphObjectCache(cache);
-    const falconAPI = createFalconAPIClient(executionContext);
+    const falconAPI = createFalconAPIClient(instance.config, logger);
 
     const iterationState = getIterationState(executionContext);
 
