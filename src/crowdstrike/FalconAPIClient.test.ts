@@ -1,8 +1,10 @@
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 import { createMockIntegrationLogger } from '@jupiterone/integration-sdk-testing';
-import { Polly } from '@pollyjs/core';
 
-import polly from '../../test/helpers/polly';
+import {
+  Recording,
+  setupCrowdstrikeRecording,
+} from '../../test/helpers/recording';
 import config from '../../test/integrationInstanceConfig';
 import { FalconAPIClient } from './FalconAPIClient';
 
@@ -10,7 +12,7 @@ function createTestLogger(): IntegrationLogger {
   return createMockIntegrationLogger();
 }
 
-let p: Polly;
+let recording: Recording;
 
 const createClient = (): FalconAPIClient => {
   return new FalconAPIClient({
@@ -20,15 +22,20 @@ const createClient = (): FalconAPIClient => {
 };
 
 afterEach(async () => {
-  await p.stop();
+  if (recording) {
+    await recording.stop();
+  }
 });
 
 describe('authenticate', () => {
   test('obtains token and expiration', async () => {
-    p = polly(__dirname, 'authenticate');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'authenticate',
+    });
 
     let requests = 0;
-    p.server.any().on('request', (_req, _event) => {
+    recording.server.any().on('request', (_req, _event) => {
       requests++;
     });
 
@@ -41,10 +48,13 @@ describe('authenticate', () => {
   });
 
   test('answers cached token before expiration', async () => {
-    p = polly(__dirname, 'authenticateCached');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'authenticateCached',
+    });
 
     let requests = 0;
-    p.server.any().on('request', (_req, _event) => {
+    recording.server.any().on('request', (_req, _event) => {
       requests++;
     });
 
@@ -56,10 +66,13 @@ describe('authenticate', () => {
   });
 
   test('answers new token after expiration', async () => {
-    p = polly(__dirname, 'authenticateRefresh');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'authenticateRefresh',
+    });
 
     let requests = 0;
-    p.server.any().on('request', (_req, _event) => {
+    recording.server.any().on('request', (_req, _event) => {
       requests++;
     });
 
@@ -82,7 +95,14 @@ describe('authenticate', () => {
   });
 
   test('throws errors', async () => {
-    p = polly(__dirname, 'authenticateError', { recordFailedRequests: true });
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'authenticateError',
+      options: {
+        recordFailedRequests: true,
+      },
+    });
+
     const client = new FalconAPIClient({
       credentials: {
         ...config,
@@ -102,14 +122,17 @@ describe('authenticate', () => {
 
 describe('executeAPIRequest', () => {
   test('waits until retryafter on 500 response', async () => {
-    p = polly(__dirname, 'executeAPIRequest429');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'executeAPIRequest429',
+    });
 
     const requestTimes: number[] = [];
-    p.server.any().on('request', (_req, _event) => {
+    recording.server.any().on('request', (_req, _event) => {
       requestTimes.push(Date.now());
     });
 
-    p.server
+    recording.server
       .any()
       .times(1)
       .intercept((_req, res) => {
@@ -122,15 +145,18 @@ describe('executeAPIRequest', () => {
   });
 
   test('waits until retryafter on 429 response', async () => {
-    p = polly(__dirname, 'executeAPIRequest429');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'executeAPIRequest429',
+    });
 
     const requestTimes: number[] = [];
-    p.server.any().on('request', (_req, _event) => {
+    recording.server.any().on('request', (_req, _event) => {
       requestTimes.push(Date.now());
     });
 
     const retryAfter = Date.now() + 1000;
-    p.server
+    recording.server
       .any()
       .times(1)
       .intercept((_req, res) => {
@@ -156,14 +182,17 @@ describe('executeAPIRequest', () => {
   });
 
   test('retries 429 response limited times', async () => {
-    p = polly(__dirname, 'executeAPIRequest429limit');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'executeAPIRequest429limit',
+    });
 
     const requestTimes: number[] = [];
-    p.server.any().on('request', (_req, _event) => {
+    recording.server.any().on('request', (_req, _event) => {
       requestTimes.push(Date.now());
     });
 
-    p.server.any().intercept((_req, res) => {
+    recording.server.any().intercept((_req, res) => {
       res
         .status(429)
         .setHeaders({
@@ -193,11 +222,14 @@ describe('executeAPIRequest', () => {
   });
 
   test('throttles at specified reserveLimit', async () => {
-    p = polly(__dirname, 'executeAPIRequestReserveLimit');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'executeAPIRequestReserveLimit',
+    });
 
     let limitRemaining = 10;
 
-    p.server.any().intercept((_req, res) => {
+    recording.server.any().intercept((_req, res) => {
       limitRemaining--;
       res
         .status(201)
@@ -236,7 +268,11 @@ describe('executeAPIRequest', () => {
 
 describe('iterateDevices', () => {
   test('complete set in single callback', async () => {
-    p = polly(__dirname, 'iterateDevicesSinglePage');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iterateDevicesSinglePage',
+    });
+
     const cbSpy = jest.fn();
 
     const paginationState = await createClient().iterateDevices({
@@ -261,7 +297,11 @@ describe('iterateDevices', () => {
   }, 20000);
 
   test('partial set in multiple callbacks', async () => {
-    p = polly(__dirname, 'iterateDevicesCompletes');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iterateDevicesCompletes',
+    });
+
     const cbSpy = jest.fn();
 
     const paginationState = await createClient().iterateDevices({
@@ -291,7 +331,11 @@ describe('iterateDevices', () => {
   }, 20000);
 
   test('partial set', async () => {
-    p = polly(__dirname, 'iterateDevicesInterrupted');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iterateDevicesInterrupted',
+    });
+
     const cbSpy = jest.fn().mockResolvedValue(false);
 
     const paginationState = await createClient().iterateDevices({
@@ -316,7 +360,11 @@ describe('iterateDevices', () => {
   }, 20000);
 
   test('resumes from pagination state', async () => {
-    p = polly(__dirname, 'iterateDevicesResumes');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iterateDevicesResumes',
+    });
+
     const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
     const paginationState = await client.iterateDevices({
@@ -347,7 +395,11 @@ describe('iterateDevices', () => {
   }, 20000);
 
   test('pagination with filter', async () => {
-    p = polly(__dirname, 'iterateDevicesFilter');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iterateDevicesFilter',
+    });
+
     const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
 
@@ -394,9 +446,14 @@ describe('iterateDevices', () => {
   }, 20000);
 
   test('throws error on expired pagination offset cursor', async () => {
-    p = polly(__dirname, 'iterateDevicesExpiredOffsetCursor', {
-      recordFailedRequests: true,
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iterateDevicesExpiredOffsetCursor',
+      options: {
+        recordFailedRequests: true,
+      },
     });
+
     const cbSpy = jest.fn();
     await expect(
       createClient().iterateDevices({
@@ -414,7 +471,11 @@ describe('iterateDevices', () => {
 
 describe('iteratePreventionPolicies', () => {
   test('complete set in single callback', async () => {
-    p = polly(__dirname, 'iteratePreventionPoliciesSinglePage');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iteratePreventionPoliciesSinglePage',
+    });
+
     const cbSpy = jest.fn();
 
     const paginationState = await createClient().iteratePreventionPolicies({
@@ -442,7 +503,11 @@ describe('iteratePreventionPolicies', () => {
   }, 20000);
 
   test('partial set in multiple callbacks', async () => {
-    p = polly(__dirname, 'iteratePreventionPoliciesCompletes');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iteratePreventionPoliciesCompletes',
+    });
+
     const cbSpy = jest.fn();
 
     const paginationState = await createClient().iteratePreventionPolicies({
@@ -481,7 +546,11 @@ describe('iteratePreventionPolicies', () => {
   }, 20000);
 
   test('partial set', async () => {
-    p = polly(__dirname, 'iteratePreventionPoliciesInterrupted');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iteratePreventionPoliciesInterrupted',
+    });
+
     const cbSpy = jest.fn().mockResolvedValue(false);
 
     const paginationState = await createClient().iteratePreventionPolicies({
@@ -505,7 +574,11 @@ describe('iteratePreventionPolicies', () => {
   }, 20000);
 
   test('resumes from pagination state', async () => {
-    p = polly(__dirname, 'iteratePreventionPoliciesResumes');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iteratePreventionPoliciesResumes',
+    });
+
     const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
     const paginationState = await client.iteratePreventionPolicies({
@@ -535,7 +608,11 @@ describe('iteratePreventionPolicies', () => {
   }, 20000);
 
   test('pagination with filter', async () => {
-    p = polly(__dirname, 'iteratePreventionPoliciesFilter');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iteratePreventionPoliciesFilter',
+    });
+
     const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
 
@@ -583,7 +660,11 @@ describe('iteratePreventionPolicies', () => {
 
 describe('iteratePreventionPolicyMemberIds', () => {
   test('complete set in single callback', async () => {
-    p = polly(__dirname, 'iteratePreventionPolicyMemberIdsSinglePage');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iteratePreventionPolicyMemberIdsSinglePage',
+    });
+
     const cbSpy = jest.fn();
 
     const paginationState =
@@ -609,7 +690,11 @@ describe('iteratePreventionPolicyMemberIds', () => {
   }, 20000);
 
   test('partial set in multiple callbacks', async () => {
-    p = polly(__dirname, 'iteratePreventionPolicyMemberIdsCompletes');
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iteratePreventionPolicyMemberIdsCompletes',
+    });
+
     const cbSpy = jest.fn();
 
     const paginationState =
