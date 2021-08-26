@@ -11,7 +11,6 @@ import getIterationState from "../getIterationState";
 import {
   ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE,
   createSensorAgentEntity,
-  SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE,
   SENSOR_AGENT_ENTITY_TYPE,
 } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
@@ -79,10 +78,6 @@ export default {
       { type: SENSOR_AGENT_ENTITY_TYPE, success: pagination.finished },
       {
         type: ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE,
-        success: pagination.finished,
-      },
-      {
-        type: SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE,
         success: pagination.finished,
       },
     );

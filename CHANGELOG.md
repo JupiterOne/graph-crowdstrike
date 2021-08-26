@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+## 1.4.1 - 2021-08-26
+
+### Fixed
+
+- Do not fetch old `crowdstrike_sensor_protects_device` relationships
+
 ## 1.4.0 - 2021-08-06
 
 ### Added
