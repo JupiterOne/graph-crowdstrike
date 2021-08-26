@@ -15,7 +15,6 @@ import {
   PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE,
   PREVENTION_POLICY_ENTITY_TYPE,
   PROTECTION_SERVICE_ENTITY_TYPE,
-  SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE,
 } from "../jupiterone/converters";
 import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
 
@@ -120,7 +119,6 @@ export default {
         oldAccountServiceRelationships,
         oldPolicyServiceRelationships,
         oldSensorAgentPolicyRelationships,
-        oldSensorAgentDeviceMappedRelationships,
       ] = await Promise.all([
         graph.findRelationshipsByType(
           generateRelationshipType(
@@ -142,9 +140,6 @@ export default {
         graph.findRelationshipsByType(
           SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE,
         ),
-        graph.findRelationshipsByType(
-          SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE,
-        ),
       ]);
 
       const oldRelationships = [
@@ -152,7 +147,6 @@ export default {
         ...oldAccountServiceRelationships,
         ...oldPolicyServiceRelationships,
         ...oldSensorAgentPolicyRelationships,
-        ...oldSensorAgentDeviceMappedRelationships,
       ];
 
       const relationshipOperations: RelationshipOperation[] = [];

@@ -114,9 +114,6 @@ export function createSensorAgentEntity(source: Device): EntityFromIntegration {
   });
 }
 
-export const SENSOR_AGENT_DEVICE_MAPPED_RELATIONSHIP_TYPE =
-  "crowdstrike_sensor_protects_device";
-
 export const DEVICE_ENTITY_TYPE = "user_endpoint";
 export const DEVICE_ENTITY_CLASS = ["Device", "Host"];
 export const PREVENTION_POLICY_ENTITY_TYPE = "crowdstrike_prevention_policy";
