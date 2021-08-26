@@ -1,6 +1,7 @@
-import Timeout from "await-timeout";
-import fetch, { RequestInfo, RequestInit, Response } from "node-fetch";
-import EventEmitter from "events";
+import Timeout from 'await-timeout';
+import fetch, { RequestInfo, RequestInit, Response } from 'node-fetch';
+import EventEmitter from 'events';
+import { URLSearchParams } from 'url';
 
 import {
   Device,
@@ -18,8 +19,8 @@ import {
   RateLimitConfig,
   RateLimitState,
   ResourcesResponse,
-} from "./types";
-import { IntegrationLogger } from "@jupiterone/jupiter-managed-integration-sdk";
+} from './types';
+import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 
 type APIRequest = {
   url: string;
@@ -30,8 +31,8 @@ type APIRequest = {
 
 type APIResponse = {
   response: Response;
-  status: Response["status"];
-  statusText: Response["statusText"];
+  status: Response['status'];
+  statusText: Response['statusText'];
   rateLimitState: RateLimitState;
 };
 
@@ -48,8 +49,8 @@ const DEFAULT_RATE_LIMIT_CONFIG: RateLimitConfig = {
 };
 
 export enum ClientEvents {
-  REQUEST = "ClientEvents.REQUEST",
-  RESPONSE = "ClientEvents.RESPONSE",
+  REQUEST = 'ClientEvents.REQUEST',
+  RESPONSE = 'ClientEvents.RESPONSE',
 }
 
 export type FalconAPIClientConfig = {
@@ -110,10 +111,10 @@ export class FalconAPIClient {
   }): Promise<PaginationState> {
     return this.paginateResources<DeviceIdentifier>({
       ...input,
-      callback: async deviceIds => {
+      callback: async (deviceIds) => {
         return await input.callback(await this.fetchDevices(deviceIds));
       },
-      resourcePath: "/devices/queries/devices-scroll/v1",
+      resourcePath: '/devices/queries/devices-scroll/v1',
     });
   }
 
@@ -130,7 +131,7 @@ export class FalconAPIClient {
   }): Promise<NumericOffsetPaginationState> {
     return this.paginateResources<PreventionPolicy>({
       ...input,
-      resourcePath: "/policy/combined/prevention/v1",
+      resourcePath: '/policy/combined/prevention/v1',
     }) as Promise<NumericOffsetPaginationState>;
   }
 
@@ -142,7 +143,7 @@ export class FalconAPIClient {
   }): Promise<NumericOffsetPaginationState> {
     return this.paginateResources<DeviceIdentifier>({
       ...input,
-      resourcePath: "/policy/queries/prevention-members/v1",
+      resourcePath: '/policy/queries/prevention-members/v1',
       query: { ...input.query, id: input.policyId },
     }) as Promise<NumericOffsetPaginationState>;
   }
@@ -150,15 +151,15 @@ export class FalconAPIClient {
   private async fetchDevices(ids: string[]): Promise<Device[]> {
     const params = new URLSearchParams();
     for (const aid of ids) {
-      params.append("ids", aid);
+      params.append('ids', aid);
     }
 
     const response = await this.executeAuthenticatedAPIRequest<
       ResourcesResponse<Device>
     >(`https://api.crowdstrike.com/devices/entities/devices/v1?${params}`, {
-      method: "GET",
+      method: 'GET',
       headers: {
-        accept: "application/json",
+        accept: 'application/json',
       },
     });
 
@@ -196,20 +197,21 @@ export class FalconAPIClient {
     let continuePagination: boolean | void;
 
     do {
-      const response: ResourcesResponse<ResourceType> = await this.executeAuthenticatedAPIRequest<
-        ResourcesResponse<ResourceType>
-      >(
-        `https://api.crowdstrike.com${resourcePath}?${toQueryString(
-          paginationParams,
-          query,
-        )}`,
-        {
-          method: "GET",
-          headers: {
-            accept: "application/json",
+      const response: ResourcesResponse<ResourceType> =
+        await this.executeAuthenticatedAPIRequest<
+          ResourcesResponse<ResourceType>
+        >(
+          `https://api.crowdstrike.com${resourcePath}?${toQueryString(
+            paginationParams,
+            query,
+          )}`,
+          {
+            method: 'GET',
+            headers: {
+              accept: 'application/json',
+            },
           },
-        },
-      );
+        );
 
       continuePagination = await callback(response.resources);
 
@@ -239,15 +241,15 @@ export class FalconAPIClient {
 
   private async requestOAuth2Token(): Promise<OAuth2Token> {
     const params = new URLSearchParams();
-    params.append("client_id", this.credentials.clientId);
-    params.append("client_secret", this.credentials.clientSecret);
+    params.append('client_id', this.credentials.clientId);
+    params.append('client_secret', this.credentials.clientSecret);
 
     const response = await this.executeAPIRequest<OAuth2TokenResponse>(
-      "https://api.crowdstrike.com/oauth2/token",
+      'https://api.crowdstrike.com/oauth2/token',
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          accept: "application/json",
+          accept: 'application/json',
         },
         body: params,
       },
@@ -326,13 +328,13 @@ export class FalconAPIClient {
 
       rateLimitState = {
         limitRemaining:
-          Number(response.headers.get("x-ratelimit-remaining")) ||
+          Number(response.headers.get('x-ratelimit-remaining')) ||
           rateLimitState.limitRemaining,
         perMinuteLimit:
-          Number(response.headers.get("x-ratelimit-limit")) ||
+          Number(response.headers.get('x-ratelimit-limit')) ||
           rateLimitState.perMinuteLimit,
         retryAfter: Number(
-          response.headers.get("x-ratelimit-retryafter") || 1000,
+          response.headers.get('x-ratelimit-retryafter') || 1000,
         ),
       };
 
@@ -361,7 +363,7 @@ export class FalconAPIClient {
           url: request.url,
           status: response.status,
         },
-        "Encountered retryable status code from Crowdstrike API",
+        'Encountered retryable status code from Crowdstrike API',
       );
     } while (attempts < request.rateLimitConfig.maxAttempts);
 
@@ -394,11 +396,11 @@ function toQueryString(
   const params = new URLSearchParams();
 
   if (pagination) {
-    if (typeof pagination.limit === "number") {
-      params.append("limit", String(pagination.limit));
+    if (typeof pagination.limit === 'number') {
+      params.append('limit', String(pagination.limit));
     }
     if (pagination.offset !== undefined) {
-      params.append("offset", String(pagination.offset));
+      params.append('offset', String(pagination.offset));
     }
   }
 

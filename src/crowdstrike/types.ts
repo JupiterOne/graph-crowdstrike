@@ -169,5 +169,6 @@ export type PreventionPolicy = {
   created_timestamp: string;
   modified_by: string;
   modified_timestamp: string;
+  enabled: boolean;
   [property: string]: string | boolean | object | Array<string | object>;
 };

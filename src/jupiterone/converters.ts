@@ -1,14 +1,14 @@
 import {
   convertProperties,
   createIntegrationEntity,
-  EntityFromIntegration,
+  Entity,
   generateRelationshipType,
   getTime,
-} from "@jupiterone/jupiter-managed-integration-sdk";
+  RelationshipClass,
+} from "@jupiterone/integration-sdk-core";
+import { Entities } from "../constants";
 
 import { Device, PreventionPolicy } from "../crowdstrike/types";
-
-export const ACCOUNT_ENTITY_TYPE = "crowdstrike_account";
 
 function normalizeMacAddress(macAddress: string): string {
   return macAddress.replace(/-/g, ":").toLowerCase();
@@ -17,32 +17,30 @@ function normalizeMacAddress(macAddress: string): string {
 export function createAccountEntity(integrationInstance: {
   id: string;
   name: string;
-}): EntityFromIntegration {
+}): Entity {
   return createIntegrationEntity({
     entityData: {
       source: {},
       assign: {
-        _class: "Account",
-        _type: ACCOUNT_ENTITY_TYPE,
-        _key: `${ACCOUNT_ENTITY_TYPE}|${integrationInstance.id}`,
+        _class: Entities.ACCOUNT._class,
+        _type: Entities.ACCOUNT._type,
+        _key: `${Entities.ACCOUNT._type}|${integrationInstance.id}`,
         name: integrationInstance.name,
       },
     },
   });
 }
 
-export const PROTECTION_SERVICE_ENTITY_TYPE = "crowdstrike_endpoint_protection";
-
 export function createProtectionServiceEntity(integrationInstance: {
   id: string;
-}): EntityFromIntegration {
+}): Entity {
   return createIntegrationEntity({
     entityData: {
       source: {},
       assign: {
-        _class: "Service",
-        _type: PROTECTION_SERVICE_ENTITY_TYPE,
-        _key: `${PROTECTION_SERVICE_ENTITY_TYPE}|${integrationInstance.id}`,
+        _class: Entities.PROTECTION_SERVICE._class,
+        _type: Entities.PROTECTION_SERVICE._type,
+        _key: `${Entities.PROTECTION_SERVICE._type}|${integrationInstance.id}`,
         name: "CrowdStrike Endpoint Protection Service",
         category: ["software", "other"],
         endpoints: ["https://falcon.crowdstrike.com/"],
@@ -50,8 +48,6 @@ export function createProtectionServiceEntity(integrationInstance: {
     },
   });
 }
-
-export const SENSOR_AGENT_ENTITY_TYPE = "crowdstrike_sensor";
 
 /**
  * @param zoneGroup {String} - `us-east-1d`
@@ -83,14 +79,14 @@ export function buildEc2InstanceArn(source: Device): string | undefined {
   return `arn:aws:ec2:${region}:${serviceProviderAccountId}:instance/${instanceId}`;
 }
 
-export function createSensorAgentEntity(source: Device): EntityFromIntegration {
+export function createSensorAgentEntity(source: Device): Entity {
   return createIntegrationEntity({
     entityData: {
       source,
       assign: {
         ...convertProperties(source),
-        _class: "HostAgent",
-        _type: SENSOR_AGENT_ENTITY_TYPE,
+        _class: Entities.SENSOR._class,
+        _type: Entities.SENSOR._type,
         _key: source.device_id,
         name: source.hostname,
         function: ["anti-malware", "activity-monitor"],
@@ -116,17 +112,14 @@ export function createSensorAgentEntity(source: Device): EntityFromIntegration {
 
 export const DEVICE_ENTITY_TYPE = "user_endpoint";
 export const DEVICE_ENTITY_CLASS = ["Device", "Host"];
-export const PREVENTION_POLICY_ENTITY_TYPE = "crowdstrike_prevention_policy";
 
-export function createPreventionPolicyEntity(
-  source: PreventionPolicy,
-): EntityFromIntegration {
+export function createPreventionPolicyEntity(source: PreventionPolicy): Entity {
   return createIntegrationEntity({
     entityData: {
       source,
       assign: {
-        _class: "ControlPolicy",
-        _type: PREVENTION_POLICY_ENTITY_TYPE,
+        _class: Entities.PREVENTION_POLICY._class,
+        _type: Entities.PREVENTION_POLICY._type,
         createdOn: Date.parse(source.created_timestamp),
         updatedOn: Date.parse(source.modified_timestamp),
         createdBy: source.created_by,
@@ -138,19 +131,20 @@ export function createPreventionPolicyEntity(
 }
 
 export const ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE = generateRelationshipType(
-  "HAS",
-  ACCOUNT_ENTITY_TYPE,
-  SENSOR_AGENT_ENTITY_TYPE,
+  RelationshipClass.HAS,
+  Entities.ACCOUNT._type,
+  Entities.SENSOR._type,
 );
 
 export const SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE = generateRelationshipType(
-  "ASSIGNED",
-  SENSOR_AGENT_ENTITY_TYPE,
-  PREVENTION_POLICY_ENTITY_TYPE,
+  RelationshipClass.ASSIGNED,
+  Entities.SENSOR._type,
+  Entities.PREVENTION_POLICY._type,
 );
 
 export const PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE = generateRelationshipType(
-  "ENFORCES",
-  PREVENTION_POLICY_ENTITY_TYPE,
-  PROTECTION_SERVICE_ENTITY_TYPE,
+  // TODO add ENFORCES to RelationshipClass
+  "ENFORCES" as RelationshipClass,
+  Entities.PREVENTION_POLICY._type,
+  Entities.PROTECTION_SERVICE._type,
 );

@@ -1,13 +1,13 @@
-import { IntegrationStepExecutionContext } from "@jupiterone/jupiter-managed-integration-sdk";
+import { IntegrationLogger } from "@jupiterone/integration-sdk-core";
+import { CrowdStrikeIntegrationInstanceConfig } from "../types";
 import { FalconAPIClient, ClientEvents } from "./FalconAPIClient";
 
 export default function createFalconAPIClient(
-  executionContext: IntegrationStepExecutionContext,
+  config: CrowdStrikeIntegrationInstanceConfig,
+  logger: IntegrationLogger,
 ): FalconAPIClient {
-  const { instance, logger } = executionContext;
-
   const falconAPI = new FalconAPIClient({
-    credentials: instance.config,
+    credentials: config,
     logger,
   });
 
