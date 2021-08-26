@@ -7,6 +7,7 @@ import fetchDevices from "./managed-steps/fetchDevices";
 import fetchPreventionPolicies from "./managed-steps/fetchPreventionPolicies";
 import prepareAccount from "./managed-steps/prepareAccount";
 import synchronize from "./managed-steps/synchronize";
+import { fetchDevicePolicyRelationshipsStep } from "./steps/fetchDevicePolicyRelationships";
 import { fetchDevicesStep } from "./steps/fetchDevices";
 import { fetchPreventionPoliciesStep } from "./steps/fetchPreventionPolicies";
 import { getAccountStep } from "./steps/getAccount";
@@ -35,6 +36,7 @@ export const invocationConfig: IntegrationInvocationConfig<CrowdStrikeIntegratio
     getAccountStep,
     fetchDevicesStep,
     fetchPreventionPoliciesStep,
+    fetchDevicePolicyRelationshipsStep,
   ],
 };
 

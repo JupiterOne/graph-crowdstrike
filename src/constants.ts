@@ -9,6 +9,7 @@ export const StepIds = {
   ACCOUNT: "get-account",
   DEVICES: "fetch-devices",
   PREVENTION_POLICIES: "fetch-prevention-policies",
+  DEVICE_POLICY_RELATIONSHIPS: "fetch-device-policies",
 };
 
 export const Entities = {
@@ -53,5 +54,11 @@ export const Relationships = {
     // TODO add ENFORCES to RelationshipClass
     _class: "ENFORCES" as RelationshipClass,
     targetType: Entities.PROTECTION_SERVICE._type,
+  },
+  SENSOR_ASSIGNED_PREVENTION_POLICY: {
+    _type: "crowdstrike_sensor_assigned_prevention_policy",
+    sourceType: Entities.SENSOR._type,
+    _class: RelationshipClass.ASSIGNED,
+    targetType: Entities.PREVENTION_POLICY._type,
   },
 };
