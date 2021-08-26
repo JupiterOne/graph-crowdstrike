@@ -1500,11 +1500,6 @@
     deepmerge "^4.2.2"
     lodash "^4.17.15"
 
-"@jupiterone/jupiter-managed-integration-sdk@^36.0.1":
-  version "36.0.1"
-  resolved "https://registry.yarnpkg.com/@jupiterone/jupiter-managed-integration-sdk/-/jupiter-managed-integration-sdk-36.0.1.tgz#f11c6d76994909727501cf4f3749d40c57b50fd2"
-  integrity sha512-mzYDYoxI3QS0RJvC0stX/d9czX/odX4ksR4J8l/V2V2XR/MVcJFObt7ycVkuWTtJgXrOteWgObg6pQ1l6vwkXg==
-
 "@lifeomic/alpha@^1.4.0":
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/@lifeomic/alpha/-/alpha-1.4.2.tgz#70772f1e2801c5fa15e706edc7d626f1477d9a1f"

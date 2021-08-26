@@ -19,7 +19,7 @@ import {
   RateLimitState,
   ResourcesResponse,
 } from "./types";
-import { IntegrationLogger } from "@jupiterone/jupiter-managed-integration-sdk";
+import { IntegrationLogger } from "@jupiterone/integration-sdk-core";
 
 type APIRequest = {
   url: string;

@@ -13,10 +13,7 @@
     "access": "public"
   },
   "scripts": {
-    "start": "ts-node --require dotenv/config tools/execute.ts | bunyan",
-    "start:containers": "docker-compose up -d",
-    "stop:containers": "docker-compose down",
-    "restart:containers": "docker-compose restart",
+    "start": "echo \"yarn start is not implemented!\"",
     "prebuild": "yarn test",
     "build": "rm -rf dist/* && yarn build:types && yarn build:src && yarn build:docs",
     "build:src": "babel src --extensions '.ts' --out-dir dist",
@@ -32,7 +29,6 @@
   "dependencies": {
     "@jupiterone/integration-sdk-core": "^6.16.0",
     "@jupiterone/integration-sdk-runtime": "^6.16.0",
-    "@jupiterone/jupiter-managed-integration-sdk": "^36.0.1",
     "await-timeout": "^1.0.1",
     "aws-sdk": "^2.828.0",
     "node-fetch": "^2.6.0"

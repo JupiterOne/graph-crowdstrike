@@ -1,10 +1,11 @@
 import {
   convertProperties,
   createIntegrationEntity,
-  EntityFromIntegration,
+  Entity,
   generateRelationshipType,
   getTime,
-} from "@jupiterone/jupiter-managed-integration-sdk";
+  RelationshipClass,
+} from "@jupiterone/integration-sdk-core";
 import { Entities } from "../constants";
 
 import { Device, PreventionPolicy } from "../crowdstrike/types";
@@ -16,7 +17,7 @@ function normalizeMacAddress(macAddress: string): string {
 export function createAccountEntity(integrationInstance: {
   id: string;
   name: string;
-}): EntityFromIntegration {
+}): Entity {
   return createIntegrationEntity({
     entityData: {
       source: {},
@@ -32,7 +33,7 @@ export function createAccountEntity(integrationInstance: {
 
 export function createProtectionServiceEntity(integrationInstance: {
   id: string;
-}): EntityFromIntegration {
+}): Entity {
   return createIntegrationEntity({
     entityData: {
       source: {},
@@ -78,7 +79,7 @@ export function buildEc2InstanceArn(source: Device): string | undefined {
   return `arn:aws:ec2:${region}:${serviceProviderAccountId}:instance/${instanceId}`;
 }
 
-export function createSensorAgentEntity(source: Device): EntityFromIntegration {
+export function createSensorAgentEntity(source: Device): Entity {
   return createIntegrationEntity({
     entityData: {
       source,
@@ -112,9 +113,7 @@ export function createSensorAgentEntity(source: Device): EntityFromIntegration {
 export const DEVICE_ENTITY_TYPE = "user_endpoint";
 export const DEVICE_ENTITY_CLASS = ["Device", "Host"];
 
-export function createPreventionPolicyEntity(
-  source: PreventionPolicy,
-): EntityFromIntegration {
+export function createPreventionPolicyEntity(source: PreventionPolicy): Entity {
   return createIntegrationEntity({
     entityData: {
       source,
@@ -132,19 +131,20 @@ export function createPreventionPolicyEntity(
 }
 
 export const ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE = generateRelationshipType(
-  "HAS",
+  RelationshipClass.HAS,
   Entities.ACCOUNT._type,
   Entities.SENSOR._type,
 );
 
 export const SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE = generateRelationshipType(
-  "ASSIGNED",
+  RelationshipClass.ASSIGNED,
   Entities.SENSOR._type,
   Entities.PREVENTION_POLICY._type,
 );
 
 export const PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE = generateRelationshipType(
-  "ENFORCES",
+  // TODO add ENFORCES to RelationshipClass
+  "ENFORCES" as RelationshipClass,
   Entities.PREVENTION_POLICY._type,
   Entities.PROTECTION_SERVICE._type,
 );

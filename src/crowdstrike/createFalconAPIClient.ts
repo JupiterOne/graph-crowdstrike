@@ -1,4 +1,4 @@
-import { IntegrationLogger } from "@jupiterone/jupiter-managed-integration-sdk";
+import { IntegrationLogger } from "@jupiterone/integration-sdk-core";
 import { CrowdStrikeIntegrationInstanceConfig } from "../types";
 import { FalconAPIClient, ClientEvents } from "./FalconAPIClient";
 

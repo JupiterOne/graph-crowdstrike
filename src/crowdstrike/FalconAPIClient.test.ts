@@ -1,20 +1,13 @@
-import { IntegrationLogger } from "@jupiterone/jupiter-managed-integration-sdk";
-import { Polly } from "@pollyjs/core";
+import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
+import { createMockIntegrationLogger } from '@jupiterone/integration-sdk-testing';
+import { Polly } from '@pollyjs/core';
 
-import polly from "../../test/helpers/polly";
-import config from "../../test/integrationInstanceConfig";
-import { FalconAPIClient } from "./FalconAPIClient";
+import polly from '../../test/helpers/polly';
+import config from '../../test/integrationInstanceConfig';
+import { FalconAPIClient } from './FalconAPIClient';
 
 function createTestLogger(): IntegrationLogger {
-  return {
-    trace: () => undefined,
-    debug: () => undefined,
-    info: () => undefined,
-    warn: () => undefined,
-    error: () => undefined,
-    fatal: () => undefined,
-    child: () => createTestLogger(),
-  };
+  return createMockIntegrationLogger();
 }
 
 let p: Polly;
@@ -30,12 +23,12 @@ afterEach(async () => {
   await p.stop();
 });
 
-describe("authenticate", () => {
-  test("obtains token and expiration", async () => {
-    p = polly(__dirname, "authenticate");
+describe('authenticate', () => {
+  test('obtains token and expiration', async () => {
+    p = polly(__dirname, 'authenticate');
 
     let requests = 0;
-    p.server.any().on("request", (_req, _event) => {
+    p.server.any().on('request', (_req, _event) => {
       requests++;
     });
 
@@ -47,11 +40,11 @@ describe("authenticate", () => {
     expect(requests).toEqual(1);
   });
 
-  test("answers cached token before expiration", async () => {
-    p = polly(__dirname, "authenticateCached");
+  test('answers cached token before expiration', async () => {
+    p = polly(__dirname, 'authenticateCached');
 
     let requests = 0;
-    p.server.any().on("request", (_req, _event) => {
+    p.server.any().on('request', (_req, _event) => {
       requests++;
     });
 
@@ -62,11 +55,11 @@ describe("authenticate", () => {
     expect(requests).toEqual(1);
   });
 
-  test("answers new token after expiration", async () => {
-    p = polly(__dirname, "authenticateRefresh");
+  test('answers new token after expiration', async () => {
+    p = polly(__dirname, 'authenticateRefresh');
 
     let requests = 0;
-    p.server.any().on("request", (_req, _event) => {
+    p.server.any().on('request', (_req, _event) => {
       requests++;
     });
 
@@ -75,7 +68,7 @@ describe("authenticate", () => {
 
     const realNow = Date.now; // eslint-disable-line @typescript-eslint/unbound-method
     jest
-      .spyOn(global.Date, "now")
+      .spyOn(global.Date, 'now')
       .mockImplementationOnce(() => realNow() + 30 * 60 * 1000);
 
     const newAccess = await client.authenticate();
@@ -88,12 +81,12 @@ describe("authenticate", () => {
     expect(requests).toEqual(2);
   });
 
-  test("throws errors", async () => {
-    p = polly(__dirname, "authenticateError", { recordFailedRequests: true });
+  test('throws errors', async () => {
+    p = polly(__dirname, 'authenticateError', { recordFailedRequests: true });
     const client = new FalconAPIClient({
       credentials: {
         ...config,
-        clientSecret: "test-error-handling",
+        clientSecret: 'test-error-handling',
       },
       logger: createTestLogger(),
     });
@@ -107,12 +100,12 @@ describe("authenticate", () => {
   });
 });
 
-describe("executeAPIRequest", () => {
-  test("waits until retryafter on 500 response", async () => {
-    p = polly(__dirname, "executeAPIRequest429");
+describe('executeAPIRequest', () => {
+  test('waits until retryafter on 500 response', async () => {
+    p = polly(__dirname, 'executeAPIRequest429');
 
     const requestTimes: number[] = [];
-    p.server.any().on("request", (_req, _event) => {
+    p.server.any().on('request', (_req, _event) => {
       requestTimes.push(Date.now());
     });
 
@@ -128,11 +121,11 @@ describe("executeAPIRequest", () => {
     expect(requestTimes.length).toBe(2);
   });
 
-  test("waits until retryafter on 429 response", async () => {
-    p = polly(__dirname, "executeAPIRequest429");
+  test('waits until retryafter on 429 response', async () => {
+    p = polly(__dirname, 'executeAPIRequest429');
 
     const requestTimes: number[] = [];
-    p.server.any().on("request", (_req, _event) => {
+    p.server.any().on('request', (_req, _event) => {
       requestTimes.push(Date.now());
     });
 
@@ -144,13 +137,13 @@ describe("executeAPIRequest", () => {
         res
           .status(429)
           .setHeaders({
-            "x-ratelimit-retryafter": String(retryAfter),
+            'x-ratelimit-retryafter': String(retryAfter),
           })
           .json({
             errors: [
               {
                 code: 429,
-                message: "API rate limit exceeded.",
+                message: 'API rate limit exceeded.',
               },
             ],
           });
@@ -162,11 +155,11 @@ describe("executeAPIRequest", () => {
     expect(requestTimes[1]).toBeGreaterThan(retryAfter);
   });
 
-  test("retries 429 response limited times", async () => {
-    p = polly(__dirname, "executeAPIRequest429limit");
+  test('retries 429 response limited times', async () => {
+    p = polly(__dirname, 'executeAPIRequest429limit');
 
     const requestTimes: number[] = [];
-    p.server.any().on("request", (_req, _event) => {
+    p.server.any().on('request', (_req, _event) => {
       requestTimes.push(Date.now());
     });
 
@@ -174,13 +167,13 @@ describe("executeAPIRequest", () => {
       res
         .status(429)
         .setHeaders({
-          "x-ratelimit-retryafter": String(Date.now() - 10),
+          'x-ratelimit-retryafter': String(Date.now() - 10),
         })
         .json({
           errors: [
             {
               code: 429,
-              message: "API rate limit exceeded.",
+              message: 'API rate limit exceeded.',
             },
           ],
         });
@@ -199,8 +192,8 @@ describe("executeAPIRequest", () => {
     expect(requestTimes.length).toBe(2);
   });
 
-  test("throttles at specified reserveLimit", async () => {
-    p = polly(__dirname, "executeAPIRequestReserveLimit");
+  test('throttles at specified reserveLimit', async () => {
+    p = polly(__dirname, 'executeAPIRequestReserveLimit');
 
     let limitRemaining = 10;
 
@@ -209,14 +202,14 @@ describe("executeAPIRequest", () => {
       res
         .status(201)
         .setHeaders({
-          "x-ratelimit-limit": "10",
-          "x-ratelimit-remaining": String(limitRemaining),
+          'x-ratelimit-limit': '10',
+          'x-ratelimit-remaining': String(limitRemaining),
         })
         .json({
           errors: [
             {
               code: 429,
-              message: "API rate limit exceeded.",
+              message: 'API rate limit exceeded.',
             },
           ],
         });
@@ -241,9 +234,9 @@ describe("executeAPIRequest", () => {
   });
 });
 
-describe("iterateDevices", () => {
-  test("complete set in single callback", async () => {
-    p = polly(__dirname, "iterateDevicesSinglePage");
+describe('iterateDevices', () => {
+  test('complete set in single callback', async () => {
+    p = polly(__dirname, 'iterateDevicesSinglePage');
     const cbSpy = jest.fn();
 
     const paginationState = await createClient().iterateDevices({
@@ -267,8 +260,8 @@ describe("iterateDevices", () => {
     );
   }, 20000);
 
-  test("partial set in multiple callbacks", async () => {
-    p = polly(__dirname, "iterateDevicesCompletes");
+  test('partial set in multiple callbacks', async () => {
+    p = polly(__dirname, 'iterateDevicesCompletes');
     const cbSpy = jest.fn();
 
     const paginationState = await createClient().iterateDevices({
@@ -297,8 +290,8 @@ describe("iterateDevices", () => {
     ]);
   }, 20000);
 
-  test("partial set", async () => {
-    p = polly(__dirname, "iterateDevicesInterrupted");
+  test('partial set', async () => {
+    p = polly(__dirname, 'iterateDevicesInterrupted');
     const cbSpy = jest.fn().mockResolvedValue(false);
 
     const paginationState = await createClient().iterateDevices({
@@ -322,8 +315,8 @@ describe("iterateDevices", () => {
     ]);
   }, 20000);
 
-  test("resumes from pagination state", async () => {
-    p = polly(__dirname, "iterateDevicesResumes");
+  test('resumes from pagination state', async () => {
+    p = polly(__dirname, 'iterateDevicesResumes');
     const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
     const paginationState = await client.iterateDevices({
@@ -353,8 +346,8 @@ describe("iterateDevices", () => {
     expect(cbSpy).toHaveBeenCalledTimes(3);
   }, 20000);
 
-  test("pagination with filter", async () => {
-    p = polly(__dirname, "iterateDevicesFilter");
+  test('pagination with filter', async () => {
+    p = polly(__dirname, 'iterateDevicesFilter');
     const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
 
@@ -400,8 +393,8 @@ describe("iterateDevices", () => {
     ]);
   }, 20000);
 
-  test("throws error on expired pagination offset cursor", async () => {
-    p = polly(__dirname, "iterateDevicesExpiredOffsetCursor", {
+  test('throws error on expired pagination offset cursor', async () => {
+    p = polly(__dirname, 'iterateDevicesExpiredOffsetCursor', {
       recordFailedRequests: true,
     });
     const cbSpy = jest.fn();
@@ -411,7 +404,7 @@ describe("iterateDevices", () => {
         pagination: {
           limit: 1,
           offset:
-            "DnF1ZXJ5VGhlbkZldGNoBQAAAAA6iW-VFnpjQldDMjNiU2htV1FGbUo5anc1d0EAAAAAOnTgtRZqV0xVRF9ndFFhQ09zYkVhTzNNOUxnAAAAADpz2L8WSWdUN2d1OVBUM2kxNGNVMUlaU1BZUQAAAAA6hrG3FlR6aHpFU1UxUkNpZ3FVV2tWNVBkQ2cAAAAAOnto1hZTajRqVll0dVF3U2VQQThXdlo3ZjZB",
+            'DnF1ZXJ5VGhlbkZldGNoBQAAAAA6iW-VFnpjQldDMjNiU2htV1FGbUo5anc1d0EAAAAAOnTgtRZqV0xVRF9ndFFhQ09zYkVhTzNNOUxnAAAAADpz2L8WSWdUN2d1OVBUM2kxNGNVMUlaU1BZUQAAAAA6hrG3FlR6aHpFU1UxUkNpZ3FVV2tWNVBkQ2cAAAAAOnto1hZTajRqVll0dVF3U2VQQThXdlo3ZjZB',
           expiresAt: Date.now() - 1,
         },
       }),
@@ -419,9 +412,9 @@ describe("iterateDevices", () => {
   });
 });
 
-describe("iteratePreventionPolicies", () => {
-  test("complete set in single callback", async () => {
-    p = polly(__dirname, "iteratePreventionPoliciesSinglePage");
+describe('iteratePreventionPolicies', () => {
+  test('complete set in single callback', async () => {
+    p = polly(__dirname, 'iteratePreventionPoliciesSinglePage');
     const cbSpy = jest.fn();
 
     const paginationState = await createClient().iteratePreventionPolicies({
@@ -448,8 +441,8 @@ describe("iteratePreventionPolicies", () => {
     );
   }, 20000);
 
-  test("partial set in multiple callbacks", async () => {
-    p = polly(__dirname, "iteratePreventionPoliciesCompletes");
+  test('partial set in multiple callbacks', async () => {
+    p = polly(__dirname, 'iteratePreventionPoliciesCompletes');
     const cbSpy = jest.fn();
 
     const paginationState = await createClient().iteratePreventionPolicies({
@@ -487,8 +480,8 @@ describe("iteratePreventionPolicies", () => {
     ]);
   }, 20000);
 
-  test("partial set", async () => {
-    p = polly(__dirname, "iteratePreventionPoliciesInterrupted");
+  test('partial set', async () => {
+    p = polly(__dirname, 'iteratePreventionPoliciesInterrupted');
     const cbSpy = jest.fn().mockResolvedValue(false);
 
     const paginationState = await createClient().iteratePreventionPolicies({
@@ -511,8 +504,8 @@ describe("iteratePreventionPolicies", () => {
     ]);
   }, 20000);
 
-  test("resumes from pagination state", async () => {
-    p = polly(__dirname, "iteratePreventionPoliciesResumes");
+  test('resumes from pagination state', async () => {
+    p = polly(__dirname, 'iteratePreventionPoliciesResumes');
     const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
     const paginationState = await client.iteratePreventionPolicies({
@@ -541,8 +534,8 @@ describe("iteratePreventionPolicies", () => {
     expect(cbSpy).toHaveBeenCalledTimes(6);
   }, 20000);
 
-  test("pagination with filter", async () => {
-    p = polly(__dirname, "iteratePreventionPoliciesFilter");
+  test('pagination with filter', async () => {
+    p = polly(__dirname, 'iteratePreventionPoliciesFilter');
     const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
 
@@ -588,17 +581,16 @@ describe("iteratePreventionPolicies", () => {
   }, 20000);
 });
 
-describe("iteratePreventionPolicyMemberIds", () => {
-  test("complete set in single callback", async () => {
-    p = polly(__dirname, "iteratePreventionPolicyMemberIdsSinglePage");
+describe('iteratePreventionPolicyMemberIds', () => {
+  test('complete set in single callback', async () => {
+    p = polly(__dirname, 'iteratePreventionPolicyMemberIdsSinglePage');
     const cbSpy = jest.fn();
 
-    const paginationState = await createClient().iteratePreventionPolicyMemberIds(
-      {
+    const paginationState =
+      await createClient().iteratePreventionPolicyMemberIds({
         callback: cbSpy,
-        policyId: "40bb0ba06b9f4a10a4330fccecc01f84",
-      },
-    );
+        policyId: '40bb0ba06b9f4a10a4330fccecc01f84',
+      });
 
     expect(paginationState).toEqual({
       finished: true,
@@ -616,17 +608,16 @@ describe("iteratePreventionPolicyMemberIds", () => {
     );
   }, 20000);
 
-  test("partial set in multiple callbacks", async () => {
-    p = polly(__dirname, "iteratePreventionPolicyMemberIdsCompletes");
+  test('partial set in multiple callbacks', async () => {
+    p = polly(__dirname, 'iteratePreventionPolicyMemberIdsCompletes');
     const cbSpy = jest.fn();
 
-    const paginationState = await createClient().iteratePreventionPolicyMemberIds(
-      {
+    const paginationState =
+      await createClient().iteratePreventionPolicyMemberIds({
         callback: cbSpy,
         pagination: { limit: 1 },
-        policyId: "40bb0ba06b9f4a10a4330fccecc01f84",
-      },
-    );
+        policyId: '40bb0ba06b9f4a10a4330fccecc01f84',
+      });
 
     expect(paginationState).toEqual({
       finished: true,

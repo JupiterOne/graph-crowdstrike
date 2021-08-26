@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/camelcase */
 
 import {
-  createTestIntegrationData,
   IntegrationInstance,
   convertProperties,
-} from "@jupiterone/jupiter-managed-integration-sdk";
+} from "@jupiterone/integration-sdk-core";
+
+import { createMockExecutionContext } from "@jupiterone/integration-sdk-testing";
 
 import { Device, PreventionPolicy } from "../crowdstrike/types";
 import {
@@ -18,7 +19,7 @@ describe("createAccountEntity", () => {
   let instance: IntegrationInstance;
 
   beforeEach(() => {
-    instance = createTestIntegrationData().instance;
+    instance = createMockExecutionContext().instance;
   });
 
   test("properties transferred", () => {
@@ -40,7 +41,7 @@ describe("createProtectionServiceEntity", () => {
   let instance: IntegrationInstance;
 
   beforeEach(() => {
-    instance = createTestIntegrationData().instance;
+    instance = createMockExecutionContext().instance;
   });
 
   test("properties transferred", () => {
