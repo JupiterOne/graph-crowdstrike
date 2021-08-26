@@ -8,11 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.0.0] - 2021-08-26
+
 ### Changed
 
 - Transitioned project from using `@jupiterone/jupiter-managed-integration-sdk`
   to open-source `@jupiterone/integration-sdk-*` packages
-  
+
 ## 1.4.1 - 2021-08-26
 
 ### Fixed
