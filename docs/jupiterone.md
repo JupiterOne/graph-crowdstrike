@@ -60,33 +60,6 @@ credentials][1].
 4. Click the **trash can** icon.
 5. Click the **Remove** button to delete the integration.
 
-## Data Model
-
-### Entities
-
-These entities are ingested when the integration runs:
-
-| Example Entity Resource | \_type : \_class of the Entity                    |
-| ----------------------- | ------------------------------------------------- |
-| Account                 | `crowdstrike_account` : `Account`                 |
-| Service                 | `crowdstrike_endpoint_protection` : `Service`     |
-| Device Sensor Agent     | `crowdstrike_sensor` : `HostAgent`                |
-| Prevention Policy       | `crowdstrike_prevention_policy` : `ControlPolicy` |
-
-Only hosts that have been seen within past 30 days are maintained.
-
-### Relationships
-
-The following relationships are created/mapped:
-
-| Relationships                                                                  |
-| ------------------------------------------------------------------------------ |
-| `crowdstrike_account` **HAS** `crowdstrike_sensor`                             |
-| `crowdstrike_account` **HAS** `crowdstrike_endpoint_protection`                |
-| `crowdstrike_prevention_policy` **ENFORCES** `crowdstrike_endpoint_protection` |
-| `crowdstrike_sensor` **ASSIGNED** `crowdstrike_prevention_policy`              |
-| `crowdstrike_sensor` **PROTECTS** `user_endpoint`                              |
-
 [1]: https://www.crowdstrike.com/blog/tech-center/get-access-falcon-apis/
 
 <!-- {J1_DOCUMENTATION_MARKER_START} -->

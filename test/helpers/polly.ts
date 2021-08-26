@@ -1,10 +1,10 @@
-import { Buffer } from "buffer";
-import { Har } from "har-format";
-import { gunzipSync } from "zlib";
+import { Buffer } from 'buffer';
+import { Har } from 'har-format';
+import { gunzipSync } from 'zlib';
 
-import NodeHttpAdapter from "@pollyjs/adapter-node-http";
-import { Polly, PollyConfig } from "@pollyjs/core";
-import FSPersister from "@pollyjs/persister-fs";
+import NodeHttpAdapter from '@pollyjs/adapter-node-http';
+import { Polly, PollyConfig } from '@pollyjs/core';
+import FSPersister from '@pollyjs/persister-fs';
 
 Polly.register(NodeHttpAdapter);
 
@@ -15,37 +15,37 @@ class RedactFSPersister extends FSPersister {
   }
 
   public saveRecording(recordingId: number, data: Har): void {
-    data.log.entries.forEach(entry => {
+    data.log.entries.forEach((entry) => {
       // Redact tokens, even though they expire
-      entry.request.headers.forEach(header => {
-        if (header.name === "authorization") {
-          header.value = "Bearer [REDACTED]";
+      entry.request.headers.forEach((header) => {
+        if (header.name === 'authorization') {
+          header.value = 'Bearer [REDACTED]';
         }
       });
 
       let responseText = entry.response.content.text;
       const contentEncoding = entry.response.headers.find(
-        e => e.name === "content-encoding",
+        (e) => e.name === 'content-encoding',
       );
       const transferEncoding = entry.response.headers.find(
-        e => e.name === "transfer-encoding",
+        (e) => e.name === 'transfer-encoding',
       );
 
-      if (responseText && contentEncoding && contentEncoding.value === "gzip") {
+      if (responseText && contentEncoding && contentEncoding.value === 'gzip') {
         const chunkBuffers: Buffer[] = [];
         const hexChunks = JSON.parse(responseText) as string[];
-        hexChunks.forEach(chunk => {
-          const chunkBuffer = Buffer.from(chunk, "hex");
+        hexChunks.forEach((chunk) => {
+          const chunkBuffer = Buffer.from(chunk, 'hex');
           chunkBuffers.push(chunkBuffer);
         });
 
         responseText = gunzipSync(Buffer.concat(chunkBuffers)).toString(
-          "utf-8",
+          'utf-8',
         );
 
         // Remove encoding/chunking since content is now unzipped
         entry.response.headers = entry.response.headers.filter(
-          e => e && e !== contentEncoding && e !== transferEncoding,
+          (e) => e && e !== contentEncoding && e !== transferEncoding,
         );
         entry.response.content.text = responseText;
       }
@@ -54,15 +54,14 @@ class RedactFSPersister extends FSPersister {
 
       if (/oauth2\/token/.exec(entry.request.url) && entry.request.postData) {
         // Redact request body with secrets for authentication
-        entry.request.postData.text = "[REDACTED]";
+        entry.request.postData.text = '[REDACTED]';
 
         // Redact authentication response token
         if (responseJson.access_token) {
           entry.response.content.text = JSON.stringify(
             {
               ...responseJson,
-              // eslint-disable-next-line @typescript-eslint/camelcase
-              access_token: "[REDACTED]",
+              access_token: '[REDACTED]',
             },
             null,
             0,
@@ -71,17 +70,17 @@ class RedactFSPersister extends FSPersister {
       }
 
       // Redact all cookie values
-      entry.response.headers = entry.response.headers.map(e => {
-        if (e.name === "set-cookie") {
-          return { ...e, value: "[REDACTED]" };
+      entry.response.headers = entry.response.headers.map((e) => {
+        if (e.name === 'set-cookie') {
+          return { ...e, value: '[REDACTED]' };
         } else {
           return e;
         }
       });
 
-      entry.response.cookies = entry.response.cookies.map(e => ({
+      entry.response.cookies = entry.response.cookies.map((e) => ({
         ...e,
-        value: "[REDACTED]",
+        value: '[REDACTED]',
       }));
     });
 
@@ -95,7 +94,7 @@ export default function polly(
   config: PollyConfig = {},
 ): Polly {
   return new Polly(name, {
-    adapters: ["node-http"],
+    adapters: ['node-http'],
     persister: RedactFSPersister,
     persisterOptions: {
       RedactFSPersister: {
