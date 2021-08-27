@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.0.1] - 221-08-27
+
+### Fixed
+
+- Fixed bug where `accountEntity` and `protectionServiceEntity` singletons were
+  not added to `jobState.setData()`
+
 ## [2.0.0] - 2021-08-26
 
 ### Changed
