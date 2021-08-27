@@ -5,13 +5,13 @@ import {
   generateRelationshipType,
   getTime,
   RelationshipClass,
-} from "@jupiterone/integration-sdk-core";
-import { Entities } from "../constants";
+} from '@jupiterone/integration-sdk-core';
+import { Entities } from '../constants';
 
-import { Device, PreventionPolicy } from "../crowdstrike/types";
+import { Device, PreventionPolicy } from '../crowdstrike/types';
 
 function normalizeMacAddress(macAddress: string): string {
-  return macAddress.replace(/-/g, ":").toLowerCase();
+  return macAddress.replace(/-/g, ':').toLowerCase();
 }
 
 export function createAccountEntity(integrationInstance: {
@@ -41,9 +41,9 @@ export function createProtectionServiceEntity(integrationInstance: {
         _class: Entities.PROTECTION_SERVICE._class,
         _type: Entities.PROTECTION_SERVICE._type,
         _key: `${Entities.PROTECTION_SERVICE._type}|${integrationInstance.id}`,
-        name: "CrowdStrike Endpoint Protection Service",
-        category: ["software", "other"],
-        endpoints: ["https://falcon.crowdstrike.com/"],
+        name: 'CrowdStrike Endpoint Protection Service',
+        category: ['software', 'other'],
+        endpoints: ['https://falcon.crowdstrike.com/'],
       },
     },
   });
@@ -66,7 +66,7 @@ export function buildEc2InstanceArn(source: Device): string | undefined {
   } = source;
 
   if (
-    serviceProvider !== "AWS_EC2" ||
+    serviceProvider !== 'AWS_EC2' ||
     !serviceProviderAccountId ||
     !zoneGroup
   ) {
@@ -89,10 +89,10 @@ export function createSensorAgentEntity(source: Device): Entity {
         _type: Entities.SENSOR._type,
         _key: source.device_id,
         name: source.hostname,
-        function: ["anti-malware", "activity-monitor"],
+        function: ['anti-malware', 'activity-monitor'],
         firstSeenOn: getTime(source.first_seen),
         lastSeenOn: getTime(source.last_seen),
-        active: source.status === "normal",
+        active: source.status === 'normal',
 
         // CrowdStrike formats their MAC addresses in dash-separated form. We
         // normalize the value and copy the original value onto the entity.
@@ -110,8 +110,8 @@ export function createSensorAgentEntity(source: Device): Entity {
   });
 }
 
-export const DEVICE_ENTITY_TYPE = "user_endpoint";
-export const DEVICE_ENTITY_CLASS = ["Device", "Host"];
+export const DEVICE_ENTITY_TYPE = 'user_endpoint';
+export const DEVICE_ENTITY_CLASS = ['Device', 'Host'];
 
 export function createPreventionPolicyEntity(source: PreventionPolicy): Entity {
   return createIntegrationEntity({
@@ -136,15 +136,16 @@ export const ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE = generateRelationshipType(
   Entities.SENSOR._type,
 );
 
-export const SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE = generateRelationshipType(
-  RelationshipClass.ASSIGNED,
-  Entities.SENSOR._type,
-  Entities.PREVENTION_POLICY._type,
-);
+export const SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE =
+  generateRelationshipType(
+    RelationshipClass.ASSIGNED,
+    Entities.SENSOR._type,
+    Entities.PREVENTION_POLICY._type,
+  );
 
-export const PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE = generateRelationshipType(
-  // TODO add ENFORCES to RelationshipClass
-  "ENFORCES" as RelationshipClass,
-  Entities.PREVENTION_POLICY._type,
-  Entities.PROTECTION_SERVICE._type,
-);
+export const PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE =
+  generateRelationshipType(
+    RelationshipClass.ENFORCES,
+    Entities.PREVENTION_POLICY._type,
+    Entities.PROTECTION_SERVICE._type,
+  );

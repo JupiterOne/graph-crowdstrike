@@ -3,17 +3,15 @@ import {
   IntegrationStepExecutionContext,
   RelationshipClass,
   Step,
-} from "@jupiterone/integration-sdk-core";
-import { Entities, Relationships, StepIds } from "../constants";
-import createFalconAPIClient from "../crowdstrike/createFalconAPIClient";
-import { createPreventionPolicyEntity } from "../jupiterone/converters";
-import { CrowdStrikeIntegrationInstanceConfig } from "../types";
-import { getProtectionServiceEntityFromJobState } from "./getAccount";
+} from '@jupiterone/integration-sdk-core';
+import { Entities, Relationships, StepIds } from '../constants';
+import createFalconAPIClient from '../crowdstrike/createFalconAPIClient';
+import { createPreventionPolicyEntity } from '../jupiterone/converters';
+import { CrowdStrikeIntegrationInstanceConfig } from '../types';
+import { getProtectionServiceEntityFromJobState } from './getAccount';
 
 export async function fetchPreventionPolicies(
-  context: IntegrationStepExecutionContext<
-    CrowdStrikeIntegrationInstanceConfig
-  >,
+  context: IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>,
 ): Promise<void> {
   const { instance, jobState, logger } = context;
 
@@ -22,14 +20,14 @@ export async function fetchPreventionPolicies(
   );
   const client = createFalconAPIClient(instance.config, logger);
 
-  logger.info("Iterating protection policies...");
+  logger.info('Iterating protection policies...');
   await client.iteratePreventionPolicies({
     // TODO remove `pagination` arg
     pagination: undefined,
-    callback: async preventionPolicies => {
+    callback: async (preventionPolicies) => {
       logger.info(
         { policyCount: preventionPolicies.length },
-        "Creating protection policy entities and relationships...",
+        'Creating protection policy entities and relationships...',
       );
 
       for (const preventionPolicy of preventionPolicies) {
@@ -39,8 +37,7 @@ export async function fetchPreventionPolicies(
         await jobState.addRelationship(
           createDirectRelationship({
             from: preventionPolicyEntity,
-            // TODO add ENFORCES to RelationshipClass
-            _class: "ENFORCES" as RelationshipClass,
+            _class: RelationshipClass.ENFORCES,
             to: protectionServiceEntity,
           }),
         );
@@ -49,11 +46,11 @@ export async function fetchPreventionPolicies(
   });
 }
 
-export const fetchPreventionPoliciesStep: Step<IntegrationStepExecutionContext<
-  CrowdStrikeIntegrationInstanceConfig
->> = {
+export const fetchPreventionPoliciesStep: Step<
+  IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>
+> = {
   id: StepIds.PREVENTION_POLICIES,
-  name: "Fetch Prevention Policies",
+  name: 'Fetch Prevention Policies',
   entities: [Entities.PREVENTION_POLICY],
   relationships: [Relationships.PREVENTION_POLICY_ENFORCES_PROTECTION_SERVICE],
   dependsOn: [StepIds.ACCOUNT],
