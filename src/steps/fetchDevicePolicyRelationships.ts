@@ -71,7 +71,7 @@ export async function fetchDevicePolicyRelationships(
             }
 
             await jobState.addRelationship({
-              _key: `${deviceId}|assigned|${policyId}`,
+              _key: deviceAssignedPolicyIdRelationshipKey,
               _type: Relationships.SENSOR_ASSIGNED_PREVENTION_POLICY._type,
               _class: RelationshipClass.ASSIGNED,
               _fromEntityKey: deviceId,
