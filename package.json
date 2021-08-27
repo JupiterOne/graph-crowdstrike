@@ -26,13 +26,13 @@
     "prepush": "yarn lint && yarn type-check && jest --changedSince main"
   },
   "dependencies": {
-    "@jupiterone/integration-sdk-core": "^6.16.0",
-    "@jupiterone/integration-sdk-runtime": "^6.16.0",
+    "@jupiterone/integration-sdk-core": "^6.16.1",
+    "@jupiterone/integration-sdk-runtime": "^6.16.1",
     "await-timeout": "^1.0.1",
     "node-fetch": "^2.6.0"
   },
   "devDependencies": {
-    "@jupiterone/integration-sdk-dev-tools": "^6.16.0",
-    "@jupiterone/integration-sdk-testing": "^6.16.0"
+    "@jupiterone/integration-sdk-dev-tools": "^6.16.1",
+    "@jupiterone/integration-sdk-testing": "^6.16.1"
   }
 }

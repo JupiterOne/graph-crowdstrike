@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.0.2] - 221-08-27
+
+### Fixed
+
+- Bumped `@jupiteron/integration-sdk-core@6.16.1` to incorporate
+  `RelationshipClass.ENFORCES` from `@jupiterone/data-model@0.36.0`
+
 ## [2.0.1] - 221-08-27
 
 ### Fixed
