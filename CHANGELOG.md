@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Removed
+
+- Removed event emitter from `FalconAPIClient`
+
 ### Fixed
 
 - Prevent malformed requests to

@@ -1,6 +1,5 @@
 import Timeout from 'await-timeout';
 import fetch, { RequestInfo, RequestInit, Response } from 'node-fetch';
-import EventEmitter from 'events';
 import { URLSearchParams } from 'url';
 
 import {
@@ -48,11 +47,6 @@ const DEFAULT_RATE_LIMIT_CONFIG: RateLimitConfig = {
   cooldownPeriod: 1000,
 };
 
-export enum ClientEvents {
-  REQUEST = 'ClientEvents.REQUEST',
-  RESPONSE = 'ClientEvents.RESPONSE',
-}
-
 export type FalconAPIClientConfig = {
   credentials: OAuth2ClientCredentials;
   rateLimitConfig?: Partial<RateLimitConfig>;
@@ -71,8 +65,6 @@ export class FalconAPIClient {
   private rateLimitState: RateLimitState;
   private logger: IntegrationLogger;
 
-  public events: EventEmitter;
-
   constructor({
     credentials,
     rateLimitConfig,
@@ -82,7 +74,6 @@ export class FalconAPIClient {
     this.credentials = credentials;
     this.rateLimitConfig = { ...DEFAULT_RATE_LIMIT_CONFIG, ...rateLimitConfig };
     this.rateLimitState = rateLimitState || INITIAL_RATE_LIMIT_STATE;
-    this.events = new EventEmitter();
     this.logger = logger;
   }
 
@@ -279,15 +270,12 @@ export class FalconAPIClient {
     info: RequestInfo,
     init: RequestInit,
   ): Promise<ResponseType> {
-    const apiResponse = await this.executeAPIRequestWithRateLimitRetries(
-      {
-        url: info as string,
-        exec: () => fetch(info, init),
-        rateLimitConfig: this.rateLimitConfig,
-        rateLimitState: this.rateLimitState,
-      },
-      this.events,
-    );
+    const apiResponse = await this.executeAPIRequestWithRateLimitRetries({
+      url: info as string,
+      exec: () => fetch(info, init),
+      rateLimitConfig: this.rateLimitConfig,
+      rateLimitState: this.rateLimitState,
+    });
 
     this.rateLimitState = apiResponse.rateLimitState;
 
@@ -304,7 +292,6 @@ export class FalconAPIClient {
 
   private async executeAPIRequestWithRateLimitRetries<T>(
     request: APIRequest,
-    events: EventEmitter,
   ): Promise<APIResponse> {
     const config = request.rateLimitConfig;
 
@@ -319,14 +306,6 @@ export class FalconAPIClient {
 
       const tryAfter = Math.max(rateLimitState.retryAfter, tryAfterCooldown);
 
-      events.emit(ClientEvents.REQUEST, {
-        url: request.url,
-        rateLimitConfig: request.rateLimitConfig,
-        rateLimitState: request.rateLimitState,
-        tryAfter,
-        attempts,
-      });
-
       const response = await tryAPIRequest(request.exec, tryAfter);
 
       rateLimitState = {
@@ -340,14 +319,6 @@ export class FalconAPIClient {
           response.headers.get('x-ratelimit-retryafter') || 1000,
         ),
       };
-
-      events.emit(ClientEvents.RESPONSE, {
-        url: request.url,
-        rateLimitConfig: request.rateLimitConfig,
-        rateLimitState: request.rateLimitState,
-        tryAfter,
-        attempts,
-      });
 
       if (response.status !== 429 && response.status !== 500) {
         return {
