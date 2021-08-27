@@ -8,14 +8,21 @@ and this project adheres to
 
 ## [Unreleased]
 
-## [2.0.2] - 221-08-27
+## [2.0.3] - 2021-08-27
+
+### Fixed
+
+- Prevent duplicate `crowdstrike_sensor` **ASSIGNED**
+  `crowdstrike_prevention_policy` relationships from being created
+
+## [2.0.2] - 2021-08-27
 
 ### Fixed
 
 - Bumped `@jupiteron/integration-sdk-core@6.16.1` to incorporate
   `RelationshipClass.ENFORCES` from `@jupiterone/data-model@0.36.0`
 
-## [2.0.1] - 221-08-27
+## [2.0.1] - 2021-08-27
 
 ### Fixed
 
