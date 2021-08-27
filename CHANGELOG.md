@@ -11,6 +11,7 @@ and this project adheres to
 ### Removed
 
 - Removed event emitter from `FalconAPIClient`
+- Removed unused pagination parameters from `FalconAPIClient`
 
 ### Fixed
 

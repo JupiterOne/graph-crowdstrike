@@ -13,7 +13,7 @@ export type OAuth2Token = {
   expiresAt: number;
 };
 
-export type PaginationState = {
+type PaginationState = {
   /**
    * Fetch limit, will be URL encoded as value of `limit` GET parameter.
    */
@@ -52,20 +52,6 @@ export type PaginationState = {
 };
 
 export type PaginationParams = Partial<PaginationState>;
-
-export type NumericOffsetPaginationParams = Omit<
-  PaginationParams,
-  "expiresAt"
-> & {
-  offset?: number;
-};
-
-export type NumericOffsetPaginationState = Omit<
-  PaginationState,
-  "expiresAt"
-> & {
-  offset?: number;
-};
 
 export type QueryParams = {
   filter?: string;
@@ -133,12 +119,12 @@ export type PaginationMeta = {
   expires_at?: number;
 };
 
-export type ResponseMeta = {
+type ResponseMeta = {
   trace_id: string;
   pagination?: PaginationMeta;
 };
 
-export type ResponseError = {
+type ResponseError = {
   code: number;
   message: string;
 };
@@ -161,7 +147,7 @@ export type Device = {
   [property: string]: string | boolean | object | Array<string | object>;
 };
 
-export type PreventionPolicyIdentifier = string;
+type PreventionPolicyIdentifier = string;
 
 export type PreventionPolicy = {
   id: PreventionPolicyIdentifier;
