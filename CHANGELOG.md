@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Prevent malformed requests to
+  `https://api.crowdstrike.com/devices/entities/devices/v1?` when _no_ devices
+  have been found.
+
 ## [2.0.3] - 2021-08-27
 
 ### Fixed
