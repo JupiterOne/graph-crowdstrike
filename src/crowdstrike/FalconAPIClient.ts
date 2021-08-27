@@ -112,7 +112,10 @@ export class FalconAPIClient {
     return this.paginateResources<DeviceIdentifier>({
       ...input,
       callback: async (deviceIds) => {
-        return await input.callback(await this.fetchDevices(deviceIds));
+        if (deviceIds.length) {
+          // If the scroll lists _no_ recent devices, we don't want to send a malformed request to https://api.crowdstrike.com/devices/entities/devices/v1?
+          return await input.callback(await this.fetchDevices(deviceIds));
+        }
       },
       resourcePath: '/devices/queries/devices-scroll/v1',
     });
