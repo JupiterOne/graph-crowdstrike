@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.0.4] - 2021-08-30
+
 ### Removed
 
 - Removed event emitter from `FalconAPIClient`
