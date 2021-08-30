@@ -5,14 +5,11 @@ import { URLSearchParams } from 'url';
 import {
   Device,
   DeviceIdentifier,
-  NumericOffsetPaginationParams,
-  NumericOffsetPaginationState,
   OAuth2ClientCredentials,
   OAuth2Token,
   OAuth2TokenResponse,
   PaginationMeta,
   PaginationParams,
-  PaginationState,
   PreventionPolicy,
   QueryParams,
   RateLimitConfig,
@@ -97,9 +94,8 @@ export class FalconAPIClient {
    */
   public async iterateDevices(input: {
     callback: FalconAPIResourceIterationCallback<Device>;
-    pagination?: PaginationParams;
     query?: QueryParams;
-  }): Promise<PaginationState> {
+  }): Promise<void> {
     return this.paginateResources<DeviceIdentifier>({
       ...input,
       callback: async (deviceIds) => {
@@ -120,26 +116,24 @@ export class FalconAPIClient {
    */
   public async iteratePreventionPolicies(input: {
     callback: FalconAPIResourceIterationCallback<PreventionPolicy>;
-    pagination?: NumericOffsetPaginationParams;
     query?: QueryParams;
-  }): Promise<NumericOffsetPaginationState> {
+  }): Promise<void> {
     return this.paginateResources<PreventionPolicy>({
       ...input,
       resourcePath: '/policy/combined/prevention/v1',
-    }) as Promise<NumericOffsetPaginationState>;
+    });
   }
 
   public async iteratePreventionPolicyMemberIds(input: {
     callback: FalconAPIResourceIterationCallback<DeviceIdentifier>;
     policyId: string;
-    pagination?: NumericOffsetPaginationParams;
     query?: QueryParams;
-  }): Promise<NumericOffsetPaginationState> {
+  }): Promise<void> {
     return this.paginateResources<DeviceIdentifier>({
       ...input,
       resourcePath: '/policy/queries/prevention-members/v1',
       query: { ...input.query, id: input.policyId },
-    }) as Promise<NumericOffsetPaginationState>;
+    });
   }
 
   private async fetchDevices(ids: string[]): Promise<Device[]> {
@@ -163,32 +157,18 @@ export class FalconAPIClient {
   private async paginateResources<ResourceType>({
     callback,
     resourcePath,
-    pagination,
     query,
   }: {
     callback: FalconAPIResourceIterationCallback<ResourceType>;
     resourcePath: string;
     pagination?: PaginationParams;
     query?: QueryParams;
-  }): Promise<PaginationState> {
-    if (pagination?.expiresAt) {
-      const invocationTime = Date.now();
-      if (pagination.expiresAt < invocationTime) {
-        const expiredAgo = invocationTime - pagination.expiresAt;
-        throw new Error(
-          `Pagination cursor (offset) expired ${expiredAgo} ms ago`,
-        );
-      }
-    }
-
-    let seen: number = pagination?.seen || 0;
-    let total: number = pagination?.total || 0;
-    let pages: number = pagination?.pages || 0;
+  }): Promise<void> {
+    let seen: number = 0;
+    let total: number = 0;
     let finished = false;
 
-    let paginationParams: PaginationParams | undefined = pagination;
-    let paginationMeta: PaginationMeta | undefined;
-    let continuePagination: boolean | void;
+    let paginationParams: PaginationParams | undefined = undefined;
 
     do {
       const response: ResourcesResponse<ResourceType> =
@@ -207,30 +187,13 @@ export class FalconAPIClient {
           },
         );
 
-      continuePagination = await callback(response.resources);
+      await callback(response.resources);
 
-      paginationParams = paginationMeta = response.meta
-        .pagination as PaginationMeta;
+      paginationParams = response.meta.pagination as PaginationMeta;
       seen += response.resources.length;
-      total = paginationMeta.total;
-      pages += 1;
+      total = paginationParams.total!;
       finished = seen === 0 || seen >= total;
-    } while (!finished && continuePagination !== false);
-
-    const paginationState: PaginationState = {
-      limit: pagination?.limit,
-      seen,
-      total,
-      pages,
-      finished,
-    };
-
-    if (!finished) {
-      paginationState.offset = paginationMeta?.offset;
-      paginationState.expiresAt = paginationMeta?.expires_at;
-    }
-
-    return paginationState;
+    } while (!finished);
   }
 
   private async requestOAuth2Token(): Promise<OAuth2Token> {

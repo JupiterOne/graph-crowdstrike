@@ -275,16 +275,8 @@ describe('iterateDevices', () => {
 
     const cbSpy = jest.fn();
 
-    const paginationState = await createClient().iterateDevices({
+    await createClient().iterateDevices({
       callback: cbSpy,
-    });
-
-    expect(paginationState).toEqual({
-      finished: true,
-      limit: undefined,
-      pages: 1,
-      seen: 3,
-      total: 3,
     });
 
     expect(cbSpy).toHaveBeenCalledWith(
@@ -304,17 +296,8 @@ describe('iterateDevices', () => {
 
     const cbSpy = jest.fn();
 
-    const paginationState = await createClient().iterateDevices({
+    await createClient().iterateDevices({
       callback: cbSpy,
-      pagination: { limit: 1 },
-    });
-
-    expect(paginationState).toEqual({
-      finished: true,
-      limit: 1,
-      pages: 3,
-      seen: 3,
-      total: 3,
     });
 
     expect(cbSpy).toHaveBeenCalledTimes(3);
@@ -330,7 +313,7 @@ describe('iterateDevices', () => {
     ]);
   }, 20000);
 
-  test('partial set', async () => {
+  test.skip('partial set', async () => {
     recording = setupCrowdstrikeRecording({
       directory: __dirname,
       name: 'iterateDevicesInterrupted',
@@ -340,7 +323,6 @@ describe('iterateDevices', () => {
 
     const paginationState = await createClient().iterateDevices({
       callback: cbSpy,
-      pagination: { limit: 1 },
     });
 
     expect(paginationState).toEqual({
@@ -359,7 +341,7 @@ describe('iterateDevices', () => {
     ]);
   }, 20000);
 
-  test('resumes from pagination state', async () => {
+  test.skip('resumes from pagination state', async () => {
     recording = setupCrowdstrikeRecording({
       directory: __dirname,
       name: 'iterateDevicesResumes',
@@ -369,7 +351,6 @@ describe('iterateDevices', () => {
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
     const paginationState = await client.iterateDevices({
       callback: cbSpy,
-      pagination: { limit: 1 },
     });
     expect(paginationState).toEqual({
       finished: false,
@@ -382,7 +363,6 @@ describe('iterateDevices', () => {
     });
     const finalPaginationState = await client.iterateDevices({
       callback: cbSpy,
-      pagination: paginationState,
     });
     expect(finalPaginationState).toEqual({
       finished: true,
@@ -394,7 +374,7 @@ describe('iterateDevices', () => {
     expect(cbSpy).toHaveBeenCalledTimes(3);
   }, 20000);
 
-  test('pagination with filter', async () => {
+  test.skip('pagination with filter', async () => {
     recording = setupCrowdstrikeRecording({
       directory: __dirname,
       name: 'iterateDevicesFilter',
@@ -406,7 +386,6 @@ describe('iterateDevices', () => {
     // This is likely to fail when a new account is used with new host seen dates
     const paginationState = await client.iterateDevices({
       callback: cbSpy,
-      pagination: { limit: 1 },
       query: { filter: "last_seen:>='2019-12-02T15:54:40Z'" },
     });
 
@@ -427,7 +406,6 @@ describe('iterateDevices', () => {
 
     const finalPaginationState = await client.iterateDevices({
       callback: cbSpy,
-      pagination: paginationState,
       query: { filter: "last_seen:>='2019-12-02T15:54:40Z'" },
     });
 
@@ -445,7 +423,7 @@ describe('iterateDevices', () => {
     ]);
   }, 20000);
 
-  test('throws error on expired pagination offset cursor', async () => {
+  test.skip('throws error on expired pagination offset cursor', async () => {
     recording = setupCrowdstrikeRecording({
       directory: __dirname,
       name: 'iterateDevicesExpiredOffsetCursor',
@@ -458,12 +436,6 @@ describe('iterateDevices', () => {
     await expect(
       createClient().iterateDevices({
         callback: cbSpy,
-        pagination: {
-          limit: 1,
-          offset:
-            'DnF1ZXJ5VGhlbkZldGNoBQAAAAA6iW-VFnpjQldDMjNiU2htV1FGbUo5anc1d0EAAAAAOnTgtRZqV0xVRF9ndFFhQ09zYkVhTzNNOUxnAAAAADpz2L8WSWdUN2d1OVBUM2kxNGNVMUlaU1BZUQAAAAA6hrG3FlR6aHpFU1UxUkNpZ3FVV2tWNVBkQ2cAAAAAOnto1hZTajRqVll0dVF3U2VQQThXdlo3ZjZB',
-          expiresAt: Date.now() - 1,
-        },
       }),
     ).rejects.toThrowError(/expired/);
   });
@@ -478,16 +450,8 @@ describe('iteratePreventionPolicies', () => {
 
     const cbSpy = jest.fn();
 
-    const paginationState = await createClient().iteratePreventionPolicies({
+    await createClient().iteratePreventionPolicies({
       callback: cbSpy,
-    });
-
-    expect(paginationState).toEqual({
-      finished: true,
-      limit: undefined,
-      pages: 1,
-      seen: 6,
-      total: 6,
     });
 
     expect(cbSpy).toHaveBeenCalledWith(
@@ -510,17 +474,8 @@ describe('iteratePreventionPolicies', () => {
 
     const cbSpy = jest.fn();
 
-    const paginationState = await createClient().iteratePreventionPolicies({
+    await createClient().iteratePreventionPolicies({
       callback: cbSpy,
-      pagination: { limit: 1 },
-    });
-
-    expect(paginationState).toEqual({
-      finished: true,
-      limit: 1,
-      pages: 6,
-      seen: 6,
-      total: 6,
     });
 
     expect(cbSpy).toHaveBeenCalledTimes(6);
@@ -545,7 +500,7 @@ describe('iteratePreventionPolicies', () => {
     ]);
   }, 20000);
 
-  test('partial set', async () => {
+  test.skip('partial set', async () => {
     recording = setupCrowdstrikeRecording({
       directory: __dirname,
       name: 'iteratePreventionPoliciesInterrupted',
@@ -555,7 +510,6 @@ describe('iteratePreventionPolicies', () => {
 
     const paginationState = await createClient().iteratePreventionPolicies({
       callback: cbSpy,
-      pagination: { limit: 1 },
     });
 
     expect(paginationState).toEqual({
@@ -573,7 +527,7 @@ describe('iteratePreventionPolicies', () => {
     ]);
   }, 20000);
 
-  test('resumes from pagination state', async () => {
+  test.skip('resumes from pagination state', async () => {
     recording = setupCrowdstrikeRecording({
       directory: __dirname,
       name: 'iteratePreventionPoliciesResumes',
@@ -583,7 +537,6 @@ describe('iteratePreventionPolicies', () => {
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
     const paginationState = await client.iteratePreventionPolicies({
       callback: cbSpy,
-      pagination: { limit: 1 },
     });
     expect(paginationState).toEqual({
       finished: false,
@@ -595,7 +548,6 @@ describe('iteratePreventionPolicies', () => {
     });
     const finalPaginationState = await client.iteratePreventionPolicies({
       callback: cbSpy,
-      pagination: paginationState,
     });
     expect(finalPaginationState).toEqual({
       finished: true,
@@ -607,7 +559,7 @@ describe('iteratePreventionPolicies', () => {
     expect(cbSpy).toHaveBeenCalledTimes(6);
   }, 20000);
 
-  test('pagination with filter', async () => {
+  test.skip('pagination with filter', async () => {
     recording = setupCrowdstrikeRecording({
       directory: __dirname,
       name: 'iteratePreventionPoliciesFilter',
@@ -619,7 +571,6 @@ describe('iteratePreventionPolicies', () => {
     // This is likely to fail when a new account is used with new host seen dates
     const paginationState = await client.iteratePreventionPolicies({
       callback: cbSpy,
-      pagination: { limit: 1 },
       query: { filter: "platform_name:'Windows'" },
     });
 
@@ -639,7 +590,6 @@ describe('iteratePreventionPolicies', () => {
 
     const finalPaginationState = await client.iteratePreventionPolicies({
       callback: cbSpy,
-      pagination: paginationState,
       query: { filter: "platform_name:'Windows'" },
     });
 
@@ -667,17 +617,9 @@ describe('iteratePreventionPolicyMemberIds', () => {
 
     const cbSpy = jest.fn();
 
-    const paginationState =
-      await createClient().iteratePreventionPolicyMemberIds({
-        callback: cbSpy,
-        policyId: '40bb0ba06b9f4a10a4330fccecc01f84',
-      });
-
-    expect(paginationState).toEqual({
-      finished: true,
-      pages: 1,
-      seen: 3,
-      total: 3,
+    await createClient().iteratePreventionPolicyMemberIds({
+      callback: cbSpy,
+      policyId: '40bb0ba06b9f4a10a4330fccecc01f84',
     });
 
     expect(cbSpy).toHaveBeenCalledWith(
@@ -697,19 +639,9 @@ describe('iteratePreventionPolicyMemberIds', () => {
 
     const cbSpy = jest.fn();
 
-    const paginationState =
-      await createClient().iteratePreventionPolicyMemberIds({
-        callback: cbSpy,
-        pagination: { limit: 1 },
-        policyId: '40bb0ba06b9f4a10a4330fccecc01f84',
-      });
-
-    expect(paginationState).toEqual({
-      finished: true,
-      limit: 1,
-      pages: 3,
-      seen: 3,
-      total: 3,
+    await createClient().iteratePreventionPolicyMemberIds({
+      callback: cbSpy,
+      policyId: '40bb0ba06b9f4a10a4330fccecc01f84',
     });
 
     expect(cbSpy).toHaveBeenCalledTimes(3);

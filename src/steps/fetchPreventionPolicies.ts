@@ -22,8 +22,6 @@ export async function fetchPreventionPolicies(
 
   logger.info('Iterating protection policies...');
   await client.iteratePreventionPolicies({
-    // TODO remove `pagination` arg
-    pagination: undefined,
     callback: async (preventionPolicies) => {
       logger.info(
         { policyCount: preventionPolicies.length },

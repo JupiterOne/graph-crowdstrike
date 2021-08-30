@@ -39,8 +39,6 @@ export async function fetchDevicePolicyRelationships(
       let totalNumDeviceAssignedPolicyRelationships = 0;
 
       await client.iteratePreventionPolicyMemberIds({
-        // TODO remove `pagination` arg
-        pagination: undefined,
         policyId: policyId,
         callback: async (memberIds) => {
           logger.info(
