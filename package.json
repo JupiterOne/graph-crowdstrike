@@ -1,6 +1,6 @@
 {
   "name": "@jupiterone/graph-crowdstrike",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "A template for JupiterOne graph converters.",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -28,7 +28,6 @@
   "dependencies": {
     "@jupiterone/integration-sdk-core": "^6.16.1",
     "@jupiterone/integration-sdk-runtime": "^6.16.1",
-    "await-timeout": "^1.0.1",
     "node-fetch": "^2.6.0"
   },
   "devDependencies": {
