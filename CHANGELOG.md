@@ -8,6 +8,15 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.0.5] - 2021-10-07
+
+### Fixed
+
+- Fixed retry logic after encountering 429 rate limit errors. Previously, the
+  `x-ratelimit-retryafter` header was not properly respected because the header
+  returned an epoch time in seconds, and we compared this to the current epoch
+  time in milliseconds.
+
 ## [2.0.4] - 2021-08-30
 
 ### Removed

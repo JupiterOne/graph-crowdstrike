@@ -1,4 +1,3 @@
-import Timeout from 'await-timeout';
 import fetch, { RequestInfo, RequestInit, Response } from 'node-fetch';
 import { URLSearchParams } from 'url';
 
@@ -17,6 +16,10 @@ import {
   ResourcesResponse,
 } from './types';
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
+
+async function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 type APIRequest = {
   url: string;
@@ -256,20 +259,24 @@ export class FalconAPIClient {
   private async executeAPIRequestWithRateLimitRetries<T>(
     request: APIRequest,
   ): Promise<APIResponse> {
-    const config = request.rateLimitConfig;
-
     let attempts = 0;
     let rateLimitState = request.rateLimitState;
 
     do {
-      const tryAfterCooldown =
-        rateLimitState.limitRemaining <= config.reserveLimit
-          ? Date.now() + config.cooldownPeriod
-          : 0;
+      if (
+        rateLimitState.limitRemaining <= request.rateLimitConfig.reserveLimit
+      ) {
+        this.logger.info(
+          {
+            rateLimitState,
+            rateLimitConfig: request.rateLimitConfig,
+          },
+          'Rate limit remaining is less than reserve limit. Waiting for cooldown period.',
+        );
+        await sleep(request.rateLimitConfig.cooldownPeriod);
+      }
 
-      const tryAfter = Math.max(rateLimitState.retryAfter, tryAfterCooldown);
-
-      const response = await tryAPIRequest(request.exec, tryAfter);
+      const response = await request.exec();
 
       rateLimitState = {
         limitRemaining:
@@ -292,6 +299,21 @@ export class FalconAPIClient {
         };
       }
 
+      if (response.status === 429) {
+        const epochTimeNow = Date.now() / 1000;
+        const timeToSleepInSeconds = rateLimitState.retryAfter - epochTimeNow;
+        this.logger.info(
+          {
+            epochTimeNow,
+            timeToSleepInSeconds,
+            rateLimitState,
+            rateLimitConfig: request.rateLimitConfig,
+          },
+          'Encountered 429 response. Waiting to retry request.',
+        );
+        await sleep(timeToSleepInSeconds * 1000);
+      }
+
       attempts += 1;
       this.logger.warn(
         {
@@ -306,17 +328,6 @@ export class FalconAPIClient {
 
     throw new Error(`Could not complete request within ${attempts} attempts!`);
   }
-}
-
-async function tryAPIRequest(
-  request: () => Promise<Response>,
-  tryAfter: number,
-): Promise<Response> {
-  const now = Date.now();
-  if (tryAfter > now) {
-    await Timeout.set(tryAfter - now);
-  }
-  return request();
 }
 
 function isValidToken(token: OAuth2Token): boolean {
