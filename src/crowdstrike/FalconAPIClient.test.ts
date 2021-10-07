@@ -1,25 +1,41 @@
-import { Polly } from "@pollyjs/core";
+import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
+import { createMockIntegrationLogger } from '@jupiterone/integration-sdk-testing';
 
-import polly from "../../test/helpers/polly";
-import config from "../../test/integrationInstanceConfig";
-import { FalconAPIClient } from "./FalconAPIClient";
+import {
+  Recording,
+  setupCrowdstrikeRecording,
+} from '../../test/helpers/recording';
+import config from '../../test/integrationInstanceConfig';
+import { FalconAPIClient } from './FalconAPIClient';
 
-let p: Polly;
+function createTestLogger(): IntegrationLogger {
+  return createMockIntegrationLogger();
+}
+
+let recording: Recording;
 
 const createClient = (): FalconAPIClient => {
-  return new FalconAPIClient({ credentials: config });
+  return new FalconAPIClient({
+    credentials: config,
+    logger: createTestLogger(),
+  });
 };
 
 afterEach(async () => {
-  await p.stop();
+  if (recording) {
+    await recording.stop();
+  }
 });
 
-describe("authenticate", () => {
-  test("obtains token and expiration", async () => {
-    p = polly(__dirname, "authenticate");
+describe('authenticate', () => {
+  test('obtains token and expiration', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'authenticate',
+    });
 
     let requests = 0;
-    p.server.any().on("request", (_req, _event) => {
+    recording.server.any().on('request', (_req, _event) => {
       requests++;
     });
 
@@ -31,11 +47,14 @@ describe("authenticate", () => {
     expect(requests).toEqual(1);
   });
 
-  test("answers cached token before expiration", async () => {
-    p = polly(__dirname, "authenticateCached");
+  test('answers cached token before expiration', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'authenticateCached',
+    });
 
     let requests = 0;
-    p.server.any().on("request", (_req, _event) => {
+    recording.server.any().on('request', (_req, _event) => {
       requests++;
     });
 
@@ -46,11 +65,14 @@ describe("authenticate", () => {
     expect(requests).toEqual(1);
   });
 
-  test("answers new token after expiration", async () => {
-    p = polly(__dirname, "authenticateRefresh");
+  test('answers new token after expiration', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'authenticateRefresh',
+    });
 
     let requests = 0;
-    p.server.any().on("request", (_req, _event) => {
+    recording.server.any().on('request', (_req, _event) => {
       requests++;
     });
 
@@ -59,7 +81,7 @@ describe("authenticate", () => {
 
     const realNow = Date.now; // eslint-disable-line @typescript-eslint/unbound-method
     jest
-      .spyOn(global.Date, "now")
+      .spyOn(global.Date, 'now')
       .mockImplementationOnce(() => realNow() + 30 * 60 * 1000);
 
     const newAccess = await client.authenticate();
@@ -72,13 +94,21 @@ describe("authenticate", () => {
     expect(requests).toEqual(2);
   });
 
-  test("throws errors", async () => {
-    p = polly(__dirname, "authenticateError", { recordFailedRequests: true });
+  test('throws errors', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'authenticateError',
+      options: {
+        recordFailedRequests: true,
+      },
+    });
+
     const client = new FalconAPIClient({
       credentials: {
         ...config,
-        clientSecret: "test-error-handling",
+        clientSecret: 'test-error-handling',
       },
+      logger: createTestLogger(),
     });
     try {
       await client.authenticate();
@@ -90,30 +120,56 @@ describe("authenticate", () => {
   });
 });
 
-describe("executeAPIRequest", () => {
-  test("waits until retryafter on 429 response", async () => {
-    p = polly(__dirname, "executeAPIRequest429");
+describe('executeAPIRequest', () => {
+  test('waits until retryafter on 500 response', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'executeAPIRequest429',
+    });
 
     const requestTimes: number[] = [];
-    p.server.any().on("request", (_req, _event) => {
+    recording.server.any().on('request', (_req, _event) => {
+      requestTimes.push(Date.now());
+    });
+
+    recording.server
+      .any()
+      .times(1)
+      .intercept((_req, res) => {
+        res.status(500);
+      });
+
+    await createClient().authenticate();
+
+    expect(requestTimes.length).toBe(2);
+  });
+
+  test('waits until retryafter on 429 response', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'executeAPIRequest429',
+    });
+
+    const requestTimes: number[] = [];
+    recording.server.any().on('request', (_req, _event) => {
       requestTimes.push(Date.now());
     });
 
     const retryAfter = Date.now() + 1000;
-    p.server
+    recording.server
       .any()
       .times(1)
       .intercept((_req, res) => {
         res
           .status(429)
           .setHeaders({
-            "x-ratelimit-retryafter": String(retryAfter),
+            'x-ratelimit-retryafter': String(retryAfter),
           })
           .json({
             errors: [
               {
                 code: 429,
-                message: "API rate limit exceeded.",
+                message: 'API rate limit exceeded.',
               },
             ],
           });
@@ -125,25 +181,28 @@ describe("executeAPIRequest", () => {
     expect(requestTimes[1]).toBeGreaterThan(retryAfter);
   });
 
-  test("retries 429 response limited times", async () => {
-    p = polly(__dirname, "executeAPIRequest429limit");
+  test('retries 429 response limited times', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'executeAPIRequest429limit',
+    });
 
     const requestTimes: number[] = [];
-    p.server.any().on("request", (_req, _event) => {
+    recording.server.any().on('request', (_req, _event) => {
       requestTimes.push(Date.now());
     });
 
-    p.server.any().intercept((_req, res) => {
+    recording.server.any().intercept((_req, res) => {
       res
         .status(429)
         .setHeaders({
-          "x-ratelimit-retryafter": String(Date.now() - 10),
+          'x-ratelimit-retryafter': String(Date.now() - 10),
         })
         .json({
           errors: [
             {
               code: 429,
-              message: "API rate limit exceeded.",
+              message: 'API rate limit exceeded.',
             },
           ],
         });
@@ -154,6 +213,7 @@ describe("executeAPIRequest", () => {
       rateLimitConfig: {
         maxAttempts: 2,
       },
+      logger: createTestLogger(),
     });
 
     await expect(client.authenticate()).rejects.toThrowError(/2/);
@@ -161,24 +221,27 @@ describe("executeAPIRequest", () => {
     expect(requestTimes.length).toBe(2);
   });
 
-  test("throttles at specified reserveLimit", async () => {
-    p = polly(__dirname, "executeAPIRequestReserveLimit");
+  test('throttles at specified reserveLimit', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'executeAPIRequestReserveLimit',
+    });
 
     let limitRemaining = 10;
 
-    p.server.any().intercept((_req, res) => {
+    recording.server.any().intercept((_req, res) => {
       limitRemaining--;
       res
         .status(201)
         .setHeaders({
-          "x-ratelimit-limit": "10",
-          "x-ratelimit-remaining": String(limitRemaining),
+          'x-ratelimit-limit': '10',
+          'x-ratelimit-remaining': String(limitRemaining),
         })
         .json({
           errors: [
             {
               code: 429,
-              message: "API rate limit exceeded.",
+              message: 'API rate limit exceeded.',
             },
           ],
         });
@@ -190,6 +253,7 @@ describe("executeAPIRequest", () => {
         reserveLimit: 8,
         cooldownPeriod: 1000,
       },
+      logger: createTestLogger(),
     });
 
     const startTime = Date.now();
@@ -202,21 +266,17 @@ describe("executeAPIRequest", () => {
   });
 });
 
-describe("iterateDevices", () => {
-  test("complete set in single callback", async () => {
-    p = polly(__dirname, "iterateDevicesSinglePage");
-    const cbSpy = jest.fn();
-
-    const paginationState = await createClient().iterateDevices({
-      callback: cbSpy,
+describe('iterateDevices', () => {
+  test('complete set in single callback', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iterateDevicesSinglePage',
     });
 
-    expect(paginationState).toEqual({
-      finished: true,
-      limit: undefined,
-      pages: 1,
-      seen: 3,
-      total: 3,
+    const cbSpy = jest.fn();
+
+    await createClient().iterateDevices({
+      callback: cbSpy,
     });
 
     expect(cbSpy).toHaveBeenCalledWith(
@@ -228,21 +288,16 @@ describe("iterateDevices", () => {
     );
   }, 20000);
 
-  test("partial set in multiple callbacks", async () => {
-    p = polly(__dirname, "iterateDevicesCompletes");
-    const cbSpy = jest.fn();
-
-    const paginationState = await createClient().iterateDevices({
-      callback: cbSpy,
-      pagination: { limit: 1 },
+  test('partial set in multiple callbacks', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iterateDevicesCompletes',
     });
 
-    expect(paginationState).toEqual({
-      finished: true,
-      limit: 1,
-      pages: 3,
-      seen: 3,
-      total: 3,
+    const cbSpy = jest.fn();
+
+    await createClient().iterateDevices({
+      callback: cbSpy,
     });
 
     expect(cbSpy).toHaveBeenCalledTimes(3);
@@ -258,13 +313,16 @@ describe("iterateDevices", () => {
     ]);
   }, 20000);
 
-  test("partial set", async () => {
-    p = polly(__dirname, "iterateDevicesInterrupted");
+  test.skip('partial set', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iterateDevicesInterrupted',
+    });
+
     const cbSpy = jest.fn().mockResolvedValue(false);
 
     const paginationState = await createClient().iterateDevices({
       callback: cbSpy,
-      pagination: { limit: 1 },
     });
 
     expect(paginationState).toEqual({
@@ -283,13 +341,16 @@ describe("iterateDevices", () => {
     ]);
   }, 20000);
 
-  test("resumes from pagination state", async () => {
-    p = polly(__dirname, "iterateDevicesResumes");
+  test.skip('resumes from pagination state', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iterateDevicesResumes',
+    });
+
     const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
     const paginationState = await client.iterateDevices({
       callback: cbSpy,
-      pagination: { limit: 1 },
     });
     expect(paginationState).toEqual({
       finished: false,
@@ -302,7 +363,6 @@ describe("iterateDevices", () => {
     });
     const finalPaginationState = await client.iterateDevices({
       callback: cbSpy,
-      pagination: paginationState,
     });
     expect(finalPaginationState).toEqual({
       finished: true,
@@ -314,15 +374,18 @@ describe("iterateDevices", () => {
     expect(cbSpy).toHaveBeenCalledTimes(3);
   }, 20000);
 
-  test("pagination with filter", async () => {
-    p = polly(__dirname, "iterateDevicesFilter");
+  test.skip('pagination with filter', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iterateDevicesFilter',
+    });
+
     const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
 
     // This is likely to fail when a new account is used with new host seen dates
     const paginationState = await client.iterateDevices({
       callback: cbSpy,
-      pagination: { limit: 1 },
       query: { filter: "last_seen:>='2019-12-02T15:54:40Z'" },
     });
 
@@ -343,7 +406,6 @@ describe("iterateDevices", () => {
 
     const finalPaginationState = await client.iterateDevices({
       callback: cbSpy,
-      pagination: paginationState,
       query: { filter: "last_seen:>='2019-12-02T15:54:40Z'" },
     });
 
@@ -361,40 +423,35 @@ describe("iterateDevices", () => {
     ]);
   }, 20000);
 
-  test("throws error on expired pagination offset cursor", async () => {
-    p = polly(__dirname, "iterateDevicesExpiredOffsetCursor", {
-      recordFailedRequests: true,
+  test.skip('throws error on expired pagination offset cursor', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iterateDevicesExpiredOffsetCursor',
+      options: {
+        recordFailedRequests: true,
+      },
     });
+
     const cbSpy = jest.fn();
     await expect(
       createClient().iterateDevices({
         callback: cbSpy,
-        pagination: {
-          limit: 1,
-          offset:
-            "DnF1ZXJ5VGhlbkZldGNoBQAAAAA6iW-VFnpjQldDMjNiU2htV1FGbUo5anc1d0EAAAAAOnTgtRZqV0xVRF9ndFFhQ09zYkVhTzNNOUxnAAAAADpz2L8WSWdUN2d1OVBUM2kxNGNVMUlaU1BZUQAAAAA6hrG3FlR6aHpFU1UxUkNpZ3FVV2tWNVBkQ2cAAAAAOnto1hZTajRqVll0dVF3U2VQQThXdlo3ZjZB",
-          expiresAt: Date.now() - 1,
-        },
       }),
     ).rejects.toThrowError(/expired/);
   });
 });
 
-describe("iteratePreventionPolicies", () => {
-  test("complete set in single callback", async () => {
-    p = polly(__dirname, "iteratePreventionPoliciesSinglePage");
-    const cbSpy = jest.fn();
-
-    const paginationState = await createClient().iteratePreventionPolicies({
-      callback: cbSpy,
+describe('iteratePreventionPolicies', () => {
+  test('complete set in single callback', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iteratePreventionPoliciesSinglePage',
     });
 
-    expect(paginationState).toEqual({
-      finished: true,
-      limit: undefined,
-      pages: 1,
-      seen: 6,
-      total: 6,
+    const cbSpy = jest.fn();
+
+    await createClient().iteratePreventionPolicies({
+      callback: cbSpy,
     });
 
     expect(cbSpy).toHaveBeenCalledWith(
@@ -409,21 +466,16 @@ describe("iteratePreventionPolicies", () => {
     );
   }, 20000);
 
-  test("partial set in multiple callbacks", async () => {
-    p = polly(__dirname, "iteratePreventionPoliciesCompletes");
-    const cbSpy = jest.fn();
-
-    const paginationState = await createClient().iteratePreventionPolicies({
-      callback: cbSpy,
-      pagination: { limit: 1 },
+  test('partial set in multiple callbacks', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iteratePreventionPoliciesCompletes',
     });
 
-    expect(paginationState).toEqual({
-      finished: true,
-      limit: 1,
-      pages: 6,
-      seen: 6,
-      total: 6,
+    const cbSpy = jest.fn();
+
+    await createClient().iteratePreventionPolicies({
+      callback: cbSpy,
     });
 
     expect(cbSpy).toHaveBeenCalledTimes(6);
@@ -448,13 +500,16 @@ describe("iteratePreventionPolicies", () => {
     ]);
   }, 20000);
 
-  test("partial set", async () => {
-    p = polly(__dirname, "iteratePreventionPoliciesInterrupted");
+  test.skip('partial set', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iteratePreventionPoliciesInterrupted',
+    });
+
     const cbSpy = jest.fn().mockResolvedValue(false);
 
     const paginationState = await createClient().iteratePreventionPolicies({
       callback: cbSpy,
-      pagination: { limit: 1 },
     });
 
     expect(paginationState).toEqual({
@@ -472,13 +527,16 @@ describe("iteratePreventionPolicies", () => {
     ]);
   }, 20000);
 
-  test("resumes from pagination state", async () => {
-    p = polly(__dirname, "iteratePreventionPoliciesResumes");
+  test.skip('resumes from pagination state', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iteratePreventionPoliciesResumes',
+    });
+
     const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
     const paginationState = await client.iteratePreventionPolicies({
       callback: cbSpy,
-      pagination: { limit: 1 },
     });
     expect(paginationState).toEqual({
       finished: false,
@@ -490,7 +548,6 @@ describe("iteratePreventionPolicies", () => {
     });
     const finalPaginationState = await client.iteratePreventionPolicies({
       callback: cbSpy,
-      pagination: paginationState,
     });
     expect(finalPaginationState).toEqual({
       finished: true,
@@ -502,15 +559,18 @@ describe("iteratePreventionPolicies", () => {
     expect(cbSpy).toHaveBeenCalledTimes(6);
   }, 20000);
 
-  test("pagination with filter", async () => {
-    p = polly(__dirname, "iteratePreventionPoliciesFilter");
+  test.skip('pagination with filter', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iteratePreventionPoliciesFilter',
+    });
+
     const client = createClient();
     const cbSpy = jest.fn().mockResolvedValueOnce(false);
 
     // This is likely to fail when a new account is used with new host seen dates
     const paginationState = await client.iteratePreventionPolicies({
       callback: cbSpy,
-      pagination: { limit: 1 },
       query: { filter: "platform_name:'Windows'" },
     });
 
@@ -530,7 +590,6 @@ describe("iteratePreventionPolicies", () => {
 
     const finalPaginationState = await client.iteratePreventionPolicies({
       callback: cbSpy,
-      pagination: paginationState,
       query: { filter: "platform_name:'Windows'" },
     });
 
@@ -549,23 +608,18 @@ describe("iteratePreventionPolicies", () => {
   }, 20000);
 });
 
-describe("iteratePreventionPolicyMemberIds", () => {
-  test("complete set in single callback", async () => {
-    p = polly(__dirname, "iteratePreventionPolicyMemberIdsSinglePage");
+describe('iteratePreventionPolicyMemberIds', () => {
+  test('complete set in single callback', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iteratePreventionPolicyMemberIdsSinglePage',
+    });
+
     const cbSpy = jest.fn();
 
-    const paginationState = await createClient().iteratePreventionPolicyMemberIds(
-      {
-        callback: cbSpy,
-        policyId: "40bb0ba06b9f4a10a4330fccecc01f84",
-      },
-    );
-
-    expect(paginationState).toEqual({
-      finished: true,
-      pages: 1,
-      seen: 3,
-      total: 3,
+    await createClient().iteratePreventionPolicyMemberIds({
+      callback: cbSpy,
+      policyId: '40bb0ba06b9f4a10a4330fccecc01f84',
     });
 
     expect(cbSpy).toHaveBeenCalledWith(
@@ -577,24 +631,17 @@ describe("iteratePreventionPolicyMemberIds", () => {
     );
   }, 20000);
 
-  test("partial set in multiple callbacks", async () => {
-    p = polly(__dirname, "iteratePreventionPolicyMemberIdsCompletes");
+  test('partial set in multiple callbacks', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'iteratePreventionPolicyMemberIdsCompletes',
+    });
+
     const cbSpy = jest.fn();
 
-    const paginationState = await createClient().iteratePreventionPolicyMemberIds(
-      {
-        callback: cbSpy,
-        pagination: { limit: 1 },
-        policyId: "40bb0ba06b9f4a10a4330fccecc01f84",
-      },
-    );
-
-    expect(paginationState).toEqual({
-      finished: true,
-      limit: 1,
-      pages: 3,
-      seen: 3,
-      total: 3,
+    await createClient().iteratePreventionPolicyMemberIds({
+      callback: cbSpy,
+      policyId: '40bb0ba06b9f4a10a4330fccecc01f84',
     });
 
     expect(cbSpy).toHaveBeenCalledTimes(3);

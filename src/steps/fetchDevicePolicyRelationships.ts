@@ -1,120 +1,107 @@
 import {
+  getRawData,
   IntegrationStepExecutionContext,
-  IntegrationStepIterationState,
-  RelationshipFromIntegration,
-} from "@jupiterone/jupiter-managed-integration-sdk";
+  RelationshipClass,
+  Step,
+} from '@jupiterone/integration-sdk-core';
+import { Entities, Relationships, StepIds } from '../constants';
+import createFalconAPIClient from '../crowdstrike/createFalconAPIClient';
+import { PreventionPolicy } from '../crowdstrike/types';
+import { CrowdStrikeIntegrationInstanceConfig } from '../types';
 
-import createFalconAPIClient from "../crowdstrike/createFalconAPIClient";
-import { getPageLimit } from "../crowdstrike/pagination";
-import {
-  NumericOffsetPaginationParams,
-  NumericOffsetPaginationState,
-} from "../crowdstrike/types";
-import getIterationState from "../getIterationState";
-import { SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE } from "../jupiterone/converters";
-import ProviderGraphObjectCache from "../ProviderGraphObjectCache";
+export async function fetchDevicePolicyRelationships(
+  context: IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>,
+): Promise<void> {
+  const { instance, jobState, logger } = context;
+  const client = createFalconAPIClient(instance.config, logger);
 
-const MEMBERS_PAGINATION: NumericOffsetPaginationParams = {
-  limit: getPageLimit("policy-members", 100),
-};
+  logger.info('Iterating policy members...');
+  await jobState.iterateEntities(
+    { _type: Entities.PREVENTION_POLICY._type },
+    async (preventionPolicyEntity) => {
+      const preventionPolicy = getRawData<PreventionPolicy>(
+        preventionPolicyEntity,
+      );
+      if (!preventionPolicy) {
+        logger.warn(
+          {
+            _key: preventionPolicyEntity._key,
+          },
+          'Could not get prevention policy raw data from entity.',
+        );
+        return;
+      }
 
-export default {
-  id: "fetch-device-policies",
-  name: "Fetch Device Policies",
-  iterates: true,
-  executionHandler: async (
-    executionContext: IntegrationStepExecutionContext,
-  ): Promise<IntegrationStepIterationState> => {
-    const { logger } = executionContext;
+      const policyId = preventionPolicy.id;
 
-    const cache = executionContext.clients.getCache();
-    const objectCache = new ProviderGraphObjectCache(cache);
-    const falconAPI = createFalconAPIClient(executionContext);
+      let currentPage = 0;
+      let totalNumMembers = 0;
+      let totalNumDeviceAssignedPolicyRelationships = 0;
 
-    const iterationState = getIterationState(executionContext);
+      await client.iteratePreventionPolicyMemberIds({
+        policyId: policyId,
+        callback: async (memberIds) => {
+          logger.info(
+            {
+              memberCount: memberIds.length,
+              policyId,
+              currentPage,
+            },
+            'Processing page of member ids',
+          );
 
-    logger.info({ iterationState }, "Iterating policy members...");
-
-    const deviceIds = new Set<string>(
-      (await cache.getEntry("device-ids")).data || [],
-    );
-    const policyIds: string[] =
-      (await cache.getEntry("prevention-policy-ids")).data || [];
-
-    let policyPagination: NumericOffsetPaginationState = iterationState.state
-      .policyPagination || {
-      total: policyIds.length,
-      seen: 0,
-      offset: 0,
-      finished: false,
-    };
-
-    let policyIndex = policyPagination.offset || 0;
-
-    let membersPagination: NumericOffsetPaginationParams = iterationState.state
-      .membersPagination || { ...MEMBERS_PAGINATION };
-
-    do {
-      const policyId = policyIds[policyIndex];
-      const loggerInfo = { policyPagination, membersPagination };
-
-      membersPagination = await falconAPI.iteratePreventionPolicyMemberIds({
-        callback: async memberIds => {
-          logger.trace(loggerInfo, "Processing page of member ids");
-
-          const relationships: RelationshipFromIntegration[] = [];
+          totalNumMembers += memberIds.length;
 
           for (const deviceId of memberIds) {
-            if (deviceIds.has(deviceId)) {
-              relationships.push({
-                _key: `${deviceId}|assigned|${policyId}`,
-                _type: SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE,
-                _class: "ASSIGNED",
-                _fromEntityKey: deviceId,
-                _toEntityKey: policyId,
-                displayName: "ASSIGNED",
-              });
+            const deviceAssignedPolicyIdRelationshipKey = `${deviceId}|assigned|${policyId}`;
+
+            if (await jobState.hasKey(deviceAssignedPolicyIdRelationshipKey)) {
+              logger.info(
+                {
+                  _key: deviceAssignedPolicyIdRelationshipKey,
+                  deviceId,
+                  policyId,
+                },
+                'Duplicate device assigned policy relationship key found',
+              );
+
+              continue;
             }
+
+            await jobState.addRelationship({
+              _key: deviceAssignedPolicyIdRelationshipKey,
+              _type: Relationships.SENSOR_ASSIGNED_PREVENTION_POLICY._type,
+              _class: RelationshipClass.ASSIGNED,
+              _fromEntityKey: deviceId,
+              _toEntityKey: policyId,
+              displayName: 'ASSIGNED',
+            });
+
+            totalNumDeviceAssignedPolicyRelationships++;
           }
-          await objectCache.putRelationships(relationships);
+
+          currentPage++;
         },
-        pagination: membersPagination,
-        policyId,
       });
 
-      if (membersPagination.finished) {
-        membersPagination = MEMBERS_PAGINATION;
+      logger.info(
+        {
+          totalNumMembers,
+          totalNumDeviceAssignedPolicyRelationships,
+        },
+        'Successfully processed devicy policy relationships',
+      );
+    },
+  );
+}
 
-        policyPagination = {
-          ...policyPagination,
-          offset: policyIndex,
-          seen: policyPagination.seen + 1,
-          finished: policyIndex === policyIds.length - 1,
-        };
-
-        logger.info(
-          { policyPagination, membersPagination },
-          "Finished paging policy members",
-        );
-
-        policyIndex += 1;
-      }
-    } while (!policyPagination.finished);
-
-    await objectCache.putCollectionStates({
-      type: SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE,
-      success: policyPagination.finished && !!membersPagination.finished,
-    });
-
-    return {
-      ...iterationState,
-      finished: policyPagination.finished,
-      state: {
-        policyPagination,
-        membersPagination: policyPagination.finished
-          ? undefined
-          : membersPagination,
-      },
-    };
-  },
+export const fetchDevicePolicyRelationshipsStep: Step<
+  IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>
+> = {
+  id: StepIds.DEVICE_POLICY_RELATIONSHIPS,
+  name: 'Fetch Device Policies',
+  entities: [],
+  relationships: [Relationships.SENSOR_ASSIGNED_PREVENTION_POLICY],
+  dependsOn: [StepIds.DEVICES, StepIds.PREVENTION_POLICIES],
+  executionHandler: fetchDevicePolicyRelationships,
 };

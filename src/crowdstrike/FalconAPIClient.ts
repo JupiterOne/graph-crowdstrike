@@ -1,24 +1,22 @@
-import Timeout from "await-timeout";
-import fetch, { RequestInfo, RequestInit, Response } from "node-fetch";
-import EventEmitter from "events";
+import Timeout from 'await-timeout';
+import fetch, { RequestInfo, RequestInit, Response } from 'node-fetch';
+import { URLSearchParams } from 'url';
 
 import {
   Device,
   DeviceIdentifier,
-  NumericOffsetPaginationParams,
-  NumericOffsetPaginationState,
   OAuth2ClientCredentials,
   OAuth2Token,
   OAuth2TokenResponse,
   PaginationMeta,
   PaginationParams,
-  PaginationState,
   PreventionPolicy,
   QueryParams,
   RateLimitConfig,
   RateLimitState,
   ResourcesResponse,
-} from "./types";
+} from './types';
+import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 
 type APIRequest = {
   url: string;
@@ -29,8 +27,8 @@ type APIRequest = {
 
 type APIResponse = {
   response: Response;
-  status: Response["status"];
-  statusText: Response["statusText"];
+  status: Response['status'];
+  statusText: Response['statusText'];
   rateLimitState: RateLimitState;
 };
 
@@ -46,15 +44,11 @@ const DEFAULT_RATE_LIMIT_CONFIG: RateLimitConfig = {
   cooldownPeriod: 1000,
 };
 
-export enum ClientEvents {
-  REQUEST = "ClientEvents.REQUEST",
-  RESPONSE = "ClientEvents.RESPONSE",
-}
-
 export type FalconAPIClientConfig = {
   credentials: OAuth2ClientCredentials;
   rateLimitConfig?: Partial<RateLimitConfig>;
   rateLimitState?: RateLimitState;
+  logger: IntegrationLogger;
 };
 
 export type FalconAPIResourceIterationCallback<T> = (
@@ -66,18 +60,18 @@ export class FalconAPIClient {
   private token: OAuth2Token | undefined;
   private rateLimitConfig: RateLimitConfig;
   private rateLimitState: RateLimitState;
-
-  public events: EventEmitter;
+  private logger: IntegrationLogger;
 
   constructor({
     credentials,
     rateLimitConfig,
     rateLimitState,
+    logger,
   }: FalconAPIClientConfig) {
     this.credentials = credentials;
     this.rateLimitConfig = { ...DEFAULT_RATE_LIMIT_CONFIG, ...rateLimitConfig };
     this.rateLimitState = rateLimitState || INITIAL_RATE_LIMIT_STATE;
-    this.events = new EventEmitter();
+    this.logger = logger;
   }
 
   public async authenticate(): Promise<OAuth2Token> {
@@ -100,15 +94,17 @@ export class FalconAPIClient {
    */
   public async iterateDevices(input: {
     callback: FalconAPIResourceIterationCallback<Device>;
-    pagination?: PaginationParams;
     query?: QueryParams;
-  }): Promise<PaginationState> {
+  }): Promise<void> {
     return this.paginateResources<DeviceIdentifier>({
       ...input,
-      callback: async deviceIds => {
-        return await input.callback(await this.fetchDevices(deviceIds));
+      callback: async (deviceIds) => {
+        if (deviceIds.length) {
+          // If the scroll lists _no_ recent devices, we don't want to send a malformed request to https://api.crowdstrike.com/devices/entities/devices/v1?
+          return await input.callback(await this.fetchDevices(deviceIds));
+        }
       },
-      resourcePath: "/devices/queries/devices-scroll/v1",
+      resourcePath: '/devices/queries/devices-scroll/v1',
     });
   }
 
@@ -120,40 +116,38 @@ export class FalconAPIClient {
    */
   public async iteratePreventionPolicies(input: {
     callback: FalconAPIResourceIterationCallback<PreventionPolicy>;
-    pagination?: NumericOffsetPaginationParams;
     query?: QueryParams;
-  }): Promise<NumericOffsetPaginationState> {
+  }): Promise<void> {
     return this.paginateResources<PreventionPolicy>({
       ...input,
-      resourcePath: "/policy/combined/prevention/v1",
-    }) as Promise<NumericOffsetPaginationState>;
+      resourcePath: '/policy/combined/prevention/v1',
+    });
   }
 
   public async iteratePreventionPolicyMemberIds(input: {
     callback: FalconAPIResourceIterationCallback<DeviceIdentifier>;
     policyId: string;
-    pagination?: NumericOffsetPaginationParams;
     query?: QueryParams;
-  }): Promise<NumericOffsetPaginationState> {
+  }): Promise<void> {
     return this.paginateResources<DeviceIdentifier>({
       ...input,
-      resourcePath: "/policy/queries/prevention-members/v1",
+      resourcePath: '/policy/queries/prevention-members/v1',
       query: { ...input.query, id: input.policyId },
-    }) as Promise<NumericOffsetPaginationState>;
+    });
   }
 
   private async fetchDevices(ids: string[]): Promise<Device[]> {
     const params = new URLSearchParams();
     for (const aid of ids) {
-      params.append("ids", aid);
+      params.append('ids', aid);
     }
 
     const response = await this.executeAuthenticatedAPIRequest<
       ResourcesResponse<Device>
     >(`https://api.crowdstrike.com/devices/entities/devices/v1?${params}`, {
-      method: "GET",
+      method: 'GET',
       headers: {
-        accept: "application/json",
+        accept: 'application/json',
       },
     });
 
@@ -163,86 +157,56 @@ export class FalconAPIClient {
   private async paginateResources<ResourceType>({
     callback,
     resourcePath,
-    pagination,
     query,
   }: {
     callback: FalconAPIResourceIterationCallback<ResourceType>;
     resourcePath: string;
     pagination?: PaginationParams;
     query?: QueryParams;
-  }): Promise<PaginationState> {
-    if (pagination?.expiresAt) {
-      const invocationTime = Date.now();
-      if (pagination.expiresAt < invocationTime) {
-        const expiredAgo = invocationTime - pagination.expiresAt;
-        throw new Error(
-          `Pagination cursor (offset) expired ${expiredAgo} ms ago`,
-        );
-      }
-    }
-
-    let seen: number = pagination?.seen || 0;
-    let total: number = pagination?.total || 0;
-    let pages: number = pagination?.pages || 0;
+  }): Promise<void> {
+    let seen: number = 0;
+    let total: number = 0;
     let finished = false;
 
-    let paginationParams: PaginationParams | undefined = pagination;
-    let paginationMeta: PaginationMeta | undefined;
-    let continuePagination: boolean | void;
+    let paginationParams: PaginationParams | undefined = undefined;
 
     do {
-      const response: ResourcesResponse<ResourceType> = await this.executeAuthenticatedAPIRequest<
-        ResourcesResponse<ResourceType>
-      >(
-        `https://api.crowdstrike.com${resourcePath}?${toQueryString(
-          paginationParams,
-          query,
-        )}`,
-        {
-          method: "GET",
-          headers: {
-            accept: "application/json",
+      const response: ResourcesResponse<ResourceType> =
+        await this.executeAuthenticatedAPIRequest<
+          ResourcesResponse<ResourceType>
+        >(
+          `https://api.crowdstrike.com${resourcePath}?${toQueryString(
+            paginationParams,
+            query,
+          )}`,
+          {
+            method: 'GET',
+            headers: {
+              accept: 'application/json',
+            },
           },
-        },
-      );
+        );
 
-      continuePagination = await callback(response.resources);
+      await callback(response.resources);
 
-      paginationParams = paginationMeta = response.meta
-        .pagination as PaginationMeta;
+      paginationParams = response.meta.pagination as PaginationMeta;
       seen += response.resources.length;
-      total = paginationMeta.total;
-      pages += 1;
+      total = paginationParams.total!;
       finished = seen === 0 || seen >= total;
-    } while (!finished && continuePagination !== false);
-
-    const paginationState: PaginationState = {
-      limit: pagination?.limit,
-      seen,
-      total,
-      pages,
-      finished,
-    };
-
-    if (!finished) {
-      paginationState.offset = paginationMeta?.offset;
-      paginationState.expiresAt = paginationMeta?.expires_at;
-    }
-
-    return paginationState;
+    } while (!finished);
   }
 
   private async requestOAuth2Token(): Promise<OAuth2Token> {
     const params = new URLSearchParams();
-    params.append("client_id", this.credentials.clientId);
-    params.append("client_secret", this.credentials.clientSecret);
+    params.append('client_id', this.credentials.clientId);
+    params.append('client_secret', this.credentials.clientSecret);
 
     const response = await this.executeAPIRequest<OAuth2TokenResponse>(
-      "https://api.crowdstrike.com/oauth2/token",
+      'https://api.crowdstrike.com/oauth2/token',
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          accept: "application/json",
+          accept: 'application/json',
         },
         body: params,
       },
@@ -269,15 +233,12 @@ export class FalconAPIClient {
     info: RequestInfo,
     init: RequestInit,
   ): Promise<ResponseType> {
-    const apiResponse = await executeAPIRequest(
-      {
-        url: info as string,
-        exec: () => fetch(info, init),
-        rateLimitConfig: this.rateLimitConfig,
-        rateLimitState: this.rateLimitState,
-      },
-      this.events,
-    );
+    const apiResponse = await this.executeAPIRequestWithRateLimitRetries({
+      url: info as string,
+      exec: () => fetch(info, init),
+      rateLimitConfig: this.rateLimitConfig,
+      rateLimitState: this.rateLimitState,
+    });
 
     this.rateLimitState = apiResponse.rateLimitState;
 
@@ -291,66 +252,60 @@ export class FalconAPIClient {
 
     return apiResponse.response.json();
   }
-}
 
-async function executeAPIRequest<T>(
-  request: APIRequest,
-  events: EventEmitter,
-): Promise<APIResponse> {
-  const config = request.rateLimitConfig;
+  private async executeAPIRequestWithRateLimitRetries<T>(
+    request: APIRequest,
+  ): Promise<APIResponse> {
+    const config = request.rateLimitConfig;
 
-  let attempts = 0;
-  let rateLimitState = request.rateLimitState;
+    let attempts = 0;
+    let rateLimitState = request.rateLimitState;
 
-  do {
-    const tryAfterCooldown =
-      rateLimitState.limitRemaining <= config.reserveLimit
-        ? Date.now() + config.cooldownPeriod
-        : 0;
+    do {
+      const tryAfterCooldown =
+        rateLimitState.limitRemaining <= config.reserveLimit
+          ? Date.now() + config.cooldownPeriod
+          : 0;
 
-    const tryAfter = Math.max(rateLimitState.retryAfter, tryAfterCooldown);
+      const tryAfter = Math.max(rateLimitState.retryAfter, tryAfterCooldown);
 
-    events.emit(ClientEvents.REQUEST, {
-      url: request.url,
-      rateLimitConfig: request.rateLimitConfig,
-      rateLimitState: request.rateLimitState,
-      tryAfter,
-      attempts,
-    });
+      const response = await tryAPIRequest(request.exec, tryAfter);
 
-    const response = await tryAPIRequest(request.exec, tryAfter);
-
-    rateLimitState = {
-      limitRemaining:
-        Number(response.headers.get("x-ratelimit-remaining")) ||
-        rateLimitState.limitRemaining,
-      perMinuteLimit:
-        Number(response.headers.get("x-ratelimit-limit")) ||
-        rateLimitState.perMinuteLimit,
-      retryAfter: Number(response.headers.get("x-ratelimit-retryafter") || 0),
-    };
-
-    events.emit(ClientEvents.RESPONSE, {
-      url: request.url,
-      rateLimitConfig: request.rateLimitConfig,
-      rateLimitState: request.rateLimitState,
-      tryAfter,
-      attempts,
-    });
-
-    if (response.status !== 429) {
-      return {
-        response,
-        rateLimitState,
-        status: response.status,
-        statusText: response.statusText,
+      rateLimitState = {
+        limitRemaining:
+          Number(response.headers.get('x-ratelimit-remaining')) ||
+          rateLimitState.limitRemaining,
+        perMinuteLimit:
+          Number(response.headers.get('x-ratelimit-limit')) ||
+          rateLimitState.perMinuteLimit,
+        retryAfter: Number(
+          response.headers.get('x-ratelimit-retryafter') || 1000,
+        ),
       };
-    }
 
-    attempts += 1;
-  } while (attempts < request.rateLimitConfig.maxAttempts);
+      if (response.status !== 429 && response.status !== 500) {
+        return {
+          response,
+          rateLimitState,
+          status: response.status,
+          statusText: response.statusText,
+        };
+      }
 
-  throw new Error(`Could not complete request within ${attempts} attempts!`);
+      attempts += 1;
+      this.logger.warn(
+        {
+          rateLimitState,
+          attempts,
+          url: request.url,
+          status: response.status,
+        },
+        'Encountered retryable status code from Crowdstrike API',
+      );
+    } while (attempts < request.rateLimitConfig.maxAttempts);
+
+    throw new Error(`Could not complete request within ${attempts} attempts!`);
+  }
 }
 
 async function tryAPIRequest(
@@ -378,11 +333,11 @@ function toQueryString(
   const params = new URLSearchParams();
 
   if (pagination) {
-    if (typeof pagination.limit === "number") {
-      params.append("limit", String(pagination.limit));
+    if (typeof pagination.limit === 'number') {
+      params.append('limit', String(pagination.limit));
     }
     if (pagination.offset !== undefined) {
-      params.append("offset", String(pagination.offset));
+      params.append('offset', String(pagination.offset));
     }
   }
 

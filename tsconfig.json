@@ -1,21 +1,7 @@
 {
-  "include": ["src/**/*", "tools/**/*", "test/**/*"],
+  "extends": "./node_modules/@jupiterone/integration-sdk-dev-tools/config/typescript",
   "compilerOptions": {
-    "outDir": "build",
-    "noUnusedLocals": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "resolveJsonModule": true,
-    "allowJs": false,
-    "moduleResolution": "node",
-    "target": "es2018",
-    "module": "commonjs",
-    "pretty": true,
-    "inlineSourceMap": true
-  }
+    "outDir": "dist"
+  },
+  "exclude": ["dist"]
 }

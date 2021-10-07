@@ -1,4 +1,5 @@
-import { IntegrationValidationContext } from "@jupiterone/jupiter-managed-integration-sdk";
+import { IntegrationExecutionContext } from "@jupiterone/integration-sdk-core";
+import { CrowdStrikeIntegrationInstanceConfig } from "./types";
 
 /**
  * Performs validation of the execution before the execution handler function is
@@ -17,7 +18,7 @@ import { IntegrationValidationContext } from "@jupiterone/jupiter-managed-integr
  */
 export default async function invocationValidator(
   /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-  _context: IntegrationValidationContext,
+  _context: IntegrationExecutionContext<CrowdStrikeIntegrationInstanceConfig>,
 ): Promise<void> {
   // const { config } = context.instance;
   // if (!config.providerAPIKey) {

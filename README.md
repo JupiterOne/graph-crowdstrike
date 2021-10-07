@@ -1,113 +1,59 @@
-# graph-crowdstrike
+# JupiterOne Integration
 
-[![Build Status](https://travis-ci.org/JupiterOne/graph-crowdstrike.svg?branch=master)](https://travis-ci.org/JupiterOne/graph-crowdstrike)
+Learn about the data ingested, benefits of this integration, and how to use it
+with JupiterOne in the [integration documentation](docs/jupiterone.md).
 
-Integrations are responsible for connecting to data provider APIs to collect
-current state and maintain a graph database representing the entities and
-relationships managed by the provider.
+## Development
 
-## Development Environment
+### Prerequisites
 
-You may use use Node to execute directly on your machine.
+1. Install [Node.js](https://nodejs.org/) using the
+   [installer](https://nodejs.org/en/download/) or a version manager such as
+   [nvm](https://github.com/nvm-sh/nvm) or [fnm](https://github.com/Schniz/fnm).
+2. Install [`yarn`](https://yarnpkg.com/getting-started/install) or
+   [`npm`](https://github.com/npm/cli#installation) to install dependencies.
+3. Install dependencies with `yarn install`.
+4. Register an account in the system this integration targets for ingestion and
+   obtain API credentials.
+5. `cp .env.example .env` and add necessary values for runtime configuration.
 
-Prerequisites:
+   When an integration executes, it needs API credentials and any other
+   configuration parameters necessary for its work (provider API credentials,
+   data ingestion parameters, etc.). The names of these parameters are defined
+   by the `IntegrationInstanceConfigFieldMap`in `src/config.ts`. When the
+   integration is executed outside the JupiterOne managed environment (local
+   development or on-prem), values for these parameters are read from Node's
+   `process.env` by converting config field names to constant case. For example,
+   `clientId` is read from `process.env.CLIENT_ID`.
 
-1.  Install Docker and Docker Compose (both included in Docker for Mac installs)
-1.  Provide credentials in `.env` (see
-    [Environment Variable](#environment-variables))
+   The `.env` file is loaded into `process.env` before the integration code is
+   executed. This file is not required should you configure the environment
+   another way. `.gitignore` is configured to to avoid commiting the `.env`
+   file.
 
-Node:
+### Running the integration
 
-1.  Install Node (Node Version Manager is recommended)
-1.  `yarn install`
-1.  `yarn start:containers`
-1.  `yarn start`
+1. `yarn start` to collect data
+2. `yarn graph` to show a visualization of the collected data
+3. `yarn j1-integration -h` for additional commands
 
-Activity is logged to the console indicating the operations produced and
-processed. View raw data in the graph database using
-[Graphexp](https://github.com/bricaud/graphexp).
+### Making Contributions
 
-Execute the integration again to see that there are no change operations
-produced.
+Start by taking a look at the source code. The integration is basically a set of
+functions called steps, each of which ingests a collection of resources and
+relationships. The goal is to limit each step to as few resource types as
+possible so that should the ingestion of one type of data fail, it does not
+necessarily prevent the ingestion of other, unrelated data. That should be
+enough information to allow you to get started coding!
 
-Restart the graph server to clear the data when you want to run the integration
-with no existing data.
+See the
+[SDK development documentation](https://github.com/JupiterOne/sdk/blob/main/docs/integrations/development.md)
+for a deep dive into the mechanics of how integrations work.
 
-```sh
-yarn restart:containers
-```
+See [docs/development.md](docs/development.md) for any additional details about
+developing this integration.
 
-### Environment Variables
+### Changelog
 
-Provider API configuration is specified by users when they install the
-integration into their JupiterOne environment. Some integrations may also
-require pre-shared secrets, used across all integration installations, which is
-to be secured by JupiterOne and provided in the execution context.
-
-Local execution requires the same configuration parameters for a development
-provider account. `tools/execute.ts` is the place to provide the parameters. The
-execution script must not include any credentials, and it is important to make
-it easy for other developers to execute the integration against their own
-development provider account.
-
-1. Update `tools/execute.ts` to provide the properties required by the
-   `executionHandler` function
-1. Create a `.env` file to provide the environment variables transferred into
-   the properties
-
-For example, given this execution script:
-
-```typescript
-const integrationConfig = {
-  apiToken: process.env.MYPROVIDER_LOCAL_EXECUTION_API_TOKEN,
-};
-
-const invocationArgs = {
-  preSharedPrivateKey: process.env.MYPROVIDER_LOCAL_EXECUTION_PRIVATE_KEY,
-};
-```
-
-Create a `.env` file (this is `.gitignore`'d):
-
-```sh
-MYPROVIDER_LOCAL_EXECUTION_API_TOKEN=abc123
-MYPROVIDER_LOCAL_EXECUTION_PRIVATE_KEY='something\nreally\nlong'
-```
-
-#### SDK Variables
-
-Environment variables can modify some aspects of the integration SDK behavior.
-These may be added to your `.env` with values to overrided the defaults listed
-here.
-
-- `GRAPH_DB_ENDPOINT` - `"localhost"`
-
-### Running tests
-
-All tests must be written using Jest. Focus on testing provider API interactions
-and conversion from provider data to entities and relationships.
-
-To run tests locally:
-
-```sh
-yarn test
-```
-
-### Deployment
-
-Managed integrations are deployed into the JupiterOne infrastructure by staff
-engineers using internal projects that declare a dependency on the open source
-integration NPM package. The package will be published by the JupiterOne team.
-
-#### Publishing to NPM
-
-Create a PR with changes and request review. Once approved, the branch will be
-merged into `master`. An administrator of the GitHub project should:
-
-1. Pull the latest from `master`
-1. Determine the new semantic version number
-1. Create the version and tag with `yarn version [--major] [--minor] [--patch]`
-1. Push the commit and tag with `git push --follow-tags`
-
-That's it! Travis will deploy the necessary bits to NPM. Manual deployment is
-possible of course, just be certain to follow the `yarn build` road.
+The history of this integration's development can be viewed at
+[CHANGELOG.md](CHANGELOG.md).
