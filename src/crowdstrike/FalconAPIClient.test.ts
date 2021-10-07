@@ -127,9 +127,9 @@ describe('executeAPIRequest', () => {
       name: 'executeAPIRequest429',
     });
 
-    const requestTimes: number[] = [];
+    const requestTimesInMs: number[] = [];
     recording.server.any().on('request', (_req, _event) => {
-      requestTimes.push(Date.now());
+      requestTimesInMs.push(Date.now());
     });
 
     recording.server
@@ -141,7 +141,7 @@ describe('executeAPIRequest', () => {
 
     await createClient().authenticate();
 
-    expect(requestTimes.length).toBe(2);
+    expect(requestTimesInMs.length).toBe(2);
   });
 
   test('waits until retryafter on 429 response', async () => {
@@ -150,12 +150,12 @@ describe('executeAPIRequest', () => {
       name: 'executeAPIRequest429',
     });
 
-    const requestTimes: number[] = [];
+    const requestTimesInMs: number[] = [];
     recording.server.any().on('request', (_req, _event) => {
-      requestTimes.push(Date.now());
+      requestTimesInMs.push(Date.now());
     });
 
-    const retryAfter = Date.now() + 1000;
+    const retryAfterTimeInSeconds = Date.now() / 1000 + 1; // server responds with epoch time in seconds, Date.now() returns epoch time in ms
     recording.server
       .any()
       .times(1)
@@ -163,7 +163,7 @@ describe('executeAPIRequest', () => {
         res
           .status(429)
           .setHeaders({
-            'x-ratelimit-retryafter': String(retryAfter),
+            'x-ratelimit-retryafter': String(retryAfterTimeInSeconds),
           })
           .json({
             errors: [
@@ -177,8 +177,8 @@ describe('executeAPIRequest', () => {
 
     await createClient().authenticate();
 
-    expect(requestTimes.length).toBe(2);
-    expect(requestTimes[1]).toBeGreaterThan(retryAfter);
+    expect(requestTimesInMs.length).toBe(2);
+    expect(requestTimesInMs[1]).toBeGreaterThan(retryAfterTimeInSeconds * 1000);
   });
 
   test('retries 429 response limited times', async () => {
@@ -187,16 +187,17 @@ describe('executeAPIRequest', () => {
       name: 'executeAPIRequest429limit',
     });
 
-    const requestTimes: number[] = [];
+    const requestTimesInMs: number[] = [];
     recording.server.any().on('request', (_req, _event) => {
-      requestTimes.push(Date.now());
+      requestTimesInMs.push(Date.now());
     });
 
+    const retryAfterTimeInSeconds = Date.now() / 1000 - 10; // server responds with epoch time in seconds, Date.now() returns epoch time in ms
     recording.server.any().intercept((_req, res) => {
       res
         .status(429)
         .setHeaders({
-          'x-ratelimit-retryafter': String(Date.now() - 10),
+          'x-ratelimit-retryafter': String(retryAfterTimeInSeconds),
         })
         .json({
           errors: [
@@ -218,7 +219,7 @@ describe('executeAPIRequest', () => {
 
     await expect(client.authenticate()).rejects.toThrowError(/2/);
 
-    expect(requestTimes.length).toBe(2);
+    expect(requestTimesInMs.length).toBe(2);
   });
 
   test('throttles at specified reserveLimit', async () => {
