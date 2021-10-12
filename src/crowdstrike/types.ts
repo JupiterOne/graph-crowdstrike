@@ -106,7 +106,7 @@ export type RateLimitState = {
    * The next time when an account's rate limit pool will have at least one
    * request available.
    */
-  retryAfter: number;
+  retryAfter?: number;
 };
 
 /**
