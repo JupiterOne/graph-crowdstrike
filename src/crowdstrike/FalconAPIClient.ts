@@ -17,6 +17,10 @@ import {
 } from './types';
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 
+function getUnixTimeNow() {
+  return Date.now() / 1000;
+}
+
 async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -200,6 +204,8 @@ export class FalconAPIClient {
   }
 
   private async requestOAuth2Token(): Promise<OAuth2Token> {
+    this.logger.info('Fetching new access token');
+
     const params = new URLSearchParams();
     params.append('client_id', this.credentials.clientId);
     params.append('client_secret', this.credentials.clientSecret);
@@ -215,9 +221,17 @@ export class FalconAPIClient {
       },
     );
 
+    const expiresAt = getUnixTimeNow() + response.expires_in;
+    this.logger.info(
+      {
+        expiresAt,
+        expires_in: response.expires_in,
+      },
+      'Fetched new access token',
+    );
     return {
       token: response.access_token,
-      expiresAt: Date.now() + response.expires_in,
+      expiresAt,
     };
   }
 
@@ -296,11 +310,13 @@ export class FalconAPIClient {
       }
 
       if (response.status === 429) {
-        const epochTimeNow = Date.now() / 1000;
-        const timeToSleepInSeconds = rateLimitState.retryAfter - epochTimeNow;
+        const unixTimeNow = getUnixTimeNow();
+        const timeToSleepInSeconds = rateLimitState.retryAfter
+          ? rateLimitState.retryAfter - unixTimeNow
+          : 0;
         this.logger.info(
           {
-            epochTimeNow,
+            unixTimeNow,
             timeToSleepInSeconds,
             rateLimitState,
             rateLimitConfig: request.rateLimitConfig,
@@ -320,14 +336,14 @@ export class FalconAPIClient {
         },
         'Encountered retryable status code from Crowdstrike API',
       );
-    } while (attempts < request.rateLimitConfig.maxAttempts);
+    } while (attempts < this.rateLimitConfig.maxAttempts);
 
     throw new Error(`Could not complete request within ${attempts} attempts!`);
   }
 }
 
 function isValidToken(token: OAuth2Token): boolean {
-  return !!(token && token.expiresAt > Date.now());
+  return !!(token && token.expiresAt > getUnixTimeNow());
 }
 
 function toQueryString(
