@@ -279,15 +279,11 @@ export class FalconAPIClient {
       const response = await request.exec();
 
       rateLimitState = {
-        limitRemaining:
-          Number(response.headers.get('x-ratelimit-remaining')) ||
-          rateLimitState.limitRemaining,
-        perMinuteLimit:
-          Number(response.headers.get('x-ratelimit-limit')) ||
-          rateLimitState.perMinuteLimit,
-        retryAfter: Number(
-          response.headers.get('x-ratelimit-retryafter') || 1000,
-        ),
+        limitRemaining: Number(response.headers.get('X-RateLimit-Remaining')),
+        perMinuteLimit: Number(response.headers.get('X-RateLimit-Limit')),
+        retryAfter:
+          response.headers.get('X-RateLimit-RetryAfter') &&
+          Number(response.headers.get('X-RateLimit-RetryAfter')),
       };
 
       if (response.status !== 429 && response.status !== 500) {
