@@ -45,11 +45,10 @@ export async function fetchDevices(
   });
 }
 
-const THIRTY_DAYS_AGO = 60 * 1000 * 60 * 24 * 30;
-const LAST_SEEN_DAYS_BACK = THIRTY_DAYS_AGO;
+const THIRTY_DAYS_AGO = 30 * 24 * 60 * 60 * 1000;
 
 function lastSeenSince(): string {
-  return new Date(Date.now() - LAST_SEEN_DAYS_BACK).toISOString();
+  return new Date(Date.now() - THIRTY_DAYS_AGO).toISOString();
 }
 
 export const fetchDevicesStep: Step<
