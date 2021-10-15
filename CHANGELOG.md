@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.0.6] - 2021-10-15
+
+- Fixed the way we calculate `expiresAt` for API tokens
+
 ## [2.0.5] - 2021-10-07
 
 ### Fixed
