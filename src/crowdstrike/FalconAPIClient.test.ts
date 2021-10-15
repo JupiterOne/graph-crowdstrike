@@ -79,10 +79,11 @@ describe('authenticate', () => {
     const client = createClient();
     const access = await client.authenticate();
 
+    const THIRTY_MINUTES_IN_MS = 30 * 60 * 1000;
     const realNow = Date.now; // eslint-disable-line @typescript-eslint/unbound-method
     jest
       .spyOn(global.Date, 'now')
-      .mockImplementationOnce(() => realNow() + 30 * 60 * 1000);
+      .mockImplementationOnce(() => realNow() + THIRTY_MINUTES_IN_MS);
 
     const newAccess = await client.authenticate();
     expect(newAccess).not.toBe(access);
