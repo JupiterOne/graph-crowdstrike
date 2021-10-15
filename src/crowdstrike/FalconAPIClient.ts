@@ -28,24 +28,15 @@ async function sleep(ms) {
 type APIRequest = {
   url: string;
   exec: () => Promise<Response>;
-  rateLimitConfig: RateLimitConfig;
-  rateLimitState: RateLimitState;
 };
 
 type APIResponse = {
   response: Response;
   status: Response['status'];
   statusText: Response['statusText'];
-  rateLimitState: RateLimitState;
 };
 
-const INITIAL_RATE_LIMIT_STATE: RateLimitState = {
-  limitRemaining: 300,
-  perMinuteLimit: 100,
-  retryAfter: 0,
-};
-
-const DEFAULT_RATE_LIMIT_CONFIG: RateLimitConfig = {
+export const DEFAULT_RATE_LIMIT_CONFIG: RateLimitConfig = {
   maxAttempts: 5,
   reserveLimit: 30,
   cooldownPeriod: 1000,
@@ -53,8 +44,6 @@ const DEFAULT_RATE_LIMIT_CONFIG: RateLimitConfig = {
 
 export type FalconAPIClientConfig = {
   credentials: OAuth2ClientCredentials;
-  rateLimitConfig?: Partial<RateLimitConfig>;
-  rateLimitState?: RateLimitState;
   logger: IntegrationLogger;
 };
 
@@ -65,19 +54,11 @@ export type FalconAPIResourceIterationCallback<T> = (
 export class FalconAPIClient {
   private credentials: OAuth2ClientCredentials;
   private token: OAuth2Token | undefined;
-  private rateLimitConfig: RateLimitConfig;
-  private rateLimitState: RateLimitState;
   private logger: IntegrationLogger;
+  private rateLimitConfig: RateLimitConfig = DEFAULT_RATE_LIMIT_CONFIG;
 
-  constructor({
-    credentials,
-    rateLimitConfig,
-    rateLimitState,
-    logger,
-  }: FalconAPIClientConfig) {
+  constructor({ credentials, logger }: FalconAPIClientConfig) {
     this.credentials = credentials;
-    this.rateLimitConfig = { ...DEFAULT_RATE_LIMIT_CONFIG, ...rateLimitConfig };
-    this.rateLimitState = rateLimitState || INITIAL_RATE_LIMIT_STATE;
     this.logger = logger;
   }
 
@@ -104,13 +85,13 @@ export class FalconAPIClient {
     query?: QueryParams;
   }): Promise<void> {
     return this.paginateResources<DeviceIdentifier>({
-      ...input,
       callback: async (deviceIds) => {
         if (deviceIds.length) {
           // If the scroll lists _no_ recent devices, we don't want to send a malformed request to https://api.crowdstrike.com/devices/entities/devices/v1?
           return await input.callback(await this.fetchDevices(deviceIds));
         }
       },
+      query: input.query,
       resourcePath: '/devices/queries/devices-scroll/v1',
     });
   }
@@ -123,10 +104,9 @@ export class FalconAPIClient {
    */
   public async iteratePreventionPolicies(input: {
     callback: FalconAPIResourceIterationCallback<PreventionPolicy>;
-    query?: QueryParams;
   }): Promise<void> {
     return this.paginateResources<PreventionPolicy>({
-      ...input,
+      callback: input.callback,
       resourcePath: '/policy/combined/prevention/v1',
     });
   }
@@ -134,12 +114,11 @@ export class FalconAPIClient {
   public async iteratePreventionPolicyMemberIds(input: {
     callback: FalconAPIResourceIterationCallback<DeviceIdentifier>;
     policyId: string;
-    query?: QueryParams;
   }): Promise<void> {
     return this.paginateResources<DeviceIdentifier>({
-      ...input,
+      callback: input.callback,
       resourcePath: '/policy/queries/prevention-members/v1',
-      query: { ...input.query, id: input.policyId },
+      query: { id: input.policyId },
     });
   }
 
@@ -168,7 +147,6 @@ export class FalconAPIClient {
   }: {
     callback: FalconAPIResourceIterationCallback<ResourceType>;
     resourcePath: string;
-    pagination?: PaginationParams;
     query?: QueryParams;
   }): Promise<void> {
     let seen: number = 0;
@@ -253,11 +231,7 @@ export class FalconAPIClient {
     const apiResponse = await this.executeAPIRequestWithRateLimitRetries({
       url: info as string,
       exec: () => fetch(info, init),
-      rateLimitConfig: this.rateLimitConfig,
-      rateLimitState: this.rateLimitState,
     });
-
-    this.rateLimitState = apiResponse.rateLimitState;
 
     if (apiResponse.status >= 400) {
       const err = new Error(
@@ -274,22 +248,9 @@ export class FalconAPIClient {
     request: APIRequest,
   ): Promise<APIResponse> {
     let attempts = 0;
-    let rateLimitState = request.rateLimitState;
+    let rateLimitState: RateLimitState;
 
     do {
-      if (
-        rateLimitState.limitRemaining <= request.rateLimitConfig.reserveLimit
-      ) {
-        this.logger.info(
-          {
-            rateLimitState,
-            rateLimitConfig: request.rateLimitConfig,
-          },
-          'Rate limit remaining is less than reserve limit. Waiting for cooldown period.',
-        );
-        await sleep(request.rateLimitConfig.cooldownPeriod);
-      }
-
       const response = await request.exec();
 
       rateLimitState = {
@@ -303,7 +264,6 @@ export class FalconAPIClient {
       if (response.status !== 429 && response.status !== 500) {
         return {
           response,
-          rateLimitState,
           status: response.status,
           statusText: response.statusText,
         };
@@ -319,11 +279,24 @@ export class FalconAPIClient {
             unixTimeNow,
             timeToSleepInSeconds,
             rateLimitState,
-            rateLimitConfig: request.rateLimitConfig,
+            rateLimitConfig: this.rateLimitConfig,
           },
           'Encountered 429 response. Waiting to retry request.',
         );
         await sleep(timeToSleepInSeconds * 1000);
+        if (
+          rateLimitState.limitRemaining &&
+          rateLimitState.limitRemaining <= this.rateLimitConfig.reserveLimit
+        ) {
+          this.logger.info(
+            {
+              rateLimitState,
+              rateLimitConfig: this.rateLimitConfig,
+            },
+            'Rate limit remaining is less than reserve limit. Waiting for cooldown period.',
+          );
+          await sleep(this.rateLimitConfig.cooldownPeriod);
+        }
       }
 
       attempts += 1;
@@ -336,7 +309,7 @@ export class FalconAPIClient {
         },
         'Encountered retryable status code from Crowdstrike API',
       );
-    } while (attempts < request.rateLimitConfig.maxAttempts);
+    } while (attempts < this.rateLimitConfig.maxAttempts);
 
     throw new Error(`Could not complete request within ${attempts} attempts!`);
   }
