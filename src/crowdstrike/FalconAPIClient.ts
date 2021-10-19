@@ -309,6 +309,10 @@ export class FalconAPIClient {
         },
         'Encountered retryable status code from Crowdstrike API',
       );
+      if (attempts === 2) {
+        // TODO remove additional 1m of waiting after second 429 encountered
+        await sleep(60 * 1000);
+      }
     } while (attempts < this.rateLimitConfig.maxAttempts);
 
     throw new Error(`Could not complete request within ${attempts} attempts!`);
