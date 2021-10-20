@@ -271,8 +271,19 @@ export class FalconAPIClient {
 
       if (response.status === 429) {
         const unixTimeNow = getUnixTimeNow();
+        /**
+         * We have seen in the wild that waiting until the
+         * `x-ratelimit-retryafter` unix timestamp before retrying requests
+         * does often still result in additional 429 errors. This may be caused
+         * by incorrect logic on the API server, out-of-sync clocks between
+         * client and server, or something else. However, we have seen that
+         * waiting an additional minute does result in successful invocations.
+         *
+         * `timeToSleepInSeconds` adds 60s to the `retryAfter` property, but
+         * may be reduced in the future.
+         */
         const timeToSleepInSeconds = rateLimitState.retryAfter
-          ? rateLimitState.retryAfter - unixTimeNow
+          ? rateLimitState.retryAfter + 60 - unixTimeNow
           : 0;
         this.logger.info(
           {
@@ -309,10 +320,6 @@ export class FalconAPIClient {
         },
         'Encountered retryable status code from Crowdstrike API',
       );
-      if (attempts === 2) {
-        // TODO remove additional 1m of waiting after second 429 encountered
-        await sleep(60 * 1000);
-      }
     } while (attempts < this.rateLimitConfig.maxAttempts);
 
     throw new Error(`Could not complete request within ${attempts} attempts!`);

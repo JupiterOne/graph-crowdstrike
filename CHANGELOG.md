@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.0.8] - 2021-10-20
+
+- Improved waiting logic after encountering 429 errors
+
 ## [2.0.7] - 2021-10-19
 
 - Attempted waiting an additional 60s after the first 429 encountered

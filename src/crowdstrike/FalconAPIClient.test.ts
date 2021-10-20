@@ -155,7 +155,7 @@ describe('executeAPIRequest', () => {
       requestTimesInMs.push(Date.now());
     });
 
-    const retryAfterTimeInSeconds = Date.now() / 1000 + 1; // server responds with epoch time in seconds, Date.now() returns epoch time in ms
+    const retryAfterTimeInSeconds = Date.now() / 1000 - 60 + 1; // server responds with epoch time in seconds, Date.now() returns epoch time in ms
     recording.server
       .any()
       .times(1)
@@ -181,8 +181,7 @@ describe('executeAPIRequest', () => {
     expect(requestTimesInMs[1]).toBeGreaterThan(retryAfterTimeInSeconds * 1000);
   });
 
-  test.skip('retries 429 response limited times', async () => {
-    // TODO remove temporary 60s wait in FalconAPIClient before re-enabling this test.
+  test('retries 429 response limited times', async () => {
     recording = setupCrowdstrikeRecording({
       directory: __dirname,
       name: 'executeAPIRequest429limit',
@@ -193,7 +192,7 @@ describe('executeAPIRequest', () => {
       requestTimesInMs.push(Date.now());
     });
 
-    const retryAfterTimeInSeconds = Date.now() / 1000 - 10; // server responds with epoch time in seconds, Date.now() returns epoch time in ms
+    const retryAfterTimeInSeconds = Date.now() / 1000 - 60 - 10; // server responds with epoch time in seconds, Date.now() returns epoch time in ms
     recording.server.any().intercept((_req, res) => {
       res
         .status(429)
