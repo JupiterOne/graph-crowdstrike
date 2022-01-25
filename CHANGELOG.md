@@ -8,7 +8,7 @@ and this project adheres to
 
 ## [Unreleased]
 
-- Update
+- Update sdk-\* packages to 8.2.1
 
 ## [2.0.8] - 2021-10-20
 
