@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+- Update
+
 ## [2.0.8] - 2021-10-20
 
 - Improved waiting logic after encountering 429 errors

@@ -120,6 +120,7 @@ export function createPreventionPolicyEntity(source: PreventionPolicy): Entity {
       assign: {
         _class: Entities.PREVENTION_POLICY._class,
         _type: Entities.PREVENTION_POLICY._type,
+        _key: source.id,
         createdOn: Date.parse(source.created_timestamp),
         updatedOn: Date.parse(source.modified_timestamp),
         createdBy: source.created_by,
