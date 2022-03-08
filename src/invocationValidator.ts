@@ -1,5 +1,5 @@
-import { IntegrationExecutionContext } from "@jupiterone/integration-sdk-core";
-import { CrowdStrikeIntegrationInstanceConfig } from "./types";
+import { IntegrationExecutionContext } from '@jupiterone/integration-sdk-core';
+import { CrowdStrikeIntegrationInstanceConfig } from './types';
 
 /**
  * Performs validation of the execution before the execution handler function is

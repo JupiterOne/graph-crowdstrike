@@ -1,1 +1,1 @@
-export { FalconAPIClient } from "./FalconAPIClient";
+export { FalconAPIClient } from './FalconAPIClient';
