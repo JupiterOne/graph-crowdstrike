@@ -5,6 +5,7 @@ import { fetchDevicesStep } from './steps/fetchDevices';
 import { fetchPreventionPoliciesStep } from './steps/fetchPreventionPolicies';
 import { getAccountStep } from './steps/getAccount';
 import { CrowdStrikeIntegrationInstanceConfig } from './types';
+import { fetchVulnerabilitiesStep } from './steps/fetchVulnerabilities';
 
 export const invocationConfig: IntegrationInvocationConfig<CrowdStrikeIntegrationInstanceConfig> =
   {
@@ -31,5 +32,6 @@ export const invocationConfig: IntegrationInvocationConfig<CrowdStrikeIntegratio
       fetchDevicesStep,
       fetchPreventionPoliciesStep,
       fetchDevicePolicyRelationshipsStep,
+      fetchVulnerabilitiesStep,
     ],
   };

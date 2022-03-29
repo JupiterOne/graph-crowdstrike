@@ -4,11 +4,12 @@ import {
   Entity,
   generateRelationshipType,
   getTime,
+  parseTimePropertyValue,
   RelationshipClass,
 } from '@jupiterone/integration-sdk-core';
 import { Entities } from '../constants';
 
-import { Device, PreventionPolicy } from '../crowdstrike/types';
+import { Device, PreventionPolicy, Vulnerability } from '../crowdstrike/types';
 
 function normalizeMacAddress(macAddress: string): string {
   return macAddress.replace(/-/g, ':').toLowerCase();
@@ -126,6 +127,32 @@ export function createPreventionPolicyEntity(source: PreventionPolicy): Entity {
         createdBy: source.created_by,
         updatedBy: source.modified_by,
         active: source.enabled,
+      },
+    },
+  });
+}
+
+export function createVulnerabilityEntity(source: Vulnerability) {
+  return createIntegrationEntity({
+    entityData: {
+      source,
+      assign: {
+        _class: Entities.VULNERABILITY._class,
+        _type: Entities.VULNERABILITY._type,
+        _key: source.id,
+
+        createdOn: parseTimePropertyValue(source.created_timestamp),
+        closedOn: parseTimePropertyValue(source.closed_timestamp),
+        updatedOn: parseTimePropertyValue(source.updated_timestamp),
+        status: source.status,
+        cveBaseScore: source.cve?.base_score,
+        cveDescription: source.cve?.description,
+        cveSeverity: source.cve?.severity,
+        cvePublishedDate: source.cve?.published_date,
+        // TODO: Add remediation data
+        // And consider these properties when we have an example response payload
+        // displayName: source.name,
+        // webLink: source?
       },
     },
   });
