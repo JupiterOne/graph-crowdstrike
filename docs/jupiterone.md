@@ -23,8 +23,9 @@
 ## Support
 
 The query used to ingest vulnerabilities limits to the date/time of the last
-successful integration or to the last 30 days for the initial run. If you need
-help with this integration, please contact
+successful integration or to the last 30 days for the initial run.
+
+If you need help with this integration, please contact
 [JupiterOne Support](https://support.jupiterone.io).
 
 ## Integration Walkthrough
