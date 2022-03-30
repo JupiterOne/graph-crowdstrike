@@ -13,7 +13,7 @@
     "access": "public"
   },
   "scripts": {
-    "start": "j1-integration collect",
+    "start": "j1-integration collect --disable-schema-validation",
     "graph": "j1-integration visualize",
     "graph:types": "j1-integration visualize-types",
     "lint": "eslint . --cache --fix --ext .ts,.tsx",

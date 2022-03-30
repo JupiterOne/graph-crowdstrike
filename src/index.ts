@@ -6,6 +6,7 @@ import { fetchPreventionPoliciesStep } from './steps/fetchPreventionPolicies';
 import { getAccountStep } from './steps/getAccount';
 import { CrowdStrikeIntegrationInstanceConfig } from './types';
 import { fetchVulnerabilitiesStep } from './steps/fetchVulnerabilities';
+import getStepStartStates from './getStepStartStates';
 
 export const invocationConfig: IntegrationInvocationConfig<CrowdStrikeIntegrationInstanceConfig> =
   {
@@ -27,6 +28,7 @@ export const invocationConfig: IntegrationInvocationConfig<CrowdStrikeIntegratio
      */
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     validateInvocation: () => {},
+    getStepStartStates,
     integrationSteps: [
       getAccountStep,
       fetchDevicesStep,

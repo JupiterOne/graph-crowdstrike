@@ -1,0 +1,41 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`getStepStartStates it returns correct disabled values 1`] = `
+Object {
+  "fetch-device-policies": Object {
+    "disabled": false,
+  },
+  "fetch-devices": Object {
+    "disabled": false,
+  },
+  "fetch-prevention-policies": Object {
+    "disabled": false,
+  },
+  "fetch-vulnerabilities": Object {
+    "disabled": false,
+  },
+  "get-account": Object {
+    "disabled": false,
+  },
+}
+`;
+
+exports[`getStepStartStates it returns correct disabled values 2`] = `
+Object {
+  "fetch-device-policies": Object {
+    "disabled": false,
+  },
+  "fetch-devices": Object {
+    "disabled": false,
+  },
+  "fetch-prevention-policies": Object {
+    "disabled": false,
+  },
+  "fetch-vulnerabilities": Object {
+    "disabled": true,
+  },
+  "get-account": Object {
+    "disabled": false,
+  },
+}
+`;
