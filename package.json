@@ -19,7 +19,7 @@
     "lint": "eslint . --cache --fix --ext .ts,.tsx",
     "format": "prettier --write '**/*.{ts,js,json,css,md,yml}'",
     "format:check": "prettier --check '**/*.{ts,js,json,css,md,yml}'",
-    "type-check": "tsc",
+    "type-check": "tsc -p tsconfig.dist.json --declaration",
     "test": "jest",
     "test:env": "LOAD_ENV=1 yarn test",
     "test:ci": "yarn format:check && yarn lint && yarn type-check && yarn test",
