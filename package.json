@@ -13,17 +13,18 @@
     "access": "public"
   },
   "scripts": {
-    "start": "j1-integration collect",
+    "start": "j1-integration collect --disable-schema-validation",
     "graph": "j1-integration visualize",
     "graph:types": "j1-integration visualize-types",
     "lint": "eslint . --cache --fix --ext .ts,.tsx",
     "format": "prettier --write '**/*.{ts,js,json,css,md,yml}'",
+    "format:check": "prettier --check '**/*.{ts,js,json,css,md,yml}'",
     "type-check": "tsc",
     "test": "jest",
     "test:env": "LOAD_ENV=1 yarn test",
-    "test:ci": "yarn lint && yarn type-check && yarn test",
+    "test:ci": "yarn format:check && yarn lint && yarn type-check && yarn test",
     "build": "tsc -p tsconfig.dist.json --declaration && cp README.md dist/README.md",
-    "prepush": "yarn lint && yarn type-check && jest --changedSince main"
+    "prepush": "yarn format:check && yarn lint && yarn type-check && jest --changedSince main"
   },
   "dependencies": {
     "@jupiterone/integration-sdk-runtime": "^8.2.1",

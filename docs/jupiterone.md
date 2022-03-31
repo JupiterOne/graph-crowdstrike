@@ -22,6 +22,9 @@
 
 ## Support
 
+The query used to ingest vulnerabilities limits to the date/time of the last
+successful integration or to the last 30 days for the initial run.
+
 If you need help with this integration, please contact
 [JupiterOne Support](https://support.jupiterone.io).
 
@@ -45,10 +48,10 @@ credentials][1].
   the integration instance.
 - Select a **Polling Interval** that you feel is sufficient for your monitoring
   needs. You may leave this as `DISABLED` and manually execute the integration.
-- Enter the **API client ID** used to authenticate with the CrowdStrike Falcon
-  API.
+- Enter the **API client ID** used to authenticate with the CrowdStrike
+  _**Falcon**_ and _**Spotlight**_ APIs.
 - Enter the **API client secret** used to authenticate with the CrowdStrike
-  Falcon API.
+  _**Falcon**_ and _**Spotlight**_ APIs.
 
 4. Click **Create Configuration** once all values are provided.
 
@@ -85,6 +88,7 @@ The following entities are created:
 | Device Sensor Agent | `crowdstrike_sensor`              | `HostAgent`     |
 | Prevention Policy   | `crowdstrike_prevention_policy`   | `ControlPolicy` |
 | Service             | `crowdstrike_endpoint_protection` | `Service`       |
+| Vulnerability       | `crowdstrike_vulnerability`       | `Vulnerability` |
 
 ### Relationships
 
@@ -96,6 +100,7 @@ The following relationships are created:
 | `crowdstrike_account`           | **HAS**               | `crowdstrike_sensor`              |
 | `crowdstrike_prevention_policy` | **ENFORCES**          | `crowdstrike_endpoint_protection` |
 | `crowdstrike_sensor`            | **ASSIGNED**          | `crowdstrike_prevention_policy`   |
+| `crowdstrike_vulnerability`     | **EXPLOITS**          | `crowdstrike_sensor`              |
 
 <!--
 ********************************************************************************

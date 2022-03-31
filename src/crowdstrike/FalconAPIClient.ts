@@ -14,6 +14,7 @@ import {
   RateLimitConfig,
   RateLimitState,
   ResourcesResponse,
+  Vulnerability,
 } from './types';
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 
@@ -78,7 +79,7 @@ export class FalconAPIClient {
    * 2 minutes. The device details request time combined with the callback
    * processing time, per page, must be less.
    *
-   * @returns pagination state for use in subsequent pagination
+   * @returns Promise
    */
   public async iterateDevices(input: {
     callback: FalconAPIResourceIterationCallback<Device>;
@@ -97,10 +98,28 @@ export class FalconAPIClient {
   }
 
   /**
+   * Iterates the known device vulnerabilities, providing pages
+   * of the collection based on the provided query to the provided callback.
+   *
+   * @param input
+   * @returns Promise
+   */
+  public async iterateVulnerabilities(input: {
+    callBack: FalconAPIResourceIterationCallback<Vulnerability>;
+    query?: QueryParams;
+  }): Promise<void> {
+    return this.paginateResources<Vulnerability>({
+      callback: input.callBack,
+      query: input.query,
+      resourcePath: '/spotlight/combined/vulnerabilities/v1',
+    });
+  }
+
+  /**
    * Iterates prevention policies using the "combined" API, providing pages of
    * the collection to the provided callback.
    *
-   * @returns pagination state for use in subsequent pagination
+   * @returns Promise
    */
   public async iteratePreventionPolicies(input: {
     callback: FalconAPIResourceIterationCallback<PreventionPolicy>;
@@ -111,6 +130,11 @@ export class FalconAPIClient {
     });
   }
 
+  /**
+   * Iterates prevention policy member ids, providing pages of the collection
+   * to the provided callback. Based on the provided policy id.
+   * @param input
+   */
   public async iteratePreventionPolicyMemberIds(input: {
     callback: FalconAPIResourceIterationCallback<DeviceIdentifier>;
     policyId: string;

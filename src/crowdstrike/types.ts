@@ -158,3 +158,33 @@ export type PreventionPolicy = {
   enabled: boolean;
   [property: string]: string | boolean | object | Array<string | object>;
 };
+
+export type Vulnerability = {
+  id: string;
+  aid?: string;
+  cid: string;
+  closed_timestamp?: string;
+  created_timestamp: string;
+  updated_timestamp: string;
+  status: string;
+  cve: {
+    id: string;
+    base_score?: number;
+    description?: string;
+    exploit_status?: number;
+    expoitability_score?: number;
+    impact_score?: number;
+    severity?: string;
+    published_date?: string;
+    vector?: string;
+  };
+  host_info: {
+    hostname: string;
+    local_ip: string;
+    machine_domain: string;
+    os_version: string;
+    ou: string;
+    site_name: string;
+    system_manufacturer: string;
+  };
+};
