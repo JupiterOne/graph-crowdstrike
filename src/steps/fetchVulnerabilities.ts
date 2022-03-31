@@ -32,10 +32,17 @@ export async function fetchVulnerabilities(
       filter: `created_timestamp:>'${createdTimestampFilter}'`,
     },
     callBack: async (vulns) => {
+      // TODO: remove logger once data model is established.
+      logger.info(
+        { vulns: Array.isArray(vulns) ? vulns[0] : vulns },
+        'Crowdstrike vuln data.',
+      );
+
       logger.info(
         { vulnerabilityCount: vulns.length, createdTimestampFilter },
         'Creating vulnerability entities and relationships...',
       );
+
       for (const vulnerability of vulns) {
         const vulnerabilityEntity = await jobState.addEntity(
           createVulnerabilityEntity(vulnerability),
@@ -43,6 +50,7 @@ export async function fetchVulnerabilities(
 
         const sensor = await jobState.findEntity(vulnerability.aid);
 
+        // TODO: consider breaking this out into a separate step
         if (sensor) {
           await jobState.addRelationship(
             createDirectRelationship({
