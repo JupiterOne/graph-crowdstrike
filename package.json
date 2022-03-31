@@ -1,6 +1,6 @@
 {
   "name": "@jupiterone/graph-crowdstrike",
-  "version": "2.0.9",
+  "version": "2.1.0",
   "description": "A template for JupiterOne graph converters.",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -19,7 +19,7 @@
     "lint": "eslint . --cache --fix --ext .ts,.tsx",
     "format": "prettier --write '**/*.{ts,js,json,css,md,yml}'",
     "format:check": "prettier --check '**/*.{ts,js,json,css,md,yml}'",
-    "type-check": "tsc",
+    "type-check": "tsc -p tsconfig.dist.json --declaration",
     "test": "jest",
     "test:env": "LOAD_ENV=1 yarn test",
     "test:ci": "yarn format:check && yarn lint && yarn type-check && yarn test",
@@ -27,14 +27,14 @@
     "prepush": "yarn format:check && yarn lint && yarn type-check && jest --changedSince main"
   },
   "dependencies": {
-    "@jupiterone/integration-sdk-runtime": "^8.2.1",
+    "@jupiterone/integration-sdk-runtime": "^8.8.0",
     "node-fetch": "^2.6.0"
   },
   "peerDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.2.1"
+    "@jupiterone/integration-sdk-core": "^8.8.0"
   },
   "devDependencies": {
-    "@jupiterone/integration-sdk-dev-tools": "^8.2.1",
-    "@jupiterone/integration-sdk-testing": "^8.2.1"
+    "@jupiterone/integration-sdk-dev-tools": "^8.8.0",
+    "@jupiterone/integration-sdk-testing": "^8.8.0"
   }
 }

@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.1.0] - 2022-03-31
+
+### Added
+
+- Added vulnerability step ingestion from the Crowdstrike Spotlight API
+
 ## [2.0.9] - 2022-01-26
 
 - Update sdk-\* packages to 8.2.1
