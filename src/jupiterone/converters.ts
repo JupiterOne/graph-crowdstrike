@@ -1,11 +1,8 @@
 import {
   convertProperties,
   createIntegrationEntity,
-  Entity,
-  generateRelationshipType,
   getTime,
   parseTimePropertyValue,
-  RelationshipClass,
 } from '@jupiterone/integration-sdk-core';
 import { Entities } from '../constants';
 
@@ -18,7 +15,7 @@ function normalizeMacAddress(macAddress: string): string {
 export function createAccountEntity(integrationInstance: {
   id: string;
   name: string;
-}): Entity {
+}) {
   return createIntegrationEntity({
     entityData: {
       source: {},
@@ -34,7 +31,7 @@ export function createAccountEntity(integrationInstance: {
 
 export function createProtectionServiceEntity(integrationInstance: {
   id: string;
-}): Entity {
+}) {
   return createIntegrationEntity({
     entityData: {
       source: {},
@@ -80,7 +77,7 @@ export function buildEc2InstanceArn(source: Device): string | undefined {
   return `arn:aws:ec2:${region}:${serviceProviderAccountId}:instance/${instanceId}`;
 }
 
-export function createSensorAgentEntity(source: Device): Entity {
+export function createSensorAgentEntity(source: Device) {
   return createIntegrationEntity({
     entityData: {
       source,
@@ -111,10 +108,7 @@ export function createSensorAgentEntity(source: Device): Entity {
   });
 }
 
-export const DEVICE_ENTITY_TYPE = 'user_endpoint';
-export const DEVICE_ENTITY_CLASS = ['Device', 'Host'];
-
-export function createPreventionPolicyEntity(source: PreventionPolicy): Entity {
+export function createPreventionPolicyEntity(source: PreventionPolicy) {
   return createIntegrationEntity({
     entityData: {
       source,
@@ -140,7 +134,6 @@ export function createVulnerabilityEntity(source: Vulnerability) {
         _class: Entities.VULNERABILITY._class,
         _type: Entities.VULNERABILITY._type,
         _key: source.id,
-
         createdOn: parseTimePropertyValue(source.created_timestamp),
         closedOn: parseTimePropertyValue(source.closed_timestamp),
         updatedOn: parseTimePropertyValue(source.updated_timestamp),
@@ -157,23 +150,3 @@ export function createVulnerabilityEntity(source: Vulnerability) {
     },
   });
 }
-
-export const ACCOUNT_SENSOR_AGENT_RELATIONSHIP_TYPE = generateRelationshipType(
-  RelationshipClass.HAS,
-  Entities.ACCOUNT._type,
-  Entities.SENSOR._type,
-);
-
-export const SENSOR_AGENT_PREVENTION_POLICY_RELATIONSHIP_TYPE =
-  generateRelationshipType(
-    RelationshipClass.ASSIGNED,
-    Entities.SENSOR._type,
-    Entities.PREVENTION_POLICY._type,
-  );
-
-export const PREVENTION_POLICY_ENFORCES_PROTECTION_RELATIONSHIP_TYPE =
-  generateRelationshipType(
-    RelationshipClass.ENFORCES,
-    Entities.PREVENTION_POLICY._type,
-    Entities.PROTECTION_SERVICE._type,
-  );
