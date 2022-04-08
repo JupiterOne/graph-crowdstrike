@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.1.1] - 2022-04-07
+
+### Fixed
+
+- Prevent duplicate `crowdstrike_vulnerability` entities and relationships from
+  being submitted
+
 ## [2.1.0] - 2022-03-31
 
 ### Added

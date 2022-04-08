@@ -27,6 +27,11 @@ export async function fetchVulnerabilities(
   ).toISOString();
 
   logger.info('Iterating vulnerabilities...');
+
+  let duplicateVulnerabilityKeysFoundCount = 0;
+  let duplicateVulnerabilitySensorRelationshipKeysFoundCount = 0;
+  let sensorEntitiesNotFoundCount = 0;
+
   await client.iterateVulnerabilities({
     query: {
       filter: `created_timestamp:>'${createdTimestampFilter}'`,
@@ -44,25 +49,45 @@ export async function fetchVulnerabilities(
       );
 
       for (const vulnerability of vulns) {
-        const vulnerabilityEntity = await jobState.addEntity(
-          createVulnerabilityEntity(vulnerability),
-        );
+        const vulnerabilityEntity = createVulnerabilityEntity(vulnerability);
+
+        if (await jobState.hasKey(vulnerabilityEntity._key)) {
+          duplicateVulnerabilityKeysFoundCount++;
+        } else {
+          await jobState.addEntity(vulnerabilityEntity);
+        }
 
         const sensor = await jobState.findEntity(vulnerability.aid);
 
+        if (!sensor) {
+          sensorEntitiesNotFoundCount++;
+          continue;
+        }
+
         // TODO: consider breaking this out into a separate step
-        if (sensor) {
-          await jobState.addRelationship(
-            createDirectRelationship({
-              from: vulnerabilityEntity,
-              _class: RelationshipClass.EXPLOITS,
-              to: sensor,
-            }),
-          );
+        const vulnerabilitySensorRelationship = createDirectRelationship({
+          from: vulnerabilityEntity,
+          _class: RelationshipClass.EXPLOITS,
+          to: sensor,
+        });
+
+        if (await jobState.hasKey(vulnerabilitySensorRelationship._key)) {
+          duplicateVulnerabilitySensorRelationshipKeysFoundCount++;
+        } else {
+          await jobState.addRelationship(vulnerabilitySensorRelationship);
         }
       }
     },
   });
+
+  logger.info(
+    {
+      duplicateVulnerabilityKeysFoundCount,
+      duplicateVulnerabilitySensorRelationshipKeysFoundCount,
+      sensorEntitiesNotFoundCount,
+    },
+    'Vulnerability step summary',
+  );
 }
 
 export const fetchVulnerabilitiesStep: Step<
