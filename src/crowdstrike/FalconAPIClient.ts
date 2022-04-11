@@ -180,28 +180,41 @@ export class FalconAPIClient {
     let paginationParams: PaginationParams | undefined = undefined;
 
     do {
+      const url = `https://api.crowdstrike.com${resourcePath}?${toQueryString(
+        paginationParams,
+        query,
+      )}`;
+
+      this.logger.info({ requestUrl: url, paginationParams });
       const response: ResourcesResponse<ResourceType> =
         await this.executeAuthenticatedAPIRequest<
           ResourcesResponse<ResourceType>
-        >(
-          `https://api.crowdstrike.com${resourcePath}?${toQueryString(
-            paginationParams,
-            query,
-          )}`,
-          {
-            method: 'GET',
-            headers: {
-              accept: 'application/json',
-            },
+        >(url, {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
           },
-        );
+        });
 
       await callback(response.resources);
+
+      this.logger.info(
+        {
+          pagination: response.meta,
+          resourcesLength: response.resources.length,
+        },
+        'pagination response details',
+      );
 
       paginationParams = response.meta.pagination as PaginationMeta;
       seen += response.resources.length;
       total = paginationParams.total!;
       finished = seen === 0 || seen >= total;
+
+      this.logger.info(
+        { seen, total, finished },
+        'post-request pagination state',
+      );
     } while (!finished);
   }
 
@@ -350,14 +363,17 @@ export class FalconAPIClient {
   }
 }
 
+const TWO_MINUTES_IN_MILLIS = 120_000;
+
 function isValidToken(token: OAuth2Token): boolean {
-  return !!(token && token.expiresAt > getUnixTimeNow());
+  return token && token.expiresAt - TWO_MINUTES_IN_MILLIS > getUnixTimeNow();
 }
 
 function toQueryString(
   pagination?: {
     limit?: number;
     offset?: number | string;
+    after?: number | string;
   },
   queryParams?: object,
 ): URLSearchParams {
@@ -369,6 +385,9 @@ function toQueryString(
     }
     if (pagination.offset !== undefined) {
       params.append('offset', String(pagination.offset));
+    }
+    if (pagination.after !== undefined) {
+      params.append('after', String(pagination.after));
     }
   }
 
