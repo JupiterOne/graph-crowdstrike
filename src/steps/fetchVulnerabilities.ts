@@ -9,7 +9,9 @@ import createFalconAPIClient from '../crowdstrike/createFalconAPIClient';
 import { Entities, Relationships, StepIds } from '../constants';
 import { createVulnerabilityEntity } from '../jupiterone/converters';
 
-const THIRTY_DAYS_AGO = 30 * 24 * 60 * 60 * 1000;
+// TODO: Understand the amount of data to be ingested by looking back only 10 days
+// const THIRTY_DAYS_AGO = 30 * 24 * 60 * 60 * 1000;
+const TEN_DAYS_AGO = 10 * 24 * 60 * 60 * 1000;
 
 export async function fetchVulnerabilities(
   context: IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>,
@@ -20,10 +22,10 @@ export async function fetchVulnerabilities(
   const lastSuccessfulSyncTime =
     context.executionHistory.lastSuccessful?.startedOn;
 
-  const thirtyDaysAgo = Date.now() - THIRTY_DAYS_AGO;
+  const daysAgo = Date.now() - TEN_DAYS_AGO;
 
   const createdTimestampFilter = new Date(
-    lastSuccessfulSyncTime ?? thirtyDaysAgo,
+    lastSuccessfulSyncTime ?? daysAgo,
   ).toISOString();
 
   logger.info('Iterating vulnerabilities...');
@@ -35,14 +37,9 @@ export async function fetchVulnerabilities(
   await client.iterateVulnerabilities({
     query: {
       filter: `created_timestamp:>'${createdTimestampFilter}'`,
+      sort: `created_timestamp:desc`,
     },
     callBack: async (vulns) => {
-      // TODO: remove logger once data model is established.
-      logger.info(
-        { vulns: Array.isArray(vulns) ? vulns[0] : vulns },
-        'Crowdstrike vuln data.',
-      );
-
       logger.info(
         { vulnerabilityCount: vulns.length, createdTimestampFilter },
         'Creating vulnerability entities and relationships...',

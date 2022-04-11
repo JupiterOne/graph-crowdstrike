@@ -36,6 +36,11 @@ type PaginationState = {
   expiresAt?: number;
 
   /**
+   * Similar to "offset", a value to start from aka a cursor.
+   */
+  after?: number | string;
+
+  /**
    * Number of resources returned through pagination to the point of offset.
    */
   seen: number;
