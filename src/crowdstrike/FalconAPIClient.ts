@@ -363,10 +363,8 @@ export class FalconAPIClient {
   }
 }
 
-const TWO_MINUTES_IN_MILLIS = 120_000;
-
 function isValidToken(token: OAuth2Token): boolean {
-  return token && token.expiresAt - TWO_MINUTES_IN_MILLIS > getUnixTimeNow();
+  return token && token.expiresAt > getUnixTimeNow();
 }
 
 function toQueryString(
