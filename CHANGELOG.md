@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.1.4] - 2022-04-12
+
+### Fixed
+
+- Typo in pagination query.
+
 ## [2.1.3] - 2022-04-11
 
 ### Fixed
