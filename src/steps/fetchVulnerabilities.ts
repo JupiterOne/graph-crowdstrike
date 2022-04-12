@@ -37,7 +37,7 @@ export async function fetchVulnerabilities(
   await client.iterateVulnerabilities({
     query: {
       filter: `created_timestamp:>'${createdTimestampFilter}'`,
-      sort: `created_timestamp:desc`,
+      sort: `created_timestamp|desc`,
     },
     callBack: async (vulns) => {
       logger.info(
