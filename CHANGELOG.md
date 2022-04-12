@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.1.3] - 2022-04-11
+
+### Fixed
+
+- Fixed pagination of vulnerabilities, enhanced logging around vulnerabilities
+  step
+
 ## [2.1.1] - 2022-04-07
 
 ### Fixed
