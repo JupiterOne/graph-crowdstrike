@@ -89,7 +89,7 @@ export async function fetchDevicePolicyRelationships(
           totalNumMembers,
           totalNumDeviceAssignedPolicyRelationships,
         },
-        'Successfully processed devicy policy relationships',
+        'Successfully processed device policy relationships',
       );
     },
   );

@@ -13,6 +13,8 @@ import { createVulnerabilityEntity } from '../jupiterone/converters';
 // const THIRTY_DAYS_AGO = 30 * 24 * 60 * 60 * 1000;
 const TEN_DAYS_AGO = 10 * 24 * 60 * 60 * 1000;
 
+// Ten days resulted in 15 minutes
+
 export async function fetchVulnerabilities(
   context: IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>,
 ): Promise<void> {

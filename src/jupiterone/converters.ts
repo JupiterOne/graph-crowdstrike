@@ -126,6 +126,27 @@ export function createPreventionPolicyEntity(source: PreventionPolicy) {
   });
 }
 
+/**
+ * Example Vuln response:
+ * {
+ *     "id": "feb24177xxxxxxxxxxc48ce11cb_d97920959227xxxxxxxxxx88ed0f",
+ *     "cid": "3b12658xxxxxxxxxx5141e3ace49",
+ *     "aid": "feb241773xxxxxxxxxbc48ce11cb",
+ *     "created_timestamp": "2021-03-11T21:04:22Z",
+ *     "updated_timestamp": "2021-03-11T21:04:22Z",
+ *     "status": "open",
+ *     "apps": [
+ *       {
+ *         "product_name_version": "kernel 4.NNN.XXX-140.257.ggl2",
+ *         "sub_status": "closed",
+ *         "remediation": { "ids": ["1ba86040xxxxxxxxxxx45d9de2705"] },
+ *         "evaluation_logic": { "id": "" }
+ *       }
+ *     ],
+ *     "cve": { "id": "CVE-2021-23444" }
+ *   }
+ * @param source
+ */
 export function createVulnerabilityEntity(source: Vulnerability) {
   return createIntegrationEntity({
     entityData: {
@@ -142,10 +163,9 @@ export function createVulnerabilityEntity(source: Vulnerability) {
         cveDescription: source.cve?.description,
         cveSeverity: source.cve?.severity,
         cvePublishedDate: source.cve?.published_date,
-        // TODO: Add remediation data
-        // And consider these properties when we have an example response payload
-        // displayName: source.name,
-        // webLink: source?
+        cveId: source.cve?.id,
+        displayName: source.cve?.id,
+        // TODO: Consider additional properties: webLink, apps, remediation
       },
     },
   });

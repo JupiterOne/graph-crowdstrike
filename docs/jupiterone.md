@@ -88,7 +88,7 @@ The following entities are created:
 | Device Sensor Agent | `crowdstrike_sensor`              | `HostAgent`     |
 | Prevention Policy   | `crowdstrike_prevention_policy`   | `ControlPolicy` |
 | Service             | `crowdstrike_endpoint_protection` | `Service`       |
-| Vulnerability       | `crowdstrike_vulnerability`       | `Vulnerability` |
+| Vulnerability       | `crowdstrike_vulnerability`       | `Finding`       |
 
 ### Relationships
 
