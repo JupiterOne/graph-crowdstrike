@@ -8,6 +8,15 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.1.5] - 2022-04-18
+
+### Changed
+
+- Change the \_class designation of the vulnerability entity from
+  `Vulnerability` to `Finding`.
+- Add additional properties to the vulnerability entity, including: `id`, `cid`,
+  `aid`, `name`, `displayName`, `cveId`
+
 ## [2.1.4] - 2022-04-12
 
 ### Fixed
