@@ -126,7 +126,31 @@ export function createPreventionPolicyEntity(source: PreventionPolicy) {
   });
 }
 
+/**
+ * Example Vuln response:
+ * {
+ *     "id": "feb24177xxxxxxxxxxc48ce11cb_d97920959227xxxxxxxxxx88ed0f",
+ *     "cid": "3b12658xxxxxxxxxx5141e3ace49",
+ *     "aid": "feb241773xxxxxxxxxbc48ce11cb",
+ *     "created_timestamp": "2021-03-11T21:04:22Z",
+ *     "updated_timestamp": "2021-03-11T21:04:22Z",
+ *     "status": "open",
+ *     "apps": [
+ *       {
+ *         "product_name_version": "kernel 4.NNN.XXX-140.257.ggl2",
+ *         "sub_status": "closed",
+ *         "remediation": { "ids": ["1ba86040xxxxxxxxxxx45d9de2705"] },
+ *         "evaluation_logic": { "id": "" }
+ *       }
+ *     ],
+ *     "cve": { "id": "CVE-2021-23444" }
+ *   }
+ * @param source
+ */
 export function createVulnerabilityEntity(source: Vulnerability) {
+  const cve = source.cve;
+  const cveId = cve?.id;
+
   return createIntegrationEntity({
     entityData: {
       source,
@@ -137,15 +161,18 @@ export function createVulnerabilityEntity(source: Vulnerability) {
         createdOn: parseTimePropertyValue(source.created_timestamp),
         closedOn: parseTimePropertyValue(source.closed_timestamp),
         updatedOn: parseTimePropertyValue(source.updated_timestamp),
+        id: source.id,
+        cid: source.cid,
+        aid: source.aid,
+        name: cveId,
+        displayName: cveId,
         status: source.status,
-        cveBaseScore: source.cve?.base_score,
-        cveDescription: source.cve?.description,
-        cveSeverity: source.cve?.severity,
-        cvePublishedDate: source.cve?.published_date,
-        // TODO: Add remediation data
-        // And consider these properties when we have an example response payload
-        // displayName: source.name,
-        // webLink: source?
+        cveBaseScore: cve?.base_score,
+        cveDescription: cve?.description,
+        cveSeverity: cve?.severity,
+        cvePublishedDate: cve?.published_date,
+        cveId,
+        // TODO: Consider additional properties: webLink, apps, remediation
       },
     },
   });

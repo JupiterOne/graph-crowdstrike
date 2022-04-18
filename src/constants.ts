@@ -40,7 +40,7 @@ export const Entities = {
   VULNERABILITY: {
     resourceName: 'Vulnerability',
     _type: 'crowdstrike_vulnerability',
-    _class: 'Vulnerability',
+    _class: 'Finding', // J1 data model considers CrowdStrike vulns as Findings. Note: this changes the billing of the entity
     partial: true,
   },
 };

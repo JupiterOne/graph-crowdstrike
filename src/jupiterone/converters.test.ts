@@ -5,12 +5,13 @@ import {
 
 import { createMockExecutionContext } from '@jupiterone/integration-sdk-testing';
 
-import { Device, PreventionPolicy } from '../crowdstrike/types';
+import { Device, PreventionPolicy, Vulnerability } from '../crowdstrike/types';
 import {
   createAccountEntity,
   createSensorAgentEntity,
   createPreventionPolicyEntity,
   createProtectionServiceEntity,
+  createVulnerabilityEntity,
 } from './converters';
 
 describe('createAccountEntity', () => {
@@ -247,6 +248,71 @@ describe('createPreventionPolicyEntity', () => {
       createdBy: 'CS Salesforce',
       updatedBy: 'CS Salesforce',
       active: true,
+    });
+  });
+});
+
+describe('createVulnerabilityEntity', () => {
+  test('properties transferred', () => {
+    const source: Vulnerability = {
+      id: 'feb24177xxxxxxxxxxc48ce11cb_d97920959227xxxxxxxxxx88ed0f',
+      cid: '3b12658xxxxxxxxxx5141e3ace49',
+      aid: 'feb241773xxxxxxxxxbc48ce11cb',
+      created_timestamp: '2021-03-11T21:04:22Z',
+      updated_timestamp: '2021-03-11T21:04:22Z',
+      status: 'open',
+      apps: [
+        {
+          product_name_version: 'kernel 4.NNN.XXX-140.257.ggl2',
+          sub_status: 'closed',
+          remediation: { ids: ['1ba86040xxxxxxxxxxx45d9de2705'] },
+          evaluation_logic: { id: '' },
+        },
+      ],
+      cve: { id: 'CVE-2021-23444' },
+    };
+
+    expect(createVulnerabilityEntity(source)).toEqual({
+      _class: ['Finding'],
+      _key: 'feb24177xxxxxxxxxxc48ce11cb_d97920959227xxxxxxxxxx88ed0f',
+      _rawData: [
+        {
+          name: 'default',
+          rawData: {
+            aid: 'feb241773xxxxxxxxxbc48ce11cb',
+            apps: [
+              {
+                evaluation_logic: {
+                  id: '',
+                },
+                product_name_version: 'kernel 4.NNN.XXX-140.257.ggl2',
+                remediation: {
+                  ids: ['1ba86040xxxxxxxxxxx45d9de2705'],
+                },
+                sub_status: 'closed',
+              },
+            ],
+            cid: '3b12658xxxxxxxxxx5141e3ace49',
+            created_timestamp: '2021-03-11T21:04:22Z',
+            cve: {
+              id: 'CVE-2021-23444',
+            },
+            id: 'feb24177xxxxxxxxxxc48ce11cb_d97920959227xxxxxxxxxx88ed0f',
+            status: 'open',
+            updated_timestamp: '2021-03-11T21:04:22Z',
+          },
+        },
+      ],
+      _type: 'crowdstrike_vulnerability',
+      aid: 'feb241773xxxxxxxxxbc48ce11cb',
+      cid: '3b12658xxxxxxxxxx5141e3ace49',
+      createdOn: expect.any(Number),
+      cveId: 'CVE-2021-23444',
+      displayName: 'CVE-2021-23444',
+      id: 'feb24177xxxxxxxxxxc48ce11cb_d97920959227xxxxxxxxxx88ed0f',
+      name: 'CVE-2021-23444',
+      status: 'open',
+      updatedOn: expect.any(Number),
     });
   });
 });
