@@ -148,6 +148,9 @@ export function createPreventionPolicyEntity(source: PreventionPolicy) {
  * @param source
  */
 export function createVulnerabilityEntity(source: Vulnerability) {
+  const cve = source.cve;
+  const cveId = cve?.id;
+
   return createIntegrationEntity({
     entityData: {
       source,
@@ -158,13 +161,17 @@ export function createVulnerabilityEntity(source: Vulnerability) {
         createdOn: parseTimePropertyValue(source.created_timestamp),
         closedOn: parseTimePropertyValue(source.closed_timestamp),
         updatedOn: parseTimePropertyValue(source.updated_timestamp),
+        id: source.id,
+        cid: source.cid,
+        aid: source.aid,
+        name: cveId,
+        displayName: cveId,
         status: source.status,
-        cveBaseScore: source.cve?.base_score,
-        cveDescription: source.cve?.description,
-        cveSeverity: source.cve?.severity,
-        cvePublishedDate: source.cve?.published_date,
-        cveId: source.cve?.id,
-        displayName: source.cve?.id,
+        cveBaseScore: cve?.base_score,
+        cveDescription: cve?.description,
+        cveSeverity: cve?.severity,
+        cvePublishedDate: cve?.published_date,
+        cveId,
         // TODO: Consider additional properties: webLink, apps, remediation
       },
     },

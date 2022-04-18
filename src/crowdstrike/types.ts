@@ -183,7 +183,7 @@ export type Vulnerability = {
     published_date?: string;
     vector?: string;
   };
-  host_info: {
+  host_info?: {
     hostname: string;
     local_ip: string;
     machine_domain: string;
@@ -192,4 +192,14 @@ export type Vulnerability = {
     site_name: string;
     system_manufacturer: string;
   };
+  apps?: {
+    product_name_version: string;
+    sub_status: string;
+    remediation?: {
+      ids: string[];
+    };
+    evaluation_logic: {
+      id: string;
+    };
+  }[];
 };
