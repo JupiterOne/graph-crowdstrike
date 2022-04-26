@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- `createFalconAPIClient` now follows a singleton pattern. This allows multiple
+  steps to run independently and share the single api rate limit.
+
 ## [2.1.5] - 2022-04-18
 
 ### Changed
