@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.1.6]
+
 ### Changed
 
 - `createFalconAPIClient` now follows a singleton pattern. This allows multiple
