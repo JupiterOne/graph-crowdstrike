@@ -1,0 +1,30 @@
+---
+sourceId: managed:crowdstrike
+integrationDefinitionId: "${integration_definition_id}"
+questions:
+- id: managed-question-endpoint-crowdstrike-sensor-protect-endpoint
+  title: Which user endpoint devices are protected by a CrowdStrike sensor?
+  description: Return a list of user endpoint devices protected by a CrowdStrike sensor.
+  queries:
+    - query: |
+        FIND crowdstrike_sensor
+        THAT PROTECTS user_endpoint AS e
+        RETURN
+          crowdstrike_sensor.displayName, 
+          e.displayName as UserEndpoint, e.macAddress, e.make, e.model, e.osName, e.osVersion
+  tags:
+  - crowd-strike
+  - device
+  - endpoint
+  
+- id: managed-question-crowdstrike-policy
+  title: What are my active Crowdstrike Prevention Policies?
+  description: Find all configued Crowdstrike Policies.
+  queries:
+    - query: |
+          Find crowdstrike_prevention_policy as a
+            RETURN 
+              a.name as Name, a.active as Active, a.description as Description
+  tags:
+  - crowd-strike
+  - compliance
