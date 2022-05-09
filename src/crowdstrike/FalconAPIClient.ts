@@ -71,22 +71,6 @@ export class FalconAPIClient {
   }
 
   /**
-   *
-   * @returns
-   */
-  // public async verifyAuthentication(): Promise<void> {
-  //   const response: ResourcesResponse<DeviceIdentifier> =
-  //       await this.executeAuthenticatedAPIRequest<
-  //         ResourcesResponse<DeviceIdentifier>
-  //       >(url, {
-  //         method: 'GET',
-  //         headers: {
-  //           accept: 'application/json',
-  //         },
-  //       });
-  // }
-
-  /**
    * Iterates the detected devices by listing the AIDs and then fetching the
    * device details, providing pages of the collection to the provided callback.
    *
