@@ -2,7 +2,7 @@ import {
   IntegrationExecutionContext,
   StepStartStates,
 } from '@jupiterone/integration-sdk-core';
-import { CrowdStrikeIntegrationInstanceConfig } from './types';
+import { CrowdStrikeIntegrationInstanceConfig } from './config';
 import { fetchVulnerabilitiesStep } from './steps/fetchVulnerabilities';
 import { fetchDevicesStep } from './steps/fetchDevices';
 import { fetchDevicePolicyRelationshipsStep } from './steps/fetchDevicePolicyRelationships';

@@ -4,7 +4,7 @@ import {
   RelationshipClass,
   Step,
 } from '@jupiterone/integration-sdk-core';
-import { CrowdStrikeIntegrationInstanceConfig } from '../types';
+import { CrowdStrikeIntegrationInstanceConfig } from '../config';
 import createFalconAPIClient from '../crowdstrike/createFalconAPIClient';
 import { Entities, Relationships, StepIds } from '../constants';
 import { createVulnerabilityEntity } from '../jupiterone/converters';

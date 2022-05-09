@@ -7,7 +7,7 @@ import {
 import { Entities, Relationships, StepIds } from '../constants';
 import createFalconAPIClient from '../crowdstrike/createFalconAPIClient';
 import { PreventionPolicy } from '../crowdstrike/types';
-import { CrowdStrikeIntegrationInstanceConfig } from '../types';
+import { CrowdStrikeIntegrationInstanceConfig } from '../config';
 
 export async function fetchDevicePolicyRelationships(
   context: IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>,
