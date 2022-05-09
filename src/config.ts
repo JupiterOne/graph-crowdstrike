@@ -42,7 +42,6 @@ export async function validateInvocation(
   context: IntegrationExecutionContext<CrowdStrikeIntegrationInstanceConfig>,
 ) {
   const { instance, logger } = context;
-  // const { config } = context.instance;
 
   if (!instance.config.clientId || !instance.config.clientSecret) {
     throw new IntegrationValidationError(
