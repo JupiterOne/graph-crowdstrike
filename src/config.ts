@@ -57,7 +57,8 @@ export async function validateInvocation(
       cause: err,
       endpoint: 'https://api.crowdstrike.com/oauth2/token',
       status: 'failed',
-      statusText: 'auth error',
+      status: err.code,
+      statusText: err.statusText,
     });
   }
 }
