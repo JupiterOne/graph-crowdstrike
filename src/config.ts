@@ -56,7 +56,6 @@ export async function validateInvocation(
     throw new IntegrationProviderAuthenticationError({
       cause: err,
       endpoint: 'https://api.crowdstrike.com/oauth2/token',
-      status: 'failed',
       status: err.code,
       statusText: err.statusText,
     });
