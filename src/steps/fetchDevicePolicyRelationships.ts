@@ -5,7 +5,7 @@ import {
   Step,
 } from '@jupiterone/integration-sdk-core';
 import { Entities, Relationships, StepIds } from '../constants';
-import createFalconAPIClient from '../crowdstrike/createFalconAPIClient';
+import getOrCreateFalconAPIClient from '../crowdstrike/getOrCreateFalconAPIClient';
 import { PreventionPolicy } from '../crowdstrike/types';
 import { CrowdStrikeIntegrationInstanceConfig } from '../types';
 
@@ -13,7 +13,7 @@ export async function fetchDevicePolicyRelationships(
   context: IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>,
 ): Promise<void> {
   const { instance, jobState, logger } = context;
-  const client = createFalconAPIClient(instance.config, logger);
+  const client = getOrCreateFalconAPIClient(instance.config, logger);
 
   logger.info('Iterating policy members...');
   await jobState.iterateEntities(

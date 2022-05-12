@@ -18,6 +18,12 @@ const createClient = (): FalconAPIClient => {
   return new FalconAPIClient({
     credentials: config,
     logger: createTestLogger(),
+    attemptOptions: {
+      maxAttempts: 5,
+      delay: 2,
+      timeout: 1000,
+      factor: 1,
+    },
   });
 };
 
@@ -113,7 +119,7 @@ describe('authenticate', () => {
     try {
       await client.authenticate();
     } catch (err) {
-      expect(err.code).toEqual(403);
+      expect(err.status).toEqual(403);
       expect(err.message).toMatch(/Forbidden/);
     }
     expect.assertions(2);
@@ -124,7 +130,10 @@ describe('executeAPIRequest', () => {
   test('waits until retryafter on 500 response', async () => {
     recording = setupCrowdstrikeRecording({
       directory: __dirname,
-      name: 'executeAPIRequest429',
+      name: 'executeAPIRequest500',
+      options: {
+        recordFailedRequests: true,
+      },
     });
 
     const requestTimesInMs: number[] = [];
@@ -139,9 +148,11 @@ describe('executeAPIRequest', () => {
         res.status(500);
       });
 
-    await createClient().authenticate();
+    await expect(createClient().authenticate()).rejects.toThrowError(
+      'Provider API failed at https://api.crowdstrike.com/oauth2/token: 500 Internal Server Error',
+    );
 
-    expect(requestTimesInMs.length).toBe(2);
+    expect(requestTimesInMs.length).toBe(5);
   });
 
   test('waits until retryafter on 429 response', async () => {
@@ -209,16 +220,13 @@ describe('executeAPIRequest', () => {
         });
     });
 
-    const client = new FalconAPIClient({
-      credentials: config,
-      logger: createTestLogger(),
-    });
+    const client = createClient();
 
     await expect(client.authenticate()).rejects.toThrowError(
-      /Could not complete request within [0-9]* attempts!/,
+      'Provider API failed at https://api.crowdstrike.com/oauth2/token: 429 Too Many Requests',
     );
 
-    expect(requestTimesInMs.length).toBe(DEFAULT_RATE_LIMIT_CONFIG.maxAttempts);
+    expect(requestTimesInMs.length).toBe(5);
   });
 
   test.skip('throttles at specified reserveLimit', async () => {

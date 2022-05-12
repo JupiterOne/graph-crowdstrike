@@ -1,4 +1,6 @@
-import fetch, { RequestInfo, RequestInit, Response } from 'node-fetch';
+import fetch, { RequestInfo, RequestInit } from 'node-fetch';
+import { retry } from '@lifeomic/attempt';
+
 import { URLSearchParams } from 'url';
 
 import {
@@ -6,7 +8,6 @@ import {
   DeviceIdentifier,
   OAuth2ClientCredentials,
   OAuth2Token,
-  OAuth2TokenResponse,
   PaginationMeta,
   PaginationParams,
   PreventionPolicy,
@@ -16,7 +17,12 @@ import {
   ResourcesResponse,
   Vulnerability,
 } from './types';
-import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
+import {
+  IntegrationLogger,
+  IntegrationProviderAPIError,
+  IntegrationProviderAuthenticationError,
+  IntegrationProviderAuthorizationError,
+} from '@jupiterone/integration-sdk-core';
 
 function getUnixTimeNow() {
   return Date.now() / 1000;
@@ -26,26 +32,22 @@ async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-type APIRequest = {
-  url: string;
-  exec: () => Promise<Response>;
-};
-
-type APIResponse = {
-  response: Response;
-  status: Response['status'];
-  statusText: Response['statusText'];
-};
-
 export const DEFAULT_RATE_LIMIT_CONFIG: RateLimitConfig = {
-  maxAttempts: 5,
   reserveLimit: 30,
   cooldownPeriod: 1000,
+};
+
+type AttemptOptions = {
+  maxAttempts: number;
+  delay: number;
+  timeout: number;
+  factor: number;
 };
 
 export type FalconAPIClientConfig = {
   credentials: OAuth2ClientCredentials;
   logger: IntegrationLogger;
+  attemptOptions?: AttemptOptions;
 };
 
 export type FalconAPIResourceIterationCallback<T> = (
@@ -56,11 +58,19 @@ export class FalconAPIClient {
   private credentials: OAuth2ClientCredentials;
   private token: OAuth2Token | undefined;
   private logger: IntegrationLogger;
-  private rateLimitConfig: RateLimitConfig = DEFAULT_RATE_LIMIT_CONFIG;
+  private readonly rateLimitConfig: RateLimitConfig = DEFAULT_RATE_LIMIT_CONFIG;
+  private rateLimitState: RateLimitState;
+  private attemptOptions: AttemptOptions;
 
-  constructor({ credentials, logger }: FalconAPIClientConfig) {
+  constructor({ credentials, logger, attemptOptions }: FalconAPIClientConfig) {
     this.credentials = credentials;
     this.logger = logger;
+    this.attemptOptions = attemptOptions ?? {
+      maxAttempts: 5,
+      delay: 30_000,
+      timeout: 180_000,
+      factor: 2,
+    };
   }
 
   public async authenticate(): Promise<OAuth2Token> {
@@ -152,7 +162,7 @@ export class FalconAPIClient {
       params.append('ids', aid);
     }
 
-    const response = await this.executeAuthenticatedAPIRequest<
+    const response = await this.executeAPIRequestWithRetries<
       ResourcesResponse<Device>
     >(`https://api.crowdstrike.com/devices/entities/devices/v1?${params}`, {
       method: 'GET',
@@ -187,7 +197,7 @@ export class FalconAPIClient {
 
       this.logger.info({ requestUrl: url, paginationParams });
       const response: ResourcesResponse<ResourceType> =
-        await this.executeAuthenticatedAPIRequest<
+        await this.executeAPIRequestWithRetries<
           ResourcesResponse<ResourceType>
         >(url, {
           method: 'GET',
@@ -225,16 +235,44 @@ export class FalconAPIClient {
     params.append('client_id', this.credentials.clientId);
     params.append('client_secret', this.credentials.clientSecret);
 
-    const response = await this.executeAPIRequest<OAuth2TokenResponse>(
-      'https://api.crowdstrike.com/oauth2/token',
-      {
+    const authRequestAttempt = async () => {
+      const endpoint = 'https://api.crowdstrike.com/oauth2/token';
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           accept: 'application/json',
         },
         body: params,
+      });
+
+      if (response.ok) {
+        return response.json();
+      } else {
+        throw new IntegrationProviderAPIError({
+          status: response.status,
+          statusText: response.statusText,
+          endpoint,
+        });
+      }
+    };
+
+    const response = await retry(authRequestAttempt, {
+      ...this.attemptOptions,
+      handleError: (error, attemptContext) => {
+        if (error.status === 403) {
+          throw new IntegrationProviderAuthenticationError({
+            status: error.status,
+            statusText: error.statusText,
+            endpoint: error.endpoint,
+          });
+        }
+
+        this.logger.warn(
+          { attemptContext, error },
+          `Hit a possibly recoverable error when authenticating. Waiting before trying again.`,
+        );
       },
-    );
+    });
 
     const expiresAt = getUnixTimeNow() + response.expires_in;
     this.logger.info(
@@ -250,47 +288,25 @@ export class FalconAPIClient {
     };
   }
 
-  private async executeAuthenticatedAPIRequest<ResponseType>(
-    info: RequestInfo,
+  private async executeAPIRequestWithRetries<T>(
+    requestUrl: RequestInfo,
     init: RequestInit,
-  ): Promise<ResponseType> {
-    const token = await this.authenticate();
-    return this.executeAPIRequest<ResponseType>(info, {
-      ...init,
-      headers: { ...init.headers, authorization: `bearer ${token.token}` },
-    });
-  }
+  ): Promise<T> {
+    await this.authenticate();
 
-  private async executeAPIRequest<ResponseType>(
-    info: RequestInfo,
-    init: RequestInit,
-  ): Promise<ResponseType> {
-    const apiResponse = await this.executeAPIRequestWithRateLimitRetries({
-      url: info as string,
-      exec: () => fetch(info, init),
-    });
+    /**
+     * This is the logic to be retried in the case of an error.
+     */
+    const requestAttempt = async () => {
+      const response = await fetch(requestUrl, {
+        ...init,
+        headers: {
+          ...init.headers,
+          authorization: `bearer ${this.token!.token}`,
+        },
+      });
 
-    if (apiResponse.status >= 400) {
-      const err = new Error(
-        `API request error for ${info}: ${apiResponse.statusText}`,
-      );
-      Object.assign(err, { code: apiResponse.status });
-      throw err;
-    }
-
-    return apiResponse.response.json();
-  }
-
-  private async executeAPIRequestWithRateLimitRetries<T>(
-    request: APIRequest,
-  ): Promise<APIResponse> {
-    let attempts = 0;
-    let rateLimitState: RateLimitState;
-
-    do {
-      const response = await request.exec();
-
-      rateLimitState = {
+      this.rateLimitState = {
         limitRemaining: Number(response.headers.get('X-RateLimit-Remaining')),
         perMinuteLimit: Number(response.headers.get('X-RateLimit-Limit')),
         retryAfter:
@@ -298,68 +314,102 @@ export class FalconAPIClient {
           Number(response.headers.get('X-RateLimit-RetryAfter')),
       };
 
-      if (response.status !== 429 && response.status !== 500) {
-        return {
-          response,
+      if (response.ok) {
+        return response.json() as T;
+      }
+
+      if (response.status === 401) {
+        throw new IntegrationProviderAuthenticationError({
           status: response.status,
           statusText: response.statusText,
-        };
+          endpoint: requestUrl,
+        });
       }
-
-      if (response.status === 429) {
-        const unixTimeNow = getUnixTimeNow();
-        /**
-         * We have seen in the wild that waiting until the
-         * `x-ratelimit-retryafter` unix timestamp before retrying requests
-         * does often still result in additional 429 errors. This may be caused
-         * by incorrect logic on the API server, out-of-sync clocks between
-         * client and server, or something else. However, we have seen that
-         * waiting an additional minute does result in successful invocations.
-         *
-         * `timeToSleepInSeconds` adds 60s to the `retryAfter` property, but
-         * may be reduced in the future.
-         */
-        const timeToSleepInSeconds = rateLimitState.retryAfter
-          ? rateLimitState.retryAfter + 60 - unixTimeNow
-          : 0;
-        this.logger.info(
-          {
-            unixTimeNow,
-            timeToSleepInSeconds,
-            rateLimitState,
-            rateLimitConfig: this.rateLimitConfig,
-          },
-          'Encountered 429 response. Waiting to retry request.',
-        );
-        await sleep(timeToSleepInSeconds * 1000);
-        if (
-          rateLimitState.limitRemaining &&
-          rateLimitState.limitRemaining <= this.rateLimitConfig.reserveLimit
-        ) {
-          this.logger.info(
-            {
-              rateLimitState,
-              rateLimitConfig: this.rateLimitConfig,
-            },
-            'Rate limit remaining is less than reserve limit. Waiting for cooldown period.',
-          );
-          await sleep(this.rateLimitConfig.cooldownPeriod);
-        }
-      }
-
-      attempts += 1;
-      this.logger.warn(
-        {
-          rateLimitState,
-          attempts,
-          url: request.url,
+      if (response.status === 403) {
+        throw new IntegrationProviderAuthorizationError({
           status: response.status,
-        },
-        'Encountered retryable status code from Crowdstrike API',
-      );
-    } while (attempts < this.rateLimitConfig.maxAttempts);
+          statusText: response.statusText,
+          endpoint: requestUrl,
+        });
+      }
 
-    throw new Error(`Could not complete request within ${attempts} attempts!`);
+      throw new IntegrationProviderAPIError({
+        status: response.status,
+        statusText: response.statusText,
+        endpoint: requestUrl,
+      });
+    };
+
+    return retry(requestAttempt, {
+      ...this.attemptOptions,
+      handleError: async (error, attemptContext) => {
+        this.logger.debug(
+          { error, attemptContext },
+          'Error being handled in handleError.',
+        );
+
+        if (error.status === 401) {
+          if (attemptContext.attemptNum > 1) {
+            attemptContext.abort();
+          } else {
+            await this.authenticate();
+          }
+        }
+        if (error.status === 403) {
+          attemptContext.abort();
+        }
+        if (error.status === 429) {
+          await this.handle429Error();
+        }
+
+        this.logger.warn(
+          { attemptContext, error },
+          `Hit a possibly recoverable error when requesting data. Waiting before trying again.`,
+        );
+      },
+    });
+  }
+
+  private async handle429Error() {
+    const unixTimeNow = getUnixTimeNow();
+    /**
+     * We have seen in the wild that waiting until the
+     * `x-ratelimit-retryafter` unix timestamp before retrying requests
+     * does often still result in additional 429 errors. This may be caused
+     * by incorrect logic on the API server, out-of-sync clocks between
+     * client and server, or something else. However, we have seen that
+     * waiting an additional minute does result in successful invocations.
+     *
+     * `timeToSleepInSeconds` adds 60s to the `retryAfter` property, but
+     * may be reduced in the future.
+     */
+    const timeToSleepInSeconds = this.rateLimitState.retryAfter
+      ? this.rateLimitState.retryAfter + 60 - unixTimeNow
+      : 0;
+    this.logger.info(
+      {
+        unixTimeNow,
+        timeToSleepInSeconds,
+        rateLimitState: this.rateLimitState,
+        rateLimitConfig: this.rateLimitConfig,
+      },
+      'Encountered 429 response. Waiting to retry request.',
+    );
+    await sleep(timeToSleepInSeconds * 1000);
+
+    if (
+      this.rateLimitState.limitRemaining &&
+      this.rateLimitState.limitRemaining <= this.rateLimitConfig.reserveLimit
+    ) {
+      this.logger.info(
+        {
+          rateLimitState: this.rateLimitState,
+          rateLimitConfig: this.rateLimitConfig,
+        },
+        'Rate limit remaining is less than reserve limit. Waiting for cooldown period.',
+      );
+      await sleep(this.rateLimitConfig.cooldownPeriod);
+    }
   }
 }
 

@@ -4,7 +4,7 @@ import { FalconAPIClient } from './FalconAPIClient';
 
 let client: FalconAPIClient;
 
-export default function createFalconAPIClient(
+export default function getOrCreateFalconAPIClient(
   config: CrowdStrikeIntegrationInstanceConfig,
   logger: IntegrationLogger,
 ): FalconAPIClient {
