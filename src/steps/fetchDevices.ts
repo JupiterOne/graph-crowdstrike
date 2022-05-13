@@ -7,7 +7,7 @@ import {
 import { Entities, Relationships, StepIds } from '../constants';
 import createFalconAPIClient from '../crowdstrike/createFalconAPIClient';
 import { createSensorAgentEntity } from '../jupiterone/converters';
-import { CrowdStrikeIntegrationInstanceConfig } from '../types';
+import { CrowdStrikeIntegrationInstanceConfig } from '../config';
 import { getAccountEntityFromJobState } from './getAccount';
 
 export async function fetchDevices(

@@ -12,7 +12,7 @@ import {
   createAccountEntity,
   createProtectionServiceEntity,
 } from '../jupiterone/converters';
-import { CrowdStrikeIntegrationInstanceConfig } from '../types';
+import { CrowdStrikeIntegrationInstanceConfig } from '../config';
 
 export async function getAccountEntityFromJobState(
   jobState: JobState,

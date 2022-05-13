@@ -274,7 +274,10 @@ export class FalconAPIClient {
       const err = new Error(
         `API request error for ${info}: ${apiResponse.statusText}`,
       );
-      Object.assign(err, { code: apiResponse.status });
+      Object.assign(err, {
+        code: apiResponse.status,
+        statusText: apiResponse.statusText,
+      });
       throw err;
     }
 
