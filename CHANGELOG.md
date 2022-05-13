@@ -8,6 +8,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.1.8] - 2022-05-13
+
+### Changed
+
+- Added improved error retry logic.
+- Added validateInvocation logic. Thanks [jakopako](https://github.com/jakopako)
+  for your contribution!
+
 ## [2.1.7] - 2022-05-06
 
 ### Added
