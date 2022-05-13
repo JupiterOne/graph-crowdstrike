@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-import { CrowdStrikeIntegrationInstanceConfig } from '../src/types';
+import { CrowdStrikeIntegrationInstanceConfig } from '../src/config';
 import path from 'path';
 
 if (process.env.LOAD_ENV) {
@@ -9,9 +9,8 @@ if (process.env.LOAD_ENV) {
 }
 
 const config: CrowdStrikeIntegrationInstanceConfig = {
-  clientId: process.env.CROWDSTRIKE_LOCAL_EXECUTION_CLIENT_ID || 'clientId',
-  clientSecret:
-    process.env.CROWDSTRIKE_LOCAL_EXECUTION_CLIENT_SECRET || 'clientSecret',
+  clientId: process.env.CLIENT_ID || 'clientId',
+  clientSecret: process.env.CLIENT_SECRET || 'clientSecret',
 };
 
 export default config;

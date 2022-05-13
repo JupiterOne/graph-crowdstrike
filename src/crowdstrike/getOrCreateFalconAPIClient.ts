@@ -1,5 +1,5 @@
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
-import { CrowdStrikeIntegrationInstanceConfig } from '../types';
+import { CrowdStrikeIntegrationInstanceConfig } from '../config';
 import { FalconAPIClient } from './FalconAPIClient';
 
 let client: FalconAPIClient;

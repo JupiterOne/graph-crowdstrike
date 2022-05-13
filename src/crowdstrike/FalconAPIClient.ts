@@ -261,6 +261,9 @@ export class FalconAPIClient {
     const response = await retry(authRequestAttempt, {
       ...this.attemptOptions,
       handleError: (error, attemptContext) => {
+        if (error.status === 400) {
+          attemptContext.abort();
+        }
         if (error.status === 403) {
           throw new IntegrationProviderAuthenticationError({
             status: error.status,
