@@ -79,16 +79,6 @@ export type RateLimitConfig = {
    * be enough information in the response headers to calculate a better value.
    */
   cooldownPeriod: number;
-
-  /**
-   * Maximum number of times to retry a request that continues to receive 429
-   * responses.
-   *
-   * The client will respect `x-ratelimit-retryafter`, but should it end up in a
-   * battle to get the next allowed request, it will give up after this many
-   * tries.
-   */
-  maxAttempts: number;
 };
 
 /**

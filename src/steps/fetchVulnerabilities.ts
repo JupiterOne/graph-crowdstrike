@@ -5,7 +5,7 @@ import {
   Step,
 } from '@jupiterone/integration-sdk-core';
 import { CrowdStrikeIntegrationInstanceConfig } from '../config';
-import createFalconAPIClient from '../crowdstrike/createFalconAPIClient';
+import getOrCreateFalconAPIClient from '../crowdstrike/getOrCreateFalconAPIClient';
 import { Entities, Relationships, StepIds } from '../constants';
 import { createVulnerabilityEntity } from '../jupiterone/converters';
 
@@ -18,7 +18,7 @@ export async function fetchVulnerabilities(
 ): Promise<void> {
   const { instance, jobState, logger } = context;
 
-  const client = createFalconAPIClient(instance.config, logger);
+  const client = getOrCreateFalconAPIClient(instance.config, logger);
   const lastSuccessfulSyncTime =
     context.executionHistory.lastSuccessful?.startedOn;
 

@@ -5,7 +5,7 @@ import {
   Step,
 } from '@jupiterone/integration-sdk-core';
 import { Entities, Relationships, StepIds } from '../constants';
-import createFalconAPIClient from '../crowdstrike/createFalconAPIClient';
+import getOrCreateFalconAPIClient from '../crowdstrike/getOrCreateFalconAPIClient';
 import { createPreventionPolicyEntity } from '../jupiterone/converters';
 import { CrowdStrikeIntegrationInstanceConfig } from '../config';
 import { getProtectionServiceEntityFromJobState } from './getAccount';
@@ -18,7 +18,7 @@ export async function fetchPreventionPolicies(
   const protectionServiceEntity = await getProtectionServiceEntityFromJobState(
     jobState,
   );
-  const client = createFalconAPIClient(instance.config, logger);
+  const client = getOrCreateFalconAPIClient(instance.config, logger);
 
   logger.info('Iterating protection policies...');
   await client.iteratePreventionPolicies({

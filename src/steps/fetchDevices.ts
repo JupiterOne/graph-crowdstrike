@@ -5,7 +5,7 @@ import {
   Step,
 } from '@jupiterone/integration-sdk-core';
 import { Entities, Relationships, StepIds } from '../constants';
-import createFalconAPIClient from '../crowdstrike/createFalconAPIClient';
+import getOrCreateFalconAPIClient from '../crowdstrike/getOrCreateFalconAPIClient';
 import { createSensorAgentEntity } from '../jupiterone/converters';
 import { CrowdStrikeIntegrationInstanceConfig } from '../config';
 import { getAccountEntityFromJobState } from './getAccount';
@@ -16,7 +16,7 @@ export async function fetchDevices(
   const { instance, jobState, logger } = context;
 
   const accountEntity = await getAccountEntityFromJobState(jobState);
-  const client = createFalconAPIClient(instance.config, logger);
+  const client = getOrCreateFalconAPIClient(instance.config, logger);
 
   logger.info('Iterating devices...');
   await client.iterateDevices({

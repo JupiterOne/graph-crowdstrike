@@ -2,10 +2,9 @@ import {
   IntegrationExecutionContext,
   IntegrationInstanceConfig,
   IntegrationInstanceConfigFieldMap,
-  IntegrationProviderAuthenticationError,
   IntegrationValidationError,
 } from '@jupiterone/integration-sdk-core';
-import createFalconAPIClient from './crowdstrike/createFalconAPIClient';
+import getOrCreateFalconAPIClient from './crowdstrike/getOrCreateFalconAPIClient';
 
 /**
  * A type describing the configuration fields required to execute the
@@ -49,15 +48,15 @@ export async function validateInvocation(
     );
   }
 
-  const client = createFalconAPIClient(instance.config, logger);
+  const client = getOrCreateFalconAPIClient(instance.config, logger);
   try {
     await client.authenticate();
-  } catch (err) {
-    throw new IntegrationProviderAuthenticationError({
-      cause: err,
-      endpoint: 'https://api.crowdstrike.com/oauth2/token',
-      status: err.code,
-      statusText: err.statusText,
-    });
+  } catch (error) {
+    if (error.status == 400) {
+      // Falcon API responds with 400 when the clientId is not valid.
+      throw new IntegrationValidationError('Invalid clientId');
+    }
+
+    throw error;
   }
 }

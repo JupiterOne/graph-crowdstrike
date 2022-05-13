@@ -1,9 +1,25 @@
-import { IntegrationProviderAuthenticationError } from '@jupiterone/integration-sdk-core';
+import {
+  IntegrationProviderAuthenticationError,
+  IntegrationValidationError,
+} from '@jupiterone/integration-sdk-core';
 import { createMockExecutionContext } from '@jupiterone/integration-sdk-testing';
 import {
   CrowdStrikeIntegrationInstanceConfig,
   validateInvocation,
 } from './config';
+import {
+  Recording,
+  setupCrowdstrikeRecording,
+} from '../test/helpers/recording';
+import config from '../test/integrationInstanceConfig';
+
+let recording: Recording;
+
+afterEach(async () => {
+  if (recording) {
+    await recording.stop();
+  }
+});
 
 describe('#validateInvocation', () => {
   test('all config params missing', async () => {
@@ -43,24 +59,47 @@ describe('#validateInvocation', () => {
     );
   });
 
-  test.skip('auth error', async () => {
+  test('auth error', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'validateInvocationAuthError',
+      options: {
+        recordFailedRequests: true,
+      },
+    });
+
     const executionContext =
       createMockExecutionContext<CrowdStrikeIntegrationInstanceConfig>({
         instanceConfig: {
-          clientId: 'XXX',
-          clientSecret: 'YYY',
+          ...config,
+          clientSecret: 'not-valid-secret',
         },
       });
 
-    try {
-      await validateInvocation(executionContext);
-    } catch (e) {
-      expect(e.message).toEqual(
-        'Provider authentication failed at https://api.crowdstrike.com/oauth2/token: failed auth error',
-      );
-      expect(e).toBeInstanceOf(IntegrationProviderAuthenticationError);
-    }
+    await expect(validateInvocation(executionContext)).rejects.toBeInstanceOf(
+      IntegrationProviderAuthenticationError,
+    );
+  });
 
-    expect.assertions(2);
+  test('auth bad request', async () => {
+    recording = setupCrowdstrikeRecording({
+      directory: __dirname,
+      name: 'validateInvocationAuthBadRequestError',
+      options: {
+        recordFailedRequests: true,
+      },
+    });
+
+    const executionContext =
+      createMockExecutionContext<CrowdStrikeIntegrationInstanceConfig>({
+        instanceConfig: {
+          clientId: 'not-valid',
+          clientSecret: 'not-valid-secret',
+        },
+      });
+
+    await expect(validateInvocation(executionContext)).rejects.toBeInstanceOf(
+      IntegrationValidationError,
+    );
   });
 });
