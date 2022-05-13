@@ -1,4 +1,3 @@
-import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 import { createMockIntegrationLogger } from '@jupiterone/integration-sdk-testing';
 
 import {
@@ -6,20 +5,20 @@ import {
   setupCrowdstrikeRecording,
 } from '../../test/helpers/recording';
 import config from '../../test/integrationInstanceConfig';
-import { DEFAULT_RATE_LIMIT_CONFIG, FalconAPIClient } from './FalconAPIClient';
-
-function createTestLogger(): IntegrationLogger {
-  return createMockIntegrationLogger();
-}
+import {
+  DEFAULT_ATTEMPT_OPTIONS,
+  DEFAULT_RATE_LIMIT_CONFIG,
+  FalconAPIClient,
+} from './FalconAPIClient';
 
 let recording: Recording;
 
 const createClient = (): FalconAPIClient => {
   return new FalconAPIClient({
     credentials: config,
-    logger: createTestLogger(),
+    logger: createMockIntegrationLogger(),
     attemptOptions: {
-      maxAttempts: 5,
+      ...DEFAULT_ATTEMPT_OPTIONS,
       delay: 2,
       timeout: 1000,
       factor: 1,
@@ -114,7 +113,7 @@ describe('authenticate', () => {
         ...config,
         clientSecret: 'test-error-handling',
       },
-      logger: createTestLogger(),
+      logger: createMockIntegrationLogger(),
     });
     try {
       await client.authenticate();
@@ -152,7 +151,7 @@ describe('executeAPIRequest', () => {
       'Provider API failed at https://api.crowdstrike.com/oauth2/token: 500 Internal Server Error',
     );
 
-    expect(requestTimesInMs.length).toBe(5);
+    expect(requestTimesInMs.length).toBe(DEFAULT_ATTEMPT_OPTIONS.maxAttempts);
   });
 
   test('waits until retryafter on 429 response', async () => {
@@ -226,7 +225,7 @@ describe('executeAPIRequest', () => {
       'Provider API failed at https://api.crowdstrike.com/oauth2/token: 429 Too Many Requests',
     );
 
-    expect(requestTimesInMs.length).toBe(5);
+    expect(requestTimesInMs.length).toBe(DEFAULT_ATTEMPT_OPTIONS.maxAttempts);
   });
 
   test.skip('throttles at specified reserveLimit', async () => {
@@ -257,7 +256,7 @@ describe('executeAPIRequest', () => {
 
     const client = new FalconAPIClient({
       credentials: config,
-      logger: createTestLogger(),
+      logger: createMockIntegrationLogger(),
     });
 
     const startTime = Date.now();

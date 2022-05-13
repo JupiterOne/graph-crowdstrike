@@ -44,6 +44,13 @@ type AttemptOptions = {
   factor: number;
 };
 
+export const DEFAULT_ATTEMPT_OPTIONS = {
+  maxAttempts: 5,
+  delay: 30_000,
+  timeout: 180_000,
+  factor: 2,
+};
+
 export type FalconAPIClientConfig = {
   credentials: OAuth2ClientCredentials;
   logger: IntegrationLogger;
@@ -65,12 +72,7 @@ export class FalconAPIClient {
   constructor({ credentials, logger, attemptOptions }: FalconAPIClientConfig) {
     this.credentials = credentials;
     this.logger = logger;
-    this.attemptOptions = attemptOptions ?? {
-      maxAttempts: 5,
-      delay: 30_000,
-      timeout: 180_000,
-      factor: 2,
-    };
+    this.attemptOptions = attemptOptions ?? DEFAULT_ATTEMPT_OPTIONS;
   }
 
   public async authenticate(): Promise<OAuth2Token> {
