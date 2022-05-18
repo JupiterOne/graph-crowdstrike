@@ -35,6 +35,14 @@ If you need help with this integration, please contact
 CrowdStrike Falcon provides [detailed instructions on creating API
 credentials][1].
 
+At a minimum, please provide Read access to the following API Scopes:
+
+- Hosts
+- Prevention policies
+
+An additional scope is needed for ingesting vulnerabilities (Spotlight
+Vulnerabilities). Future additions may require other scopes.
+
 ### In JupiterOne
 
 1. From the configuration **Gear Icon**, select **Integrations**.
