@@ -121,6 +121,7 @@ type ResponseMeta = {
 
 type ResponseError = {
   code: number;
+  id: string;
   message: string;
 };
 
