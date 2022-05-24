@@ -59,7 +59,7 @@ export const Relationships: Record<string, StepRelationshipMetadata> = {
     targetType: Entities.SENSOR._type,
   },
   PREVENTION_POLICY_ENFORCES_PROTECTION_SERVICE: {
-    _type: 'crowdstrike_prevention_policy_enforces_protection_service',
+    _type: 'crowdstrike_prevention_policy_enforces_endpoint_protection',
     sourceType: Entities.PREVENTION_POLICY._type,
     _class: RelationshipClass.ENFORCES,
     targetType: Entities.PROTECTION_SERVICE._type,
