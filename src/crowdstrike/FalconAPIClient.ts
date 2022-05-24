@@ -208,6 +208,17 @@ export class FalconAPIClient {
           },
         });
 
+      if (response.errors?.length) {
+        const errorsToLog = response.errors.map((err) => {
+          return { code: err.code, message: err.message, id: err.id };
+        });
+
+        this.logger.error(
+          { errors: errorsToLog },
+          'encountered error(s) in api response',
+        );
+      }
+
       await callback(response.resources);
 
       this.logger.info(
