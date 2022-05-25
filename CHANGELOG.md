@@ -8,6 +8,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.1.10] - 2022-05-25
+
+### Changed
+
+- Enable Vulnerability ingestion for all accounts. If permissions are not
+  enabled for vuln endpoints, warning is published to the event log.
+- Removed getStepStartStates.ts
+
 ## [2.1.9] - 2022-05-24
 
 ### Changed
