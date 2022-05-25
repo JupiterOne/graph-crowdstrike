@@ -1,5 +1,6 @@
 import {
   createDirectRelationship,
+  IntegrationProviderAuthorizationError,
   IntegrationStepExecutionContext,
   RelationshipClass,
   Step,
@@ -8,6 +9,7 @@ import { CrowdStrikeIntegrationInstanceConfig } from '../config';
 import getOrCreateFalconAPIClient from '../crowdstrike/getOrCreateFalconAPIClient';
 import { Entities, Relationships, StepIds } from '../constants';
 import { createVulnerabilityEntity } from '../jupiterone/converters';
+import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/src/types/logger';
 
 // TODO: Understand the amount of data to be ingested by looking back only 10 days
 // const THIRTY_DAYS_AGO = 30 * 24 * 60 * 60 * 1000;
@@ -34,48 +36,67 @@ export async function fetchVulnerabilities(
   let duplicateVulnerabilitySensorRelationshipKeysFoundCount = 0;
   let sensorEntitiesNotFoundCount = 0;
 
-  await client.iterateVulnerabilities({
-    query: {
-      filter: `created_timestamp:>'${createdTimestampFilter}'`,
-      sort: `created_timestamp|desc`,
-    },
-    callBack: async (vulns) => {
-      logger.info(
-        { vulnerabilityCount: vulns.length, createdTimestampFilter },
-        'Creating vulnerability entities and relationships...',
-      );
+  await client
+    .iterateVulnerabilities({
+      query: {
+        filter: `created_timestamp:>'${createdTimestampFilter}'`,
+        sort: `created_timestamp|desc`,
+      },
+      callBack: async (vulns) => {
+        logger.info(
+          { vulnerabilityCount: vulns.length, createdTimestampFilter },
+          'Creating vulnerability entities and relationships...',
+        );
 
-      for (const vulnerability of vulns) {
-        const vulnerabilityEntity = createVulnerabilityEntity(vulnerability);
+        for (const vulnerability of vulns) {
+          const vulnerabilityEntity = createVulnerabilityEntity(vulnerability);
 
-        if (await jobState.hasKey(vulnerabilityEntity._key)) {
-          duplicateVulnerabilityKeysFoundCount++;
-        } else {
-          await jobState.addEntity(vulnerabilityEntity);
+          if (await jobState.hasKey(vulnerabilityEntity._key)) {
+            duplicateVulnerabilityKeysFoundCount++;
+          } else {
+            await jobState.addEntity(vulnerabilityEntity);
+          }
+
+          const sensor = await jobState.findEntity(vulnerability.aid);
+
+          if (!sensor) {
+            sensorEntitiesNotFoundCount++;
+            continue;
+          }
+
+          // TODO: consider breaking this out into a separate step
+          const vulnerabilitySensorRelationship = createDirectRelationship({
+            from: vulnerabilityEntity,
+            _class: RelationshipClass.EXPLOITS,
+            to: sensor,
+          });
+
+          if (await jobState.hasKey(vulnerabilitySensorRelationship._key)) {
+            duplicateVulnerabilitySensorRelationshipKeysFoundCount++;
+          } else {
+            await jobState.addRelationship(vulnerabilitySensorRelationship);
+          }
         }
-
-        const sensor = await jobState.findEntity(vulnerability.aid);
-
-        if (!sensor) {
-          sensorEntitiesNotFoundCount++;
-          continue;
-        }
-
-        // TODO: consider breaking this out into a separate step
-        const vulnerabilitySensorRelationship = createDirectRelationship({
-          from: vulnerabilityEntity,
-          _class: RelationshipClass.EXPLOITS,
-          to: sensor,
+      },
+    })
+    .catch((error) => {
+      if (
+        error instanceof IntegrationProviderAuthorizationError &&
+        error.status === 403
+      ) {
+        logger.warn(
+          { error },
+          'Encountered a 403 while ingesting vulnerabilities. This is most like a permissions error.',
+        );
+        logger.publishWarnEvent({
+          name: IntegrationWarnEventName.MissingPermission,
+          description:
+            'Received authorization error when attempting to retrieve vulnerabilities. Please update credentials to grant access.',
         });
-
-        if (await jobState.hasKey(vulnerabilitySensorRelationship._key)) {
-          duplicateVulnerabilitySensorRelationshipKeysFoundCount++;
-        } else {
-          await jobState.addRelationship(vulnerabilitySensorRelationship);
-        }
+      } else {
+        throw error;
       }
-    },
-  });
+    });
 
   logger.info(
     {

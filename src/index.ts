@@ -5,7 +5,6 @@ import { fetchDevicesStep } from './steps/fetchDevices';
 import { fetchPreventionPoliciesStep } from './steps/fetchPreventionPolicies';
 import { getAccountStep } from './steps/getAccount';
 import { fetchVulnerabilitiesStep } from './steps/fetchVulnerabilities';
-import getStepStartStates from './getStepStartStates';
 import {
   CrowdStrikeIntegrationInstanceConfig,
   instanceConfigFields,
@@ -16,7 +15,6 @@ export const invocationConfig: IntegrationInvocationConfig<CrowdStrikeIntegratio
   {
     instanceConfigFields,
     validateInvocation,
-    getStepStartStates,
     integrationSteps: [
       getAccountStep,
       fetchDevicesStep,
