@@ -71,7 +71,7 @@ export const Relationships: Record<string, StepRelationshipMetadata> = {
     targetType: Entities.PREVENTION_POLICY._type,
   },
   VULN_EXPLOITS_SENSOR: {
-    _type: 'crowdstrike_vuln_exploits_sensor',
+    _type: 'crowdstrike_vulnerability_exploits_sensor',
     sourceType: Entities.VULNERABILITY._type,
     _class: RelationshipClass.EXPLOITS,
     targetType: Entities.SENSOR._type,
