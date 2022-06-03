@@ -8,6 +8,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.1.11] - 2022-06-03
+
+### Fixed
+
+- Fixed incorrect relationship `_type`. `crowdstrike_vuln_exploits_sensor` was
+  renamed to `crowdstrike_vulnerability_exploits_sensor`. This allows the
+  `partial` flag to be appropriately applied to the relationship.
+
 ## [2.1.10] - 2022-05-25
 
 ### Changed
