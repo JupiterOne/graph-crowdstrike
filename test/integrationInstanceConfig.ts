@@ -8,9 +8,13 @@ if (process.env.LOAD_ENV) {
   });
 }
 
-const config: CrowdStrikeIntegrationInstanceConfig = {
+export const config: CrowdStrikeIntegrationInstanceConfig = {
   clientId: process.env.CLIENT_ID || 'clientId',
   clientSecret: process.env.CLIENT_SECRET || 'clientSecret',
 };
 
-export default config;
+export const availabilityZoneConfig: CrowdStrikeIntegrationInstanceConfig = {
+  clientId: process.env.CLIENT_ID || 'clientId',
+  clientSecret: process.env.CLIENT_SECRET || 'clientSecret',
+  availabilityZone: 'availabilityTestZone',
+};

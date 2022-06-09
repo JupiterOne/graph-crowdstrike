@@ -1,6 +1,7 @@
 export type OAuth2ClientCredentials = {
   clientId: string;
   clientSecret: string;
+  availabilityZone?: string;
 };
 
 export type OAuth2TokenResponse = {

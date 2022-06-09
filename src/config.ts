@@ -29,12 +29,17 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
     type: 'string',
     mask: true,
   },
+  availabilityZone: {
+    type: 'string',
+    mask: false,
+  },
 };
 
 export interface CrowdStrikeIntegrationInstanceConfig
   extends IntegrationInstanceConfig {
   clientId: string;
   clientSecret: string;
+  availabilityZone?: string;
 }
 
 export async function validateInvocation(

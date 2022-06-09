@@ -60,6 +60,10 @@ Vulnerabilities). Future additions may require other scopes.
   _**Falcon**_ and _**Spotlight**_ APIs.
 - Enter the **API client secret** used to authenticate with the CrowdStrike
   _**Falcon**_ and _**Spotlight**_ APIs.
+- Enter the **Availability Zone** you'd like to use for API calls. Leave blank
+  to use the main API endpoint. For example, entering `us-2` as the availability
+  zone will result in the use of a CrowdStrike API endpoint of
+  `api.us-2.crowdstrike.com`
 
 4. Click **Create Configuration** once all values are provided.
 

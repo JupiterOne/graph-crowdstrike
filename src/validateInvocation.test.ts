@@ -11,7 +11,7 @@ import {
   Recording,
   setupCrowdstrikeRecording,
 } from '../test/helpers/recording';
-import config from '../test/integrationInstanceConfig';
+import { config } from '../test/integrationInstanceConfig';
 
 let recording: Recording;
 
