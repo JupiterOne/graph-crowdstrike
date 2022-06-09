@@ -71,6 +71,12 @@ export class FalconAPIClient {
 
   constructor({ credentials, logger, attemptOptions }: FalconAPIClientConfig) {
     this.credentials = credentials;
+
+    // If an availability zone is specified, prepare it for inclusion in the URL
+    this.credentials.availabilityZone = credentials.availabilityZone
+      ? credentials.availabilityZone + '.'
+      : '';
+
     this.logger = logger;
     this.attemptOptions = attemptOptions ?? DEFAULT_ATTEMPT_OPTIONS;
   }
@@ -166,12 +172,15 @@ export class FalconAPIClient {
 
     const response = await this.executeAPIRequestWithRetries<
       ResourcesResponse<Device>
-    >(`https://api.crowdstrike.com/devices/entities/devices/v1?${params}`, {
-      method: 'GET',
-      headers: {
-        accept: 'application/json',
+    >(
+      `https://api.${this.credentials.availabilityZone}crowdstrike.com/devices/entities/devices/v1?${params}`,
+      {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+        },
       },
-    });
+    );
 
     return response.resources;
   }
@@ -192,7 +201,9 @@ export class FalconAPIClient {
     let paginationParams: PaginationParams | undefined = undefined;
 
     do {
-      const url = `https://api.crowdstrike.com${resourcePath}?${toQueryString(
+      const url = `https://api.${
+        this.credentials.availabilityZone
+      }crowdstrike.com${resourcePath}?${toQueryString(
         paginationParams,
         query,
       )}`;
@@ -249,7 +260,7 @@ export class FalconAPIClient {
     params.append('client_secret', this.credentials.clientSecret);
 
     const authRequestAttempt = async () => {
-      const endpoint = 'https://api.crowdstrike.com/oauth2/token';
+      const endpoint = `https://api.${this.credentials.availabilityZone}crowdstrike.com/oauth2/token`;
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {

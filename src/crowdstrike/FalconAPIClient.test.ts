@@ -4,7 +4,10 @@ import {
   Recording,
   setupCrowdstrikeRecording,
 } from '../../test/helpers/recording';
-import config from '../../test/integrationInstanceConfig';
+import {
+  config,
+  availabilityZoneConfig,
+} from '../../test/integrationInstanceConfig';
 import {
   DEFAULT_ATTEMPT_OPTIONS,
   DEFAULT_RATE_LIMIT_CONFIG,
@@ -653,4 +656,25 @@ describe('iteratePreventionPolicyMemberIds', () => {
     expect(cbSpy.mock.calls[1]).toEqual([[expect.any(String)]]);
     expect(cbSpy.mock.calls[2]).toEqual([[expect.any(String)]]);
   }, 20000);
+});
+
+describe('test availability zones', () => {
+  test('specify availability zone', async () => {
+    const client = new FalconAPIClient({
+      credentials: availabilityZoneConfig,
+      logger: createMockIntegrationLogger(),
+      attemptOptions: {
+        ...DEFAULT_ATTEMPT_OPTIONS,
+        delay: 2,
+        timeout: 1000,
+        factor: 1,
+      },
+    });
+    // We really only care that the API URL is properly formed to include the availability zone.  It doesn't need to have
+    // a successful run.  Additionally, we don't need to test the default use case of not providing an availability zone,
+    // since all of our prior tests are thoroughly testing that case.
+    await expect(client.authenticate()).rejects.toThrowError(
+      'request to https://api.availabilitytestzone.crowdstrike.com/oauth2/token failed, reason: getaddrinfo ENOTFOUND api.availabilitytestzone.crowdstrike.com',
+    );
+  });
 });
