@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.2.0] - 2022-06-09
+
+### Added
+
+- The integration now allows users to optionally specify an availability zone in
+  the configuration.
+
 ## [2.1.11] - 2022-06-03
 
 ### Fixed
