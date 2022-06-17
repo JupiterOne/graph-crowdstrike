@@ -18,6 +18,7 @@
     "graph": "j1-integration visualize",
     "graph:types": "j1-integration visualize-types",
     "graph:spec": "j1-integration visualize-types --project-path docs/spec --output-file ./.j1-integration/types-graph/index.spec.html",
+    "graph:dependencies": "j1-integration visualize-dependencies",
     "lint": "eslint . --cache --fix --ext .ts,.tsx",
     "format": "prettier --write '**/*.{ts,js,json,css,md,yml}'",
     "format:check": "prettier --check '**/*.{ts,js,json,css,md,yml}'",
@@ -31,14 +32,15 @@
     "validate:questions:dry": "j1-integration validate-question-file --dry-run"
   },
   "dependencies": {
+    "@jupiterone/integration-sdk-core": "^8.14.0",
     "@jupiterone/integration-sdk-runtime": "^8.8.0",
     "node-fetch": "^2.6.0"
   },
   "peerDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.8.0"
+    "@jupiterone/integration-sdk-core": "^8.14.0"
   },
   "devDependencies": {
-    "@jupiterone/integration-sdk-dev-tools": "^8.8.0",
-    "@jupiterone/integration-sdk-testing": "^8.8.0"
+    "@jupiterone/integration-sdk-dev-tools": "^8.14.0",
+    "@jupiterone/integration-sdk-testing": "^8.14.0"
   }
 }
