@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.2.1] - 2022-06-28
+
+### Fixed
+
+- `crowdstrike_sensor`'s should map to `aws_instance` entities when the
+  CrowdStrike device's `service_provider` property has the value `AWS_EC2_V2`
+
 ## [2.2.0] - 2022-06-09
 
 ### Added

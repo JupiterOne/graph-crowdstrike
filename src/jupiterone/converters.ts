@@ -55,22 +55,29 @@ function zoneGroupToRegion(zoneGroup: string): string {
   return zoneGroup.substr(0, zoneGroup.length - 1);
 }
 
+function isAwsEc2Device(source: Device): boolean {
+  const {
+    service_provider: serviceProvider, // Ex. AWS_EC2, AWS_EC2_V2
+    service_provider_account_id: serviceProviderAccountId, // Ex. 123456789
+    zone_group: zoneGroup, // Ex. us-east-1d
+  } = source;
+
+  return !!(
+    typeof serviceProvider === 'string' &&
+    serviceProvider.startsWith('AWS_EC2') &&
+    serviceProviderAccountId &&
+    zoneGroup
+  );
+}
+
 export function buildEc2InstanceArn(source: Device): string | undefined {
   const {
-    service_provider: serviceProvider, // Ex. AWS_EC2
     service_provider_account_id: serviceProviderAccountId, // Ex. 123456789
     zone_group: zoneGroup, // Ex. us-east-1d
     instance_id: instanceId, // i-1234567
   } = source;
 
-  if (
-    serviceProvider !== 'AWS_EC2' ||
-    !serviceProviderAccountId ||
-    !zoneGroup
-  ) {
-    return;
-  }
-
+  if (!isAwsEc2Device(source)) return;
   const region = zoneGroupToRegion(zoneGroup as string);
 
   // arn:aws:ec2:us-east-1:123456789:instance/i-1234567
