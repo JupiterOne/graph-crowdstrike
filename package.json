@@ -1,6 +1,6 @@
 {
   "name": "@jupiterone/graph-crowdstrike",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "A template for JupiterOne graph converters.",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -32,15 +32,14 @@
     "validate:questions:dry": "j1-integration validate-question-file --dry-run"
   },
   "dependencies": {
-    "@jupiterone/integration-sdk-core": "^8.14.0",
-    "@jupiterone/integration-sdk-runtime": "^8.8.0",
     "node-fetch": "^2.6.0"
   },
   "peerDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.14.0"
+    "@jupiterone/integration-sdk-core": "^8.16.0"
   },
   "devDependencies": {
-    "@jupiterone/integration-sdk-dev-tools": "^8.14.0",
-    "@jupiterone/integration-sdk-testing": "^8.14.0"
+    "@jupiterone/integration-sdk-core": "^8.16.0",
+    "@jupiterone/integration-sdk-dev-tools": "^8.16.0",
+    "@jupiterone/integration-sdk-testing": "^8.16.0"
   }
 }
