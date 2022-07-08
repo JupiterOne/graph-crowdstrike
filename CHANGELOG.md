@@ -8,6 +8,11 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Handle redirects manually. Dependabot node-fetch upgrade removed auth headers
+  when redirecting.
+
 ## [2.2.1] - 2022-06-28
 
 ### Fixed
