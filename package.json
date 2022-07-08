@@ -32,7 +32,7 @@
     "validate:questions:dry": "j1-integration validate-question-file --dry-run"
   },
   "dependencies": {
-    "node-fetch": "^2.6.0"
+    "node-fetch": "^2.6.7"
   },
   "peerDependencies": {
     "@jupiterone/integration-sdk-core": "^8.16.0"

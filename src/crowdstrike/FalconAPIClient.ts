@@ -23,6 +23,7 @@ import {
   IntegrationProviderAuthenticationError,
   IntegrationProviderAuthorizationError,
 } from '@jupiterone/integration-sdk-core';
+import { URL } from 'url';
 
 function getUnixTimeNow() {
   return Date.now() / 1000;
@@ -331,6 +332,7 @@ export class FalconAPIClient {
           ...init.headers,
           authorization: `bearer ${this.token!.token}`,
         },
+        redirect: 'manual',
       });
 
       this.rateLimitState = {
@@ -340,6 +342,16 @@ export class FalconAPIClient {
           response.headers.get('X-RateLimit-RetryAfter') &&
           Number(response.headers.get('X-RateLimit-RetryAfter')),
       };
+
+      // Manually handle redirects.
+      if ([301, 302, 308].includes(response.status)) {
+        return this.handleRedirects(response, (redirectLocationUrl) => {
+          return this.executeAPIRequestWithRetries<T>(
+            redirectLocationUrl,
+            init,
+          );
+        });
+      }
 
       if (response.ok) {
         return response.json() as T;
@@ -395,6 +407,31 @@ export class FalconAPIClient {
         );
       },
     });
+  }
+
+  private handleRedirects(response, handler) {
+    this.logger.info(
+      {
+        locationHeader: response.headers.get('location'),
+        responseUrl: response.url,
+      },
+      'Encountered a redirect.',
+    );
+
+    const redirectLocationUrl = new URL(
+      response.headers.get('location'),
+      response.url,
+    );
+
+    const validUrls = /^api\.(\S+\.)?crowdstrike.com/;
+    if (validUrls.test(redirectLocationUrl.host)) {
+      return handler(redirectLocationUrl);
+    } else {
+      this.logger.warn(
+        { redirectLocationUrl },
+        `Encountered an invalid redirect location URL! Redirect prevented.`,
+      );
+    }
   }
 
   private async handle429Error() {
