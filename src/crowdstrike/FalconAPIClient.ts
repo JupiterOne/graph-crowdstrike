@@ -345,31 +345,12 @@ export class FalconAPIClient {
 
       // Manually handle redirects.
       if ([301, 302, 308].includes(response.status)) {
-        this.logger.info(
-          {
-            locationHeader: response.headers.get('location'),
-            responseUrl: response.url,
-          },
-          'Encountered a redirect.',
-        );
-
-        const redirectLocationUrl = new URL(
-          response.headers.get('location'),
-          response.url,
-        );
-
-        const validUrls = /^api\.(\S+\.)?crowdstrike.com/;
-        if (validUrls.test(redirectLocationUrl.host)) {
+        return this.handleRedirects(response, (redirectLocationUrl) => {
           return this.executeAPIRequestWithRetries<T>(
             redirectLocationUrl,
             init,
           );
-        } else {
-          this.logger.warn(
-            { redirectLocationUrl },
-            `Encountered an invalid redirect location URL! Redirect prevented.`,
-          );
-        }
+        });
       }
 
       if (response.ok) {
@@ -426,6 +407,31 @@ export class FalconAPIClient {
         );
       },
     });
+  }
+
+  private handleRedirects(response, handler) {
+    this.logger.info(
+      {
+        locationHeader: response.headers.get('location'),
+        responseUrl: response.url,
+      },
+      'Encountered a redirect.',
+    );
+
+    const redirectLocationUrl = new URL(
+      response.headers.get('location'),
+      response.url,
+    );
+
+    const validUrls = /^api\.(\S+\.)?crowdstrike.com/;
+    if (validUrls.test(redirectLocationUrl.host)) {
+      return handler(redirectLocationUrl);
+    } else {
+      this.logger.warn(
+        { redirectLocationUrl },
+        `Encountered an invalid redirect location URL! Redirect prevented.`,
+      );
+    }
   }
 
   private async handle429Error() {
