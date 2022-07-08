@@ -352,13 +352,23 @@ export class FalconAPIClient {
           },
           'Encountered a redirect.',
         );
-        const locationUrl = new URL(
+
+        const redirectLocationUrl = new URL(
           response.headers.get('location'),
           response.url,
         );
 
-        if (locationUrl.host.includes('crowdstrike.com')) {
-          return this.executeAPIRequestWithRetries<T>(locationUrl, init);
+        const validUrls = /^api.(\S+.)?crowdstrike.com/;
+        if (validUrls.test(redirectLocationUrl.host)) {
+          return this.executeAPIRequestWithRetries<T>(
+            redirectLocationUrl,
+            init,
+          );
+        } else {
+          this.logger.warn(
+            { redirectLocationUrl },
+            `Encountered an invalid redirect location URL! Redirect prevented.`,
+          );
         }
       }
 
