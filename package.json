@@ -1,6 +1,6 @@
 {
   "name": "@jupiterone/graph-crowdstrike",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "A template for JupiterOne graph converters.",
   "main": "src/index.js",
   "types": "src/index.d.ts",
