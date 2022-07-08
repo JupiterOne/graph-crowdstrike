@@ -23,6 +23,7 @@ import {
   IntegrationProviderAuthenticationError,
   IntegrationProviderAuthorizationError,
 } from '@jupiterone/integration-sdk-core';
+import { URL } from 'url';
 
 function getUnixTimeNow() {
   return Date.now() / 1000;
@@ -331,6 +332,7 @@ export class FalconAPIClient {
           ...init.headers,
           authorization: `bearer ${this.token!.token}`,
         },
+        redirect: 'manual',
       });
 
       this.rateLimitState = {
@@ -340,6 +342,25 @@ export class FalconAPIClient {
           response.headers.get('X-RateLimit-RetryAfter') &&
           Number(response.headers.get('X-RateLimit-RetryAfter')),
       };
+
+      // Manually handle redirects.
+      if ([301, 302, 308].includes(response.status)) {
+        this.logger.info(
+          {
+            locationHeader: response.headers.get('location'),
+            responseUrl: response.url,
+          },
+          'Encountered a redirect.',
+        );
+        const locationUrl = new URL(
+          response.headers.get('location'),
+          response.url,
+        );
+
+        if (locationUrl.host.includes('crowdstrike.com')) {
+          return this.executeAPIRequestWithRetries<T>(locationUrl, init);
+        }
+      }
 
       if (response.ok) {
         return response.json() as T;
