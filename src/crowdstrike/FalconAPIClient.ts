@@ -358,7 +358,7 @@ export class FalconAPIClient {
           response.url,
         );
 
-        const validUrls = /^api.(\S+.)?crowdstrike.com/;
+        const validUrls = /^api.(\S+\.)?crowdstrike.com/;
         if (validUrls.test(redirectLocationUrl.host)) {
           return this.executeAPIRequestWithRetries<T>(
             redirectLocationUrl,
