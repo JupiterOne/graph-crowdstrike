@@ -8,6 +8,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.2.3] - 2022-07-27
+
+### Changed
+
+- increased page size to 250 when fetching vulnerabilities
+- removed `await` from `hasKey` operations
+- added `return` after `abort()` during error handling
+
 ## [2.2.2] - 2022-07-08
 
 ### Fixed
