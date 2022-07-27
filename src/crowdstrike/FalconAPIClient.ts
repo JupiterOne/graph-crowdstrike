@@ -237,6 +237,7 @@ export class FalconAPIClient {
         {
           pagination: response.meta,
           resourcesLength: response.resources.length,
+          errors: response.errors,
         },
         'pagination response details',
       );
