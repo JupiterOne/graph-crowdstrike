@@ -55,7 +55,7 @@ export async function fetchDevicePolicyRelationships(
           for (const deviceId of memberIds) {
             const deviceAssignedPolicyIdRelationshipKey = `${deviceId}|assigned|${policyId}`;
 
-            if (await jobState.hasKey(deviceAssignedPolicyIdRelationshipKey)) {
+            if (jobState.hasKey(deviceAssignedPolicyIdRelationshipKey)) {
               logger.info(
                 {
                   _key: deviceAssignedPolicyIdRelationshipKey,

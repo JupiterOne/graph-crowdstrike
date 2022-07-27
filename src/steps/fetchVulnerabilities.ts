@@ -39,6 +39,7 @@ export async function fetchVulnerabilities(
   await client
     .iterateVulnerabilities({
       query: {
+        limit: '250',
         filter: `created_timestamp:>'${createdTimestampFilter}'`,
         sort: `created_timestamp|desc`,
       },
@@ -51,7 +52,7 @@ export async function fetchVulnerabilities(
         for (const vulnerability of vulns) {
           const vulnerabilityEntity = createVulnerabilityEntity(vulnerability);
 
-          if (await jobState.hasKey(vulnerabilityEntity._key)) {
+          if (jobState.hasKey(vulnerabilityEntity._key)) {
             duplicateVulnerabilityKeysFoundCount++;
           } else {
             await jobState.addEntity(vulnerabilityEntity);
@@ -71,7 +72,7 @@ export async function fetchVulnerabilities(
             to: sensor,
           });
 
-          if (await jobState.hasKey(vulnerabilitySensorRelationship._key)) {
+          if (jobState.hasKey(vulnerabilitySensorRelationship._key)) {
             duplicateVulnerabilitySensorRelationshipKeysFoundCount++;
           } else {
             await jobState.addRelationship(vulnerabilitySensorRelationship);

@@ -286,6 +286,7 @@ export class FalconAPIClient {
       handleError: (error, attemptContext) => {
         if (error.status === 400) {
           attemptContext.abort();
+          return;
         }
         if (error.status === 403) {
           throw new IntegrationProviderAuthenticationError({
@@ -390,12 +391,14 @@ export class FalconAPIClient {
         if (error.status === 401) {
           if (attemptContext.attemptNum > 1) {
             attemptContext.abort();
+            return;
           } else {
             await this.authenticate();
           }
         }
         if (error.status === 403) {
           attemptContext.abort();
+          return;
         }
         if (error.status === 429) {
           await this.handle429Error();
