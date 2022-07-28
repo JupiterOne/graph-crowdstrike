@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.2.4] - 2022-07-28
+
+### Changed
+
+- log all errors during pagiation
+
 ## [2.2.3] - 2022-07-27
 
 ### Changed
