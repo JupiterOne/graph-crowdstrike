@@ -21,6 +21,7 @@ export async function fetchDevices(
   logger.info('Iterating devices...');
   await client.iterateDevices({
     query: {
+      limit: '250',
       filter: `last_seen:>='${lastSeenSince()}'`,
     },
     callback: async (devices) => {

@@ -39,6 +39,9 @@ export async function fetchDevicePolicyRelationships(
       let totalNumDeviceAssignedPolicyRelationships = 0;
 
       await client.iteratePreventionPolicyMemberIds({
+        query: {
+          limit: '250',
+        },
         policyId: policyId,
         callback: async (memberIds) => {
           logger.info(
