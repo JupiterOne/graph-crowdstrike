@@ -142,9 +142,11 @@ export class FalconAPIClient {
    */
   public async iteratePreventionPolicies(input: {
     callback: FalconAPIResourceIterationCallback<PreventionPolicy>;
+    query?: QueryParams;
   }): Promise<void> {
     return this.paginateResources<PreventionPolicy>({
       callback: input.callback,
+      query: input.query,
       resourcePath: '/policy/combined/prevention/v1',
     });
   }
@@ -155,13 +157,17 @@ export class FalconAPIClient {
    * @param input
    */
   public async iteratePreventionPolicyMemberIds(input: {
+    query?: QueryParams;
     callback: FalconAPIResourceIterationCallback<DeviceIdentifier>;
     policyId: string;
   }): Promise<void> {
     return this.paginateResources<DeviceIdentifier>({
       callback: input.callback,
       resourcePath: '/policy/queries/prevention-members/v1',
-      query: { id: input.policyId },
+      query: {
+        ...input.query,
+        id: input.policyId,
+      },
     });
   }
 
