@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.2.5] - 2022-08-01
+
+### Changed
+
+- increase page size to 250 for devices, prevention policy, and prevention
+  policy members endpoints
+
 ## [2.2.4] - 2022-07-28
 
 ### Changed
