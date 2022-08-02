@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.2.6] - 2022-08-01
+
+### Fixed
+
+- corrected creation of query parameters to only include pagination details at
+  most once and default to using details returned by the CrowdStrike API
+
 ## [2.2.5] - 2022-08-01
 
 ### Changed
