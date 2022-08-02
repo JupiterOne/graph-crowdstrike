@@ -501,21 +501,21 @@ function toQueryString(
 ): URLSearchParams {
   const params = new URLSearchParams();
 
-  if (pagination) {
-    if (typeof pagination.limit === 'number') {
-      params.append('limit', String(pagination.limit));
-    }
-    if (pagination.offset !== undefined) {
-      params.append('offset', String(pagination.offset));
-    }
-    if (pagination.after !== undefined) {
-      params.append('after', String(pagination.after));
-    }
-  }
-
   if (queryParams) {
     for (const e of Object.entries(queryParams)) {
       params.append(e[0], String(e[1]));
+    }
+  }
+
+  if (pagination) {
+    if (typeof pagination.limit === 'number') {
+      params.set('limit', String(pagination.limit));
+    }
+    if (pagination.offset !== undefined) {
+      params.set('offset', String(pagination.offset));
+    }
+    if (pagination.after !== undefined) {
+      params.set('after', String(pagination.after));
     }
   }
 
