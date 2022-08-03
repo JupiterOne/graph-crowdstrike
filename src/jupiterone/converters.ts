@@ -4,7 +4,7 @@ import {
   getTime,
   parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
-import { Entities } from '../constants';
+import { Entities } from '../steps/constants';
 
 import { Device, PreventionPolicy, Vulnerability } from '../crowdstrike/types';
 

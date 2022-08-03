@@ -1,10 +1,10 @@
 import { IntegrationInvocationConfig } from '@jupiterone/integration-sdk-core';
 
-import { fetchDevicePolicyRelationshipsStep } from './steps/fetchDevicePolicyRelationships';
-import { fetchDevicesStep } from './steps/fetchDevices';
-import { fetchPreventionPoliciesStep } from './steps/fetchPreventionPolicies';
-import { getAccountStep } from './steps/getAccount';
-import { fetchVulnerabilitiesStep } from './steps/fetchVulnerabilities';
+import { fetchDevicePolicyRelationshipsStep } from './steps/devicePolicies';
+import { fetchDevicesStep } from './steps/devices';
+import { fetchPreventionPoliciesStep } from './steps/preventionPolicies';
+import { getAccountStep } from './steps/account';
+import { fetchVulnerabilitiesStep } from './steps/vulnerabilities';
 import {
   CrowdStrikeIntegrationInstanceConfig,
   instanceConfigFields,
