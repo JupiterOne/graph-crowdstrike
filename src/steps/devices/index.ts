@@ -5,10 +5,10 @@ import {
   Step,
 } from '@jupiterone/integration-sdk-core';
 import { Entities, Relationships, StepIds } from '../constants';
-import getOrCreateFalconAPIClient from '../crowdstrike/getOrCreateFalconAPIClient';
-import { createSensorAgentEntity } from '../jupiterone/converters';
-import { CrowdStrikeIntegrationInstanceConfig } from '../config';
-import { getAccountEntityFromJobState } from './getAccount';
+import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
+import { createSensorAgentEntity } from '../../jupiterone/converters';
+import { CrowdStrikeIntegrationInstanceConfig } from '../../config';
+import { getAccountEntityFromJobState } from '../account';
 
 export async function fetchDevices(
   context: IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>,

@@ -11,8 +11,8 @@ import { Entities, Relationships, SetDataKeys, StepIds } from '../constants';
 import {
   createAccountEntity,
   createProtectionServiceEntity,
-} from '../jupiterone/converters';
-import { CrowdStrikeIntegrationInstanceConfig } from '../config';
+} from '../../jupiterone/converters';
+import { CrowdStrikeIntegrationInstanceConfig } from '../../config';
 
 export async function getAccountEntityFromJobState(
   jobState: JobState,

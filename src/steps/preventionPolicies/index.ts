@@ -5,10 +5,10 @@ import {
   Step,
 } from '@jupiterone/integration-sdk-core';
 import { Entities, Relationships, StepIds } from '../constants';
-import getOrCreateFalconAPIClient from '../crowdstrike/getOrCreateFalconAPIClient';
-import { createPreventionPolicyEntity } from '../jupiterone/converters';
-import { CrowdStrikeIntegrationInstanceConfig } from '../config';
-import { getProtectionServiceEntityFromJobState } from './getAccount';
+import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
+import { createPreventionPolicyEntity } from '../../jupiterone/converters';
+import { CrowdStrikeIntegrationInstanceConfig } from '../../config';
+import { getProtectionServiceEntityFromJobState } from '../account';
 
 export async function fetchPreventionPolicies(
   context: IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>,

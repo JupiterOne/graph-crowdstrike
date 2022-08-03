@@ -5,9 +5,9 @@ import {
   Step,
 } from '@jupiterone/integration-sdk-core';
 import { Entities, Relationships, StepIds } from '../constants';
-import getOrCreateFalconAPIClient from '../crowdstrike/getOrCreateFalconAPIClient';
-import { PreventionPolicy } from '../crowdstrike/types';
-import { CrowdStrikeIntegrationInstanceConfig } from '../config';
+import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
+import { PreventionPolicy } from '../../crowdstrike/types';
+import { CrowdStrikeIntegrationInstanceConfig } from '../../config';
 
 export async function fetchDevicePolicyRelationships(
   context: IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>,

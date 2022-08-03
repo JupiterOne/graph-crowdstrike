@@ -5,10 +5,10 @@ import {
   RelationshipClass,
   Step,
 } from '@jupiterone/integration-sdk-core';
-import { CrowdStrikeIntegrationInstanceConfig } from '../config';
-import getOrCreateFalconAPIClient from '../crowdstrike/getOrCreateFalconAPIClient';
+import { CrowdStrikeIntegrationInstanceConfig } from '../../config';
+import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
 import { Entities, Relationships, StepIds } from '../constants';
-import { createVulnerabilityEntity } from '../jupiterone/converters';
+import { createVulnerabilityEntity } from '../../jupiterone/converters';
 import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/src/types/logger';
 
 // TODO: Understand the amount of data to be ingested by looking back only 10 days
