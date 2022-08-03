@@ -1,10 +1,7 @@
 import {
   createDirectRelationship,
-  Entity,
-  IntegrationError,
   IntegrationStep,
   IntegrationStepExecutionContext,
-  JobState,
   RelationshipClass,
 } from '@jupiterone/integration-sdk-core';
 import { Entities, Relationships, SetDataKeys, StepIds } from '../constants';
