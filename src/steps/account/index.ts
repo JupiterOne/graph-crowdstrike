@@ -14,38 +14,6 @@ import {
 } from '../../jupiterone/converters';
 import { IntegrationConfig } from '../../config';
 
-export async function getAccountEntityFromJobState(
-  jobState: JobState,
-): Promise<Entity> {
-  const accountEntity = await jobState.getData<Entity>(
-    SetDataKeys.ACCOUNT_ENTITY,
-  );
-
-  if (!accountEntity) {
-    throw new IntegrationError({
-      code: 'MISSING_ACCOUNT_ENTITY',
-      message: `The ${Entities.ACCOUNT._type} entity could not be found in the job state.`,
-    });
-  }
-  return accountEntity;
-}
-
-export async function getProtectionServiceEntityFromJobState(
-  jobState: JobState,
-): Promise<Entity> {
-  const protectionServiceEntity = await jobState.getData<Entity>(
-    SetDataKeys.PROTECTION_SERVICE_ENTITY,
-  );
-
-  if (!protectionServiceEntity) {
-    throw new IntegrationError({
-      code: 'MISSING_PROTECTION_SERVICE_ENTITY',
-      message: `The ${Entities.PROTECTION_SERVICE._type} entity could not be found in the job state.`,
-    });
-  }
-  return protectionServiceEntity;
-}
-
 async function getAccount(
   context: IntegrationStepExecutionContext<IntegrationConfig>,
 ): Promise<void> {

@@ -8,7 +8,7 @@ import { Entities, Relationships, StepIds } from '../constants';
 import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
 import { createSensorAgentEntity } from '../../jupiterone/converters';
 import { IntegrationConfig } from '../../config';
-import { getAccountEntityFromJobState } from '../account';
+import { getAccountEntityFromJobState } from '../utils';
 
 async function fetchDevices(
   context: IntegrationStepExecutionContext<IntegrationConfig>,

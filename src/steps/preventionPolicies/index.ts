@@ -8,7 +8,7 @@ import { Entities, Relationships, StepIds } from '../constants';
 import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
 import { createPreventionPolicyEntity } from '../../jupiterone/converters';
 import { IntegrationConfig } from '../../config';
-import { getProtectionServiceEntityFromJobState } from '../account';
+import { getProtectionServiceEntityFromJobState } from '../utils';
 
 async function fetchPreventionPolicies(
   context: IntegrationStepExecutionContext<IntegrationConfig>,
