@@ -9,7 +9,7 @@ import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPICl
 import { PreventionPolicy } from '../../crowdstrike/types';
 import { IntegrationConfig } from '../../config';
 
-export async function fetchDevicePolicyRelationships(
+async function fetchDevicePolicyRelationships(
   context: IntegrationStepExecutionContext<IntegrationConfig>,
 ): Promise<void> {
   const { instance, jobState, logger } = context;

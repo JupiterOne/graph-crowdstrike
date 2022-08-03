@@ -15,7 +15,7 @@ import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/
 // const THIRTY_DAYS_AGO = 30 * 24 * 60 * 60 * 1000;
 const TEN_DAYS_AGO = 10 * 24 * 60 * 60 * 1000;
 
-export async function fetchVulnerabilities(
+async function fetchVulnerabilities(
   context: IntegrationStepExecutionContext<IntegrationConfig>,
 ): Promise<void> {
   const { instance, jobState, logger } = context;

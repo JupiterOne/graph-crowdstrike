@@ -46,7 +46,7 @@ export async function getProtectionServiceEntityFromJobState(
   return protectionServiceEntity;
 }
 
-export async function getAccount(
+async function getAccount(
   context: IntegrationStepExecutionContext<IntegrationConfig>,
 ): Promise<void> {
   const { instance, jobState } = context;

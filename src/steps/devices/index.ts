@@ -10,7 +10,7 @@ import { createSensorAgentEntity } from '../../jupiterone/converters';
 import { IntegrationConfig } from '../../config';
 import { getAccountEntityFromJobState } from '../account';
 
-export async function fetchDevices(
+async function fetchDevices(
   context: IntegrationStepExecutionContext<IntegrationConfig>,
 ): Promise<void> {
   const { instance, jobState, logger } = context;

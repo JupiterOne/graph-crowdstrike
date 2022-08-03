@@ -10,7 +10,7 @@ import { createPreventionPolicyEntity } from '../../jupiterone/converters';
 import { IntegrationConfig } from '../../config';
 import { getProtectionServiceEntityFromJobState } from '../account';
 
-export async function fetchPreventionPolicies(
+async function fetchPreventionPolicies(
   context: IntegrationStepExecutionContext<IntegrationConfig>,
 ): Promise<void> {
   const { instance, jobState, logger } = context;
