@@ -1,7 +1,7 @@
 {
   "name": "@jupiterone/graph-crowdstrike",
   "version": "2.2.6",
-  "description": "A template for JupiterOne graph converters.",
+  "description": "A graph conversion tool for the CrowdStrike API",
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "repository": "https://github.com/JupiterOne/graph-crowdstrike",
@@ -35,11 +35,11 @@
     "node-fetch": "^2.6.7"
   },
   "peerDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.16.0"
+    "@jupiterone/integration-sdk-core": "^8.22.0"
   },
   "devDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.16.0",
-    "@jupiterone/integration-sdk-dev-tools": "^8.16.0",
-    "@jupiterone/integration-sdk-testing": "^8.16.0"
+    "@jupiterone/integration-sdk-core": "^8.22.0",
+    "@jupiterone/integration-sdk-dev-tools": "^8.22.0",
+    "@jupiterone/integration-sdk-testing": "^8.22.0"
   }
 }
