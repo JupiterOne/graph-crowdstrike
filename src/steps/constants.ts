@@ -1,5 +1,6 @@
 import {
   RelationshipClass,
+  StepEntityMetadata,
   StepRelationshipMetadata,
 } from '@jupiterone/integration-sdk-core';
 
@@ -8,7 +9,14 @@ export const SetDataKeys = {
   PROTECTION_SERVICE_ENTITY: 'PROTECTION_SERVICE_ENTITY',
 };
 
-export const StepIds = {
+export const StepIds: Record<
+  | 'ACCOUNT'
+  | 'DEVICES'
+  | 'PREVENTION_POLICIES'
+  | 'VULNERABILITIES'
+  | 'DEVICE_POLICY_RELATIONSHIPS',
+  string
+> = {
   ACCOUNT: 'get-account',
   DEVICES: 'fetch-devices',
   PREVENTION_POLICIES: 'fetch-prevention-policies',
@@ -16,7 +24,14 @@ export const StepIds = {
   VULNERABILITIES: 'fetch-vulnerabilities',
 };
 
-export const Entities = {
+export const Entities: Record<
+  | 'ACCOUNT'
+  | 'PROTECTION_SERVICE'
+  | 'SENSOR'
+  | 'PREVENTION_POLICY'
+  | 'VULNERABILITY',
+  StepEntityMetadata
+> = {
   ACCOUNT: {
     resourceName: 'Account',
     _type: 'crowdstrike_account',
@@ -45,7 +60,14 @@ export const Entities = {
   },
 };
 
-export const Relationships: Record<string, StepRelationshipMetadata> = {
+export const Relationships: Record<
+  | 'ACCOUNT_HAS_PROTECTION_SERVICE'
+  | 'ACCOUNT_HAS_SENSOR'
+  | 'PREVENTION_POLICY_ENFORCES_PROTECTION_SERVICE'
+  | 'SENSOR_ASSIGNED_PREVENTION_POLICY'
+  | 'VULN_EXPLOITS_SENSOR',
+  StepRelationshipMetadata
+> = {
   ACCOUNT_HAS_PROTECTION_SERVICE: {
     _type: 'crowdstrike_account_has_endpoint_protection',
     sourceType: Entities.ACCOUNT._type,

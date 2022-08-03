@@ -1,16 +1,16 @@
 import {
   getRawData,
+  IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
-  Step,
 } from '@jupiterone/integration-sdk-core';
 import { Entities, Relationships, StepIds } from '../constants';
 import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
 import { PreventionPolicy } from '../../crowdstrike/types';
-import { CrowdStrikeIntegrationInstanceConfig } from '../../config';
+import { IntegrationConfig } from '../../config';
 
-export async function fetchDevicePolicyRelationships(
-  context: IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>,
+async function fetchDevicePolicyRelationships(
+  context: IntegrationStepExecutionContext<IntegrationConfig>,
 ): Promise<void> {
   const { instance, jobState, logger } = context;
   const client = getOrCreateFalconAPIClient(instance.config, logger);
@@ -98,13 +98,13 @@ export async function fetchDevicePolicyRelationships(
   );
 }
 
-export const fetchDevicePolicyRelationshipsStep: Step<
-  IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>
-> = {
-  id: StepIds.DEVICE_POLICY_RELATIONSHIPS,
-  name: 'Fetch Device Policies',
-  entities: [],
-  relationships: [Relationships.SENSOR_ASSIGNED_PREVENTION_POLICY],
-  dependsOn: [StepIds.DEVICES, StepIds.PREVENTION_POLICIES],
-  executionHandler: fetchDevicePolicyRelationships,
-};
+export const devicePolicySteps: IntegrationStep<IntegrationConfig>[] = [
+  {
+    id: StepIds.DEVICE_POLICY_RELATIONSHIPS,
+    name: 'Fetch Device Policies',
+    entities: [],
+    relationships: [Relationships.SENSOR_ASSIGNED_PREVENTION_POLICY],
+    dependsOn: [StepIds.DEVICES, StepIds.PREVENTION_POLICIES],
+    executionHandler: fetchDevicePolicyRelationships,
+  },
+];

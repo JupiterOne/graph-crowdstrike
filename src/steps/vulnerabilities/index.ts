@@ -1,11 +1,11 @@
 import {
   createDirectRelationship,
   IntegrationProviderAuthorizationError,
+  IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
-  Step,
 } from '@jupiterone/integration-sdk-core';
-import { CrowdStrikeIntegrationInstanceConfig } from '../../config';
+import { IntegrationConfig } from '../../config';
 import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
 import { Entities, Relationships, StepIds } from '../constants';
 import { createVulnerabilityEntity } from '../../jupiterone/converters';
@@ -15,8 +15,8 @@ import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/
 // const THIRTY_DAYS_AGO = 30 * 24 * 60 * 60 * 1000;
 const TEN_DAYS_AGO = 10 * 24 * 60 * 60 * 1000;
 
-export async function fetchVulnerabilities(
-  context: IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>,
+async function fetchVulnerabilities(
+  context: IntegrationStepExecutionContext<IntegrationConfig>,
 ): Promise<void> {
   const { instance, jobState, logger } = context;
 
@@ -109,13 +109,13 @@ export async function fetchVulnerabilities(
   );
 }
 
-export const fetchVulnerabilitiesStep: Step<
-  IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>
-> = {
-  id: StepIds.VULNERABILITIES,
-  name: 'Fetch Vulnerabilities',
-  entities: [Entities.VULNERABILITY],
-  relationships: [Relationships.VULN_EXPLOITS_SENSOR],
-  dependsOn: [StepIds.DEVICES],
-  executionHandler: fetchVulnerabilities,
-};
+export const vulnerabilitiesSteps: IntegrationStep<IntegrationConfig>[] = [
+  {
+    id: StepIds.VULNERABILITIES,
+    name: 'Fetch Vulnerabilities',
+    entities: [Entities.VULNERABILITY],
+    relationships: [Relationships.VULN_EXPLOITS_SENSOR],
+    dependsOn: [StepIds.DEVICES],
+    executionHandler: fetchVulnerabilities,
+  },
+];

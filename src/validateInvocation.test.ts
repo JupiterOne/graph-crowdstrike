@@ -3,10 +3,7 @@ import {
   IntegrationValidationError,
 } from '@jupiterone/integration-sdk-core';
 import { createMockExecutionContext } from '@jupiterone/integration-sdk-testing';
-import {
-  CrowdStrikeIntegrationInstanceConfig,
-  validateInvocation,
-} from './config';
+import { IntegrationConfig, validateInvocation } from './config';
 import {
   Recording,
   setupCrowdstrikeRecording,
@@ -23,10 +20,9 @@ afterEach(async () => {
 
 describe('#validateInvocation', () => {
   test('all config params missing', async () => {
-    const executionContext =
-      createMockExecutionContext<CrowdStrikeIntegrationInstanceConfig>({
-        instanceConfig: {} as CrowdStrikeIntegrationInstanceConfig,
-      });
+    const executionContext = createMockExecutionContext<IntegrationConfig>({
+      instanceConfig: {} as IntegrationConfig,
+    });
 
     await expect(validateInvocation(executionContext)).rejects.toThrow(
       'Config requires all of {clientId, clientSecret}',
@@ -34,12 +30,11 @@ describe('#validateInvocation', () => {
   });
 
   test('clientId missing', async () => {
-    const executionContext =
-      createMockExecutionContext<CrowdStrikeIntegrationInstanceConfig>({
-        instanceConfig: {
-          clientSecret: 'YYY',
-        } as CrowdStrikeIntegrationInstanceConfig,
-      });
+    const executionContext = createMockExecutionContext<IntegrationConfig>({
+      instanceConfig: {
+        clientSecret: 'YYY',
+      } as IntegrationConfig,
+    });
 
     await expect(validateInvocation(executionContext)).rejects.toThrow(
       'Config requires all of {clientId, clientSecret}',
@@ -47,12 +42,11 @@ describe('#validateInvocation', () => {
   });
 
   test('clientSecret missing', async () => {
-    const executionContext =
-      createMockExecutionContext<CrowdStrikeIntegrationInstanceConfig>({
-        instanceConfig: {
-          clientId: 'XXX',
-        } as CrowdStrikeIntegrationInstanceConfig,
-      });
+    const executionContext = createMockExecutionContext<IntegrationConfig>({
+      instanceConfig: {
+        clientId: 'XXX',
+      } as IntegrationConfig,
+    });
 
     await expect(validateInvocation(executionContext)).rejects.toThrow(
       'Config requires all of {clientId, clientSecret}',
@@ -68,13 +62,12 @@ describe('#validateInvocation', () => {
       },
     });
 
-    const executionContext =
-      createMockExecutionContext<CrowdStrikeIntegrationInstanceConfig>({
-        instanceConfig: {
-          ...config,
-          clientSecret: 'not-valid-secret',
-        },
-      });
+    const executionContext = createMockExecutionContext<IntegrationConfig>({
+      instanceConfig: {
+        ...config,
+        clientSecret: 'not-valid-secret',
+      },
+    });
 
     await expect(validateInvocation(executionContext)).rejects.toBeInstanceOf(
       IntegrationProviderAuthenticationError,
@@ -90,13 +83,12 @@ describe('#validateInvocation', () => {
       },
     });
 
-    const executionContext =
-      createMockExecutionContext<CrowdStrikeIntegrationInstanceConfig>({
-        instanceConfig: {
-          clientId: 'not-valid',
-          clientSecret: 'not-valid-secret',
-        },
-      });
+    const executionContext = createMockExecutionContext<IntegrationConfig>({
+      instanceConfig: {
+        clientId: 'not-valid',
+        clientSecret: 'not-valid-secret',
+      },
+    });
 
     await expect(validateInvocation(executionContext)).rejects.toBeInstanceOf(
       IntegrationValidationError,
