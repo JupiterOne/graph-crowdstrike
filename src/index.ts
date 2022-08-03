@@ -1,25 +1,14 @@
 import { IntegrationInvocationConfig } from '@jupiterone/integration-sdk-core';
-
-import { fetchDevicePolicyRelationshipsStep } from './steps/devicePolicies';
-import { fetchDevicesStep } from './steps/devices';
-import { fetchPreventionPoliciesStep } from './steps/preventionPolicies';
-import { getAccountStep } from './steps/account';
-import { fetchVulnerabilitiesStep } from './steps/vulnerabilities';
 import {
-  CrowdStrikeIntegrationInstanceConfig,
+  IntegrationConfig,
   instanceConfigFields,
   validateInvocation,
 } from './config';
+import { integrationSteps } from './steps';
 
-export const invocationConfig: IntegrationInvocationConfig<CrowdStrikeIntegrationInstanceConfig> =
+export const invocationConfig: IntegrationInvocationConfig<IntegrationConfig> =
   {
     instanceConfigFields,
     validateInvocation,
-    integrationSteps: [
-      getAccountStep,
-      fetchDevicesStep,
-      fetchPreventionPoliciesStep,
-      fetchDevicePolicyRelationshipsStep,
-      fetchVulnerabilitiesStep,
-    ],
+    integrationSteps,
   };

@@ -1,11 +1,11 @@
 import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
-import { CrowdStrikeIntegrationInstanceConfig } from '../config';
+import { IntegrationConfig } from '../config';
 import { FalconAPIClient } from './FalconAPIClient';
 
 let client: FalconAPIClient;
 
 export default function getOrCreateFalconAPIClient(
-  config: CrowdStrikeIntegrationInstanceConfig,
+  config: IntegrationConfig,
   logger: IntegrationLogger,
 ): FalconAPIClient {
   if (!client) {

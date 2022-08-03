@@ -35,15 +35,14 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
   },
 };
 
-export interface CrowdStrikeIntegrationInstanceConfig
-  extends IntegrationInstanceConfig {
+export interface IntegrationConfig extends IntegrationInstanceConfig {
   clientId: string;
   clientSecret: string;
   availabilityZone?: string;
 }
 
 export async function validateInvocation(
-  context: IntegrationExecutionContext<CrowdStrikeIntegrationInstanceConfig>,
+  context: IntegrationExecutionContext<IntegrationConfig>,
 ) {
   const { instance, logger } = context;
 

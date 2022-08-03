@@ -1,17 +1,17 @@
 import {
   createDirectRelationship,
+  IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
-  Step,
 } from '@jupiterone/integration-sdk-core';
 import { Entities, Relationships, StepIds } from '../constants';
 import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
 import { createPreventionPolicyEntity } from '../../jupiterone/converters';
-import { CrowdStrikeIntegrationInstanceConfig } from '../../config';
+import { IntegrationConfig } from '../../config';
 import { getProtectionServiceEntityFromJobState } from '../account';
 
 export async function fetchPreventionPolicies(
-  context: IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>,
+  context: IntegrationStepExecutionContext<IntegrationConfig>,
 ): Promise<void> {
   const { instance, jobState, logger } = context;
 
@@ -47,13 +47,15 @@ export async function fetchPreventionPolicies(
   });
 }
 
-export const fetchPreventionPoliciesStep: Step<
-  IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>
-> = {
-  id: StepIds.PREVENTION_POLICIES,
-  name: 'Fetch Prevention Policies',
-  entities: [Entities.PREVENTION_POLICY],
-  relationships: [Relationships.PREVENTION_POLICY_ENFORCES_PROTECTION_SERVICE],
-  dependsOn: [StepIds.ACCOUNT],
-  executionHandler: fetchPreventionPolicies,
-};
+export const preventionPoliciesSteps: IntegrationStep<IntegrationConfig>[] = [
+  {
+    id: StepIds.PREVENTION_POLICIES,
+    name: 'Fetch Prevention Policies',
+    entities: [Entities.PREVENTION_POLICY],
+    relationships: [
+      Relationships.PREVENTION_POLICY_ENFORCES_PROTECTION_SERVICE,
+    ],
+    dependsOn: [StepIds.ACCOUNT],
+    executionHandler: fetchPreventionPolicies,
+  },
+];

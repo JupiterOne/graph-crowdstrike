@@ -1,17 +1,17 @@
 import {
   createDirectRelationship,
+  IntegrationStep,
   IntegrationStepExecutionContext,
   RelationshipClass,
-  Step,
 } from '@jupiterone/integration-sdk-core';
 import { Entities, Relationships, StepIds } from '../constants';
 import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
 import { createSensorAgentEntity } from '../../jupiterone/converters';
-import { CrowdStrikeIntegrationInstanceConfig } from '../../config';
+import { IntegrationConfig } from '../../config';
 import { getAccountEntityFromJobState } from '../account';
 
 export async function fetchDevices(
-  context: IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>,
+  context: IntegrationStepExecutionContext<IntegrationConfig>,
 ): Promise<void> {
   const { instance, jobState, logger } = context;
 
@@ -51,13 +51,13 @@ function lastSeenSince(): string {
   return new Date(Date.now() - THIRTY_DAYS_AGO).toISOString();
 }
 
-export const fetchDevicesStep: Step<
-  IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>
-> = {
-  id: StepIds.DEVICES,
-  name: 'Fetch Devices',
-  entities: [Entities.SENSOR],
-  relationships: [Relationships.ACCOUNT_HAS_SENSOR],
-  dependsOn: [StepIds.ACCOUNT],
-  executionHandler: fetchDevices,
-};
+export const devicesSteps: IntegrationStep<IntegrationConfig>[] = [
+  {
+    id: StepIds.DEVICES,
+    name: 'Fetch Devices',
+    entities: [Entities.SENSOR],
+    relationships: [Relationships.ACCOUNT_HAS_SENSOR],
+    dependsOn: [StepIds.ACCOUNT],
+    executionHandler: fetchDevices,
+  },
+];

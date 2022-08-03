@@ -2,17 +2,17 @@ import {
   createDirectRelationship,
   Entity,
   IntegrationError,
+  IntegrationStep,
   IntegrationStepExecutionContext,
   JobState,
   RelationshipClass,
-  Step,
 } from '@jupiterone/integration-sdk-core';
 import { Entities, Relationships, SetDataKeys, StepIds } from '../constants';
 import {
   createAccountEntity,
   createProtectionServiceEntity,
 } from '../../jupiterone/converters';
-import { CrowdStrikeIntegrationInstanceConfig } from '../../config';
+import { IntegrationConfig } from '../../config';
 
 export async function getAccountEntityFromJobState(
   jobState: JobState,
@@ -47,7 +47,7 @@ export async function getProtectionServiceEntityFromJobState(
 }
 
 export async function getAccount(
-  context: IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>,
+  context: IntegrationStepExecutionContext<IntegrationConfig>,
 ): Promise<void> {
   const { instance, jobState } = context;
   const accountEntity = await jobState.addEntity(createAccountEntity(instance));
@@ -70,12 +70,12 @@ export async function getAccount(
   );
 }
 
-export const getAccountStep: Step<
-  IntegrationStepExecutionContext<CrowdStrikeIntegrationInstanceConfig>
-> = {
-  id: StepIds.ACCOUNT,
-  name: 'Get Account',
-  entities: [Entities.ACCOUNT, Entities.PROTECTION_SERVICE],
-  relationships: [Relationships.ACCOUNT_HAS_PROTECTION_SERVICE],
-  executionHandler: getAccount,
-};
+export const accountSteps: IntegrationStep<IntegrationConfig>[] = [
+  {
+    id: StepIds.ACCOUNT,
+    name: 'Get Account',
+    entities: [Entities.ACCOUNT, Entities.PROTECTION_SERVICE],
+    relationships: [Relationships.ACCOUNT_HAS_PROTECTION_SERVICE],
+    executionHandler: getAccount,
+  },
+];
