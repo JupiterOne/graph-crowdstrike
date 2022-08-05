@@ -10,40 +10,36 @@ import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPICl
 import { Entities, Relationships, StepIds } from '../constants';
 import { createVulnerabilityEntity } from '../../jupiterone/converters';
 import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/src/types/logger';
+import { createCreatedTimestampFilter } from './util';
 
-// TODO: Understand the amount of data to be ingested by looking back only 10 days
-// const THIRTY_DAYS_AGO = 30 * 24 * 60 * 60 * 1000;
-const TEN_DAYS_AGO = 10 * 24 * 60 * 60 * 1000;
-
-async function fetchVulnerabilities(
-  context: IntegrationStepExecutionContext<IntegrationConfig>,
-): Promise<void> {
-  const { instance, jobState, logger } = context;
-
+async function fetchVulnerabilities({
+  instance,
+  jobState,
+  logger,
+  executionHistory,
+}: IntegrationStepExecutionContext<IntegrationConfig>): Promise<void> {
   const client = getOrCreateFalconAPIClient(instance.config, logger);
-  const lastSuccessfulSyncTime =
-    context.executionHistory.lastSuccessful?.startedOn;
+  const lastSuccessfulRun = executionHistory.lastSuccessful?.startedOn;
 
-  const daysAgo = Date.now() - TEN_DAYS_AGO;
-
-  const createdTimestampFilter = new Date(
-    lastSuccessfulSyncTime ?? daysAgo,
-  ).toISOString();
-
-  logger.info('Iterating vulnerabilities...');
+  const createdTimestampFilter = createCreatedTimestampFilter({
+    maxDaysInPast: 10,
+    lastSuccessfulRun,
+  });
 
   let duplicateVulnerabilityKeysFoundCount = 0;
   let duplicateVulnerabilitySensorRelationshipKeysFoundCount = 0;
   let sensorEntitiesNotFoundCount = 0;
 
+  const filter = `created_timestamp:>${createdTimestampFilter}`;
+
   await client
     .iterateVulnerabilities({
       query: {
         limit: '250',
-        filter: `created_timestamp:>'${createdTimestampFilter}'`,
+        filter,
         sort: `created_timestamp|desc`,
       },
-      callBack: async (vulns) => {
+      callback: async (vulns) => {
         logger.info(
           { vulnerabilityCount: vulns.length, createdTimestampFilter },
           'Creating vulnerability entities and relationships...',

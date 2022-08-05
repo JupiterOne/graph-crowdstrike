@@ -11,10 +11,10 @@ import {
 } from '../../jupiterone/converters';
 import { IntegrationConfig } from '../../config';
 
-async function getAccount(
-  context: IntegrationStepExecutionContext<IntegrationConfig>,
-): Promise<void> {
-  const { instance, jobState } = context;
+async function getAccount({
+  instance,
+  jobState,
+}: IntegrationStepExecutionContext<IntegrationConfig>): Promise<void> {
   const accountEntity = await jobState.addEntity(createAccountEntity(instance));
   await jobState.setData(SetDataKeys.ACCOUNT_ENTITY, accountEntity);
 

@@ -124,11 +124,11 @@ export class FalconAPIClient {
    * @returns Promise
    */
   public async iterateVulnerabilities(input: {
-    callBack: FalconAPIResourceIterationCallback<Vulnerability>;
+    callback: FalconAPIResourceIterationCallback<Vulnerability>;
     query?: QueryParams;
   }): Promise<void> {
     return this.paginateResources<Vulnerability>({
-      callback: input.callBack,
+      callback: input.callback,
       query: input.query,
       resourcePath: '/spotlight/combined/vulnerabilities/v1',
     });
