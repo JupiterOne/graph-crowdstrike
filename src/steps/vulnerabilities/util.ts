@@ -21,13 +21,13 @@ export function calculateFilterTime({
   maxDaysInPast,
   lastSuccessfulRun,
 }: CreateFilterTimeParams): Date {
+  const maxDateInPast = getDateInPast(maxDaysInPast);
   if (!lastSuccessfulRun) {
-    return getDateInPast(maxDaysInPast);
+    return maxDateInPast;
   }
 
-  const dateInPast = getDateInPast(maxDaysInPast);
-  if (dateInPast.getTime() > lastSuccessfulRun) {
-    return dateInPast;
+  if (maxDateInPast.getTime() > lastSuccessfulRun) {
+    return maxDateInPast;
   } else {
     return new Date(lastSuccessfulRun);
   }

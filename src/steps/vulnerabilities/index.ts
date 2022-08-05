@@ -30,7 +30,7 @@ async function fetchVulnerabilities({
   let duplicateVulnerabilitySensorRelationshipKeysFoundCount = 0;
   let sensorEntitiesNotFoundCount = 0;
 
-  const filter = `created_timestamp:>${createdTimestampFilter}`;
+  const filter = `created_timestamp:>'${createdTimestampFilter}'`;
 
   await client
     .iterateVulnerabilities({
