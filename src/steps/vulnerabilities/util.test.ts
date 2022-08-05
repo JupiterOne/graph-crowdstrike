@@ -1,11 +1,11 @@
 import { getDateInPast } from '../util';
-import { calculateFilterTime } from './util';
+import { calculateCreatedFilterTime } from './util';
 
 function mockDateNow() {
   return 1659689855416;
 }
 
-describe('calculateFilterTime', () => {
+describe('calculateCreatedFilterTime', () => {
   let originalDateNow: () => number;
   beforeEach(() => {
     originalDateNow = Date.now;
@@ -20,7 +20,7 @@ describe('calculateFilterTime', () => {
     const data = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     for (const d of data) {
       const expected = getDateInPast(d).getTime();
-      const actual = calculateFilterTime({ maxDaysInPast: d }).getTime();
+      const actual = calculateCreatedFilterTime({ maxDaysInPast: d }).getTime();
       expect(actual).toBe(expected);
     }
   });
@@ -30,7 +30,7 @@ describe('calculateFilterTime', () => {
     const expected = getDateInPast(daysInPast).getTime();
     const lastSuccessfulRuns = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     for (const runs of lastSuccessfulRuns) {
-      const actual = calculateFilterTime({
+      const actual = calculateCreatedFilterTime({
         maxDaysInPast: daysInPast,
         lastSuccessfulRun: runs,
       }).getTime();
@@ -40,7 +40,7 @@ describe('calculateFilterTime', () => {
 
   test('should return lastSuccessfulRun if less than maxDaysInPast', () => {
     const lastSuccessfulRun = getDateInPast(9).getTime();
-    const actual = calculateFilterTime({
+    const actual = calculateCreatedFilterTime({
       maxDaysInPast: 10,
       lastSuccessfulRun,
     }).getTime();

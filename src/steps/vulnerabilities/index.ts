@@ -10,7 +10,8 @@ import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPICl
 import { Entities, Relationships, StepIds } from '../constants';
 import { createVulnerabilityEntity } from '../../jupiterone/converters';
 import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/src/types/logger';
-import { createCreatedTimestampFilter } from './util';
+import { createFQLTimestamp } from '../util';
+import { calculateCreatedFilterTime } from './util';
 
 async function fetchVulnerabilities({
   instance,
@@ -21,10 +22,9 @@ async function fetchVulnerabilities({
   const client = getOrCreateFalconAPIClient(instance.config, logger);
   const lastSuccessfulRun = executionHistory.lastSuccessful?.startedOn;
 
-  const createdTimestampFilter = createCreatedTimestampFilter({
-    maxDaysInPast: 10,
-    lastSuccessfulRun,
-  });
+  const createdTimestampFilter = createFQLTimestamp(
+    calculateCreatedFilterTime({ maxDaysInPast: 10, lastSuccessfulRun }),
+  );
 
   let duplicateVulnerabilityKeysFoundCount = 0;
   let duplicateVulnerabilitySensorRelationshipKeysFoundCount = 0;

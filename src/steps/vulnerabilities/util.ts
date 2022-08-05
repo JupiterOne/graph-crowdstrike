@@ -1,26 +1,14 @@
 import { getDateInPast } from '../util';
 
-type CreateFilterTimeParams = {
+type CalculateCreatedFilterTimeParams = {
   maxDaysInPast: number;
   lastSuccessfulRun?: number;
 };
 
-export function createCreatedTimestampFilter({
+export function calculateCreatedFilterTime({
   maxDaysInPast,
   lastSuccessfulRun,
-}: CreateFilterTimeParams): string {
-  const filterTime = calculateFilterTime({
-    maxDaysInPast,
-    lastSuccessfulRun,
-  }).toISOString();
-
-  return filterTime;
-}
-
-export function calculateFilterTime({
-  maxDaysInPast,
-  lastSuccessfulRun,
-}: CreateFilterTimeParams): Date {
+}: CalculateCreatedFilterTimeParams): Date {
   const maxDateInPast = getDateInPast(maxDaysInPast);
   if (!lastSuccessfulRun) {
     return maxDateInPast;
