@@ -51,10 +51,10 @@ async function fetchDevices({
     },
   });
 
-  // Attempt to collect missing devices in Indeed, Inc's account
+  // Attempt to collect missing devices
   const enableHiddenDevices = [
     'j1dev',
-    '2a04aebf-04ad-4649-bf8f-73abe00c81b0',
+    '2a04aebf-04ad-4649-bf8f-73abe00c81b0', //Indeed, Inc
   ].includes(instance.accountId);
 
   if (enableHiddenDevices) {
