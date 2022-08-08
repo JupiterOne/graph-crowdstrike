@@ -57,32 +57,34 @@ async function fetchDevices({
     '2a04aebf-04ad-4649-bf8f-73abe00c81b0',
   ].includes(instance.accountId);
 
-  if (enableHiddenDevices) logger.info('Iterating hidden devices...');
+  if (enableHiddenDevices) {
+    logger.info('Iterating hidden devices...');
 
-  await client.iterateHiddenDevices({
-    query: {
-      filter: `last_seen:>='${timestamp}'`,
-    },
-    callback: async (devices) => {
-      logger.info(
-        { deviceCount: devices.length },
-        'Creating device entities and relationships (hidden)...',
-      );
+    await client.iterateHiddenDevices({
+      query: {
+        filter: `last_seen:>='${timestamp}'`,
+      },
+      callback: async (devices) => {
+        logger.info(
+          { deviceCount: devices.length },
+          'Creating device entities and relationships (hidden)...',
+        );
 
-      for (const device of devices) {
-        const deviceEntity = await jobState.addEntity(
-          createSensorAgentEntity(device),
-        );
-        await jobState.addRelationship(
-          createDirectRelationship({
-            from: accountEntity,
-            _class: RelationshipClass.HAS,
-            to: deviceEntity,
-          }),
-        );
-      }
-    },
-  });
+        for (const device of devices) {
+          const deviceEntity = await jobState.addEntity(
+            createSensorAgentEntity(device),
+          );
+          await jobState.addRelationship(
+            createDirectRelationship({
+              from: accountEntity,
+              _class: RelationshipClass.HAS,
+              to: deviceEntity,
+            }),
+          );
+        }
+      },
+    });
+  }
 }
 
 export const devicesSteps: IntegrationStep<IntegrationConfig>[] = [
