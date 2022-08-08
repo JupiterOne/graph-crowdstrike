@@ -118,7 +118,8 @@ export class FalconAPIClient {
 
   /**
    * Iterates through hidden devices.
-   Beta - Docs are unclear how hidden devices are different than devices.   * @param input
+   * Beta - Docs are unclear how hidden devices are different than devices.
+   * @param input
    */
   public async iterateHiddenDevices(input: {
     callback: FalconAPIResourceIterationCallback<Device>;
