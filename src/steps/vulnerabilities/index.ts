@@ -13,6 +13,11 @@ import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/
 import { createFQLTimestamp } from '../util';
 import { calculateCreatedFilterTime } from './util';
 
+// maxDaysInPast is set to 10 days because most integrations will run at least once a week.
+// Additionally, at the time of this comment, we are just using the `created_timestamp`
+// as a filter, so the quantity of data can still be extremely large.
+const maxDaysInPast = 10;
+
 async function fetchVulnerabilities({
   instance,
   jobState,
@@ -23,7 +28,7 @@ async function fetchVulnerabilities({
   const lastSuccessfulRun = executionHistory.lastSuccessful?.startedOn;
 
   const createdTimestampFilter = createFQLTimestamp(
-    calculateCreatedFilterTime({ maxDaysInPast: 10, lastSuccessfulRun }),
+    calculateCreatedFilterTime({ maxDaysInPast, lastSuccessfulRun }),
   );
 
   let duplicateVulnerabilityKeysFoundCount = 0;
