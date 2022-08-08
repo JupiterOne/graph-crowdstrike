@@ -36,3 +36,18 @@ export async function getProtectionServiceEntityFromJobState(
   }
   return protectionServiceEntity;
 }
+
+const DAY_IN_MS = 1000 * 60 * 60 * 24;
+
+/**
+ * getDateInPast returns a date in the past by the number of days specified.
+ * @param daysAgo {number} - number of days in the past
+ * @returns {Date} - date in the past
+ */
+export function getDateInPast(daysAgo: number): Date {
+  return new Date(Date.now() - daysAgo * DAY_IN_MS);
+}
+
+export function createFQLTimestamp(date: Date) {
+  return date.toISOString();
+}

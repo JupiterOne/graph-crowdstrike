@@ -8,13 +8,13 @@ import { Entities, Relationships, StepIds } from '../constants';
 import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
 import { createPreventionPolicyEntity } from '../../jupiterone/converters';
 import { IntegrationConfig } from '../../config';
-import { getProtectionServiceEntityFromJobState } from '../utils';
+import { getProtectionServiceEntityFromJobState } from '../util';
 
-async function fetchPreventionPolicies(
-  context: IntegrationStepExecutionContext<IntegrationConfig>,
-): Promise<void> {
-  const { instance, jobState, logger } = context;
-
+async function fetchPreventionPolicies({
+  instance,
+  jobState,
+  logger,
+}: IntegrationStepExecutionContext<IntegrationConfig>): Promise<void> {
   const protectionServiceEntity = await getProtectionServiceEntityFromJobState(
     jobState,
   );

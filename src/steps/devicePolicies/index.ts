@@ -9,10 +9,11 @@ import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPICl
 import { PreventionPolicy } from '../../crowdstrike/types';
 import { IntegrationConfig } from '../../config';
 
-async function fetchDevicePolicyRelationships(
-  context: IntegrationStepExecutionContext<IntegrationConfig>,
-): Promise<void> {
-  const { instance, jobState, logger } = context;
+async function fetchDevicePolicyRelationships({
+  instance,
+  jobState,
+  logger,
+}: IntegrationStepExecutionContext<IntegrationConfig>): Promise<void> {
   const client = getOrCreateFalconAPIClient(instance.config, logger);
 
   logger.info('Iterating policy members...');

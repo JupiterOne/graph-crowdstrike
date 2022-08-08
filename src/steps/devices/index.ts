@@ -8,20 +8,27 @@ import { Entities, Relationships, StepIds } from '../constants';
 import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
 import { createSensorAgentEntity } from '../../jupiterone/converters';
 import { IntegrationConfig } from '../../config';
-import { getAccountEntityFromJobState } from '../utils';
+import {
+  createFQLTimestamp,
+  getAccountEntityFromJobState,
+  getDateInPast,
+} from '../util';
 
-async function fetchDevices(
-  context: IntegrationStepExecutionContext<IntegrationConfig>,
-): Promise<void> {
-  const { instance, jobState, logger } = context;
-
+async function fetchDevices({
+  instance,
+  jobState,
+  logger,
+}: IntegrationStepExecutionContext<IntegrationConfig>): Promise<void> {
   const accountEntity = await getAccountEntityFromJobState(jobState);
   const client = getOrCreateFalconAPIClient(instance.config, logger);
 
   logger.info('Iterating devices...');
+
+  const timestamp = createFQLTimestamp(getDateInPast(30));
+
   await client.iterateDevices({
     query: {
-      filter: `last_seen:>='${lastSeenSince()}'`,
+      filter: `last_seen:>='${timestamp}'`,
     },
     callback: async (devices) => {
       logger.info(
@@ -43,12 +50,6 @@ async function fetchDevices(
       }
     },
   });
-}
-
-const THIRTY_DAYS_AGO = 30 * 24 * 60 * 60 * 1000;
-
-function lastSeenSince(): string {
-  return new Date(Date.now() - THIRTY_DAYS_AGO).toISOString();
 }
 
 export const devicesSteps: IntegrationStep<IntegrationConfig>[] = [

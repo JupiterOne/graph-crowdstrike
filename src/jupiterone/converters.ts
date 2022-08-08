@@ -1,7 +1,6 @@
 import {
   convertProperties,
   createIntegrationEntity,
-  getTime,
   parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
 import { Entities } from '../steps/constants';
@@ -95,8 +94,8 @@ export function createSensorAgentEntity(source: Device) {
         _key: source.device_id,
         name: source.hostname,
         function: ['anti-malware', 'activity-monitor'],
-        firstSeenOn: getTime(source.first_seen),
-        lastSeenOn: getTime(source.last_seen),
+        firstSeenOn: parseTimePropertyValue(source.first_seen),
+        lastSeenOn: parseTimePropertyValue(source.last_seen),
         active: source.status === 'normal',
 
         // CrowdStrike formats their MAC addresses in dash-separated form. We
