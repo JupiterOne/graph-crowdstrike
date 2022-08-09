@@ -33,11 +33,11 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
     type: 'string',
     mask: false,
   },
-  vulnerabilityScoreFilter: {
+  vulnerabilitySeverities: {
     type: 'string',
     mask: false,
   },
-  includeClosedVulnerabilities: {
+  closedVulnerabilities: {
     type: 'boolean',
     mask: false,
   },

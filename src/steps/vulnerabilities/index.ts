@@ -40,6 +40,7 @@ async function fetchVulnerabilities({
         limit: '250',
         filter,
         sort: `created_timestamp|desc`,
+        facet: 'cve',
       },
       callback: async (vulns) => {
         for (const vulnerability of vulns) {
