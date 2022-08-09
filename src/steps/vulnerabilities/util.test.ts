@@ -72,7 +72,7 @@ describe('#createVulnerabilityFQLFilter', () => {
     const { instance, executionHistory } =
       createMockExecutionContext<IntegrationConfig>({
         instanceConfig: {
-          closedVulnerabilities: false,
+          includeClosedVulnerabilities: false,
         } as IntegrationConfig,
       });
 
@@ -116,7 +116,7 @@ describe('#createVulnerabilityFQLFilter', () => {
     });
 
     expect(actual).toContain(
-      `cve.severity:['CRITICAL','HIGH','MEDIUM','UNKNOWN','NONE']`,
+      `cve.severity:['CRITICAL','HIGH','MEDIUM','UNKNOWN']`,
     );
   });
 
@@ -135,7 +135,7 @@ describe('#createVulnerabilityFQLFilter', () => {
     });
 
     expect(actual).toContain(
-      `cve.severity:['CRITICAL','HIGH','MEDIUM','UNKNOWN','NONE']`,
+      `cve.severity:['CRITICAL','HIGH','MEDIUM','UNKNOWN']`,
     );
   });
 });
