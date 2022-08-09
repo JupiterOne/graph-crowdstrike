@@ -33,23 +33,38 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
     type: 'string',
     mask: false,
   },
+  vulnerabilityScoreFilter: {
+    type: 'string',
+    mask: false,
+  },
+  includeClosedVulnerabilities: {
+    type: 'boolean',
+    mask: false,
+  },
 };
 
 export interface IntegrationConfig extends IntegrationInstanceConfig {
   clientId: string;
   clientSecret: string;
   availabilityZone?: string;
+  vulnerabilitySeverities?: string;
+  closedVulnerabilities?: boolean;
 }
 
-export async function validateInvocation(
-  context: IntegrationExecutionContext<IntegrationConfig>,
-) {
-  const { instance, logger } = context;
-
+export async function validateInvocation({
+  instance,
+  logger,
+}: IntegrationExecutionContext<IntegrationConfig>) {
   if (!instance.config.clientId || !instance.config.clientSecret) {
     throw new IntegrationValidationError(
       'Config requires all of {clientId, clientSecret}',
     );
+  }
+
+  // If a vulnerability severity filter is included we should validate it
+  // otherwise an empty or undefined filter will be handled at the time it is used
+  if (instance.config.vulnerabilitySeverities) {
+    validateSeverities(instance.config.vulnerabilitySeverities);
   }
 
   const client = getOrCreateFalconAPIClient(instance.config, logger);
@@ -62,5 +77,27 @@ export async function validateInvocation(
     }
 
     throw error;
+  }
+}
+
+const VALID_SEVERITIES = [
+  'CRITICAL',
+  'HIGH',
+  'MEDIUM',
+  'LOW',
+  'NONE',
+  'UNKNOWN',
+];
+
+function validateSeverities(severities: string) {
+  const sevArr = severities.split(',');
+  for (const sev of sevArr) {
+    if (!VALID_SEVERITIES.includes(sev)) {
+      throw new IntegrationValidationError(
+        `Severity - ${sev} - is not valid. Valid vulnerability severities include ${VALID_SEVERITIES.map(
+          (v) => v,
+        )}`,
+      );
+    }
   }
 }

@@ -10,8 +10,7 @@ import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPICl
 import { Entities, Relationships, StepIds } from '../constants';
 import { createVulnerabilityEntity } from '../../jupiterone/converters';
 import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/src/types/logger';
-import { createFQLTimestamp } from '../util';
-import { calculateCreatedFilterTime } from './util';
+import { createVulnerabilityFQLFilter } from './util';
 
 // maxDaysInPast is set to 10 days because most integrations will run at least once a week.
 // Additionally, at the time of this comment, we are just using the `created_timestamp`
@@ -25,17 +24,15 @@ async function fetchVulnerabilities({
   executionHistory,
 }: IntegrationStepExecutionContext<IntegrationConfig>): Promise<void> {
   const client = getOrCreateFalconAPIClient(instance.config, logger);
-  const lastSuccessfulRun = executionHistory.lastSuccessful?.startedOn;
-
-  const createdTimestampFilter = createFQLTimestamp(
-    calculateCreatedFilterTime({ maxDaysInPast, lastSuccessfulRun }),
-  );
-
   let duplicateVulnerabilityKeysFoundCount = 0;
   let duplicateVulnerabilitySensorRelationshipKeysFoundCount = 0;
   let sensorEntitiesNotFoundCount = 0;
 
-  const filter = `created_timestamp:>'${createdTimestampFilter}'`;
+  const filter = createVulnerabilityFQLFilter({
+    config: instance.config,
+    executionHistory,
+    maxDaysInPast,
+  });
 
   await client
     .iterateVulnerabilities({
@@ -45,11 +42,6 @@ async function fetchVulnerabilities({
         sort: `created_timestamp|desc`,
       },
       callback: async (vulns) => {
-        logger.info(
-          { vulnerabilityCount: vulns.length, createdTimestampFilter },
-          'Creating vulnerability entities and relationships...',
-        );
-
         for (const vulnerability of vulns) {
           const vulnerabilityEntity = createVulnerabilityEntity(vulnerability);
 
