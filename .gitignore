@@ -5,3 +5,5 @@ dist/
 .env
 .eslintcache
 tsconfig.tsbuildinfo
+.DS_Store
+yarn-error.log

@@ -108,11 +108,37 @@ export class FalconAPIClient {
       callback: async (deviceIds) => {
         if (deviceIds.length) {
           // If the scroll lists _no_ recent devices, we don't want to send a malformed request to https://api.crowdstrike.com/devices/entities/devices/v1?
-          return await input.callback(await this.fetchDevices(deviceIds));
+          return input.callback(await this.fetchDevices(deviceIds));
         }
       },
       query: input.query,
       resourcePath: '/devices/queries/devices-scroll/v1',
+    });
+  }
+
+  /**
+   * Iterates through hidden devices.
+   * Beta - Docs are unclear how hidden devices are different than devices.
+   * @param input
+   */
+  public async iterateHiddenDevices(input: {
+    callback: FalconAPIResourceIterationCallback<Device>;
+    query?: QueryParams;
+  }): Promise<void> {
+    return this.paginateResources<DeviceIdentifier>({
+      callback: async (deviceIds) => {
+        if (deviceIds.length) {
+          this.logger.info(
+            { hiddenDevicesCount: deviceIds.length },
+            `Found hidden devices.`,
+          );
+
+          // If the scroll lists _no_ recent devices, we don't want to send a malformed request to https://api.crowdstrike.com/devices/entities/devices/v1?
+          return input.callback(await this.fetchDevices(deviceIds));
+        }
+      },
+      query: input.query,
+      resourcePath: '/devices/queries/devices-hidden/v1',
     });
   }
 
