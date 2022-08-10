@@ -171,7 +171,7 @@ export type Vulnerability = {
     exploit_status?: number;
     exprt_rating?: string;
     description?: string;
-    published_date?: Date;
+    published_date?: string;
     references?: string[];
     exploitability_score?: number;
     impact_score?: number;

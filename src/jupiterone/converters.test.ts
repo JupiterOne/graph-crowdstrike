@@ -1,6 +1,7 @@
 import {
   IntegrationInstance,
   convertProperties,
+  parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
 
 import { createMockExecutionContext } from '@jupiterone/integration-sdk-testing';
@@ -304,7 +305,19 @@ describe('createVulnerabilityEntity', () => {
           evaluation_logic: { id: '' },
         },
       ],
-      cve: { id: 'CVE-2021-23444' },
+      cve: {
+        id: 'CVE-2021-23444',
+        base_score: 1,
+        severity: 'HIGH',
+        exploit_status: 0,
+        exprt_rating: 'MEDIUM',
+        description: 'test desc',
+        published_date: '2022-07-03T06:23:00Z',
+        exploitability_score: 1,
+        impact_score: 1,
+        vector: 'test',
+        references: ['alink'],
+      },
     };
 
     expect(createVulnerabilityEntity(source)).toEqual({
@@ -331,6 +344,16 @@ describe('createVulnerabilityEntity', () => {
             created_timestamp: '2021-03-11T21:04:22Z',
             cve: {
               id: 'CVE-2021-23444',
+              base_score: 1,
+              description: 'test desc',
+              exploit_status: 0,
+              exploitability_score: 1,
+              exprt_rating: 'MEDIUM',
+              impact_score: 1,
+              published_date: '2022-07-03T06:23:00Z',
+              references: ['alink'],
+              severity: 'HIGH',
+              vector: 'test',
             },
             id: 'feb24177xxxxxxxxxxc48ce11cb_d97920959227xxxxxxxxxx88ed0f',
             status: 'open',
@@ -348,6 +371,19 @@ describe('createVulnerabilityEntity', () => {
       name: 'CVE-2021-23444',
       status: 'open',
       updatedOn: expect.any(Number),
+      open: true,
+      public: true,
+      closedOn: undefined,
+      description: 'test desc',
+      exploitability: 1,
+      impact: 1,
+      publishedOn: parseTimePropertyValue('2022-07-03T06:23:00Z'),
+      vector: 'test',
+      severity: 'High',
+      score: 1,
+      active: undefined,
+      references: ['alink'],
+      webLink: 'alink',
     });
   });
 });
