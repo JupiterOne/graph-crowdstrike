@@ -1,5 +1,10 @@
+import { createMockExecutionContext } from '@jupiterone/integration-sdk-testing';
+import { IntegrationConfig } from '../../config';
 import { getDateInPast } from '../util';
-import { calculateCreatedFilterTime } from './util';
+import {
+  calculateCreatedFilterTime,
+  createVulnerabilityFQLFilter,
+} from './util';
 
 function mockDateNow() {
   return 1659689855416;
@@ -45,5 +50,92 @@ describe('calculateCreatedFilterTime', () => {
       lastSuccessfulRun,
     }).getTime();
     expect(actual).toBe(lastSuccessfulRun);
+  });
+});
+
+describe('#createVulnerabilityFQLFilter', () => {
+  test('excludes closed vulnerabilities by default', () => {
+    const { instance, executionHistory } =
+      createMockExecutionContext<IntegrationConfig>({
+        instanceConfig: {} as IntegrationConfig,
+      });
+
+    const actual = createVulnerabilityFQLFilter({
+      config: instance.config,
+      executionHistory,
+      maxDaysInPast: 10,
+    });
+    expect(actual).toContain(`status:!'closed'`);
+  });
+
+  test('excludes closed vulnerabilities when includeClosedVulnerabilities is false', () => {
+    const { instance, executionHistory } =
+      createMockExecutionContext<IntegrationConfig>({
+        instanceConfig: {
+          includeClosedVulnerabilities: false,
+        } as IntegrationConfig,
+      });
+
+    const actual = createVulnerabilityFQLFilter({
+      config: instance.config,
+      executionHistory,
+      maxDaysInPast: 10,
+    });
+    expect(actual).toContain(`status:!'closed'`);
+  });
+
+  test('correctly formats vulnerability severities into FQL statement', () => {
+    const { instance, executionHistory } =
+      createMockExecutionContext<IntegrationConfig>({
+        instanceConfig: {
+          vulnerabilitySeverities: 'CRITICAL,HIGH,LOW',
+        } as IntegrationConfig,
+      });
+
+    const actual = createVulnerabilityFQLFilter({
+      config: instance.config,
+      executionHistory,
+      maxDaysInPast: 10,
+    });
+
+    expect(actual).toContain(`cve.severity:['CRITICAL','HIGH','LOW']`);
+  });
+
+  test('uses default filter when vulnerability severities is undefined', () => {
+    const { instance, executionHistory } =
+      createMockExecutionContext<IntegrationConfig>({
+        instanceConfig: {
+          vulnerabilitySeverities: undefined,
+        } as IntegrationConfig,
+      });
+
+    const actual = createVulnerabilityFQLFilter({
+      config: instance.config,
+      executionHistory,
+      maxDaysInPast: 10,
+    });
+
+    expect(actual).toContain(
+      `cve.severity:['CRITICAL','HIGH','MEDIUM','UNKNOWN']`,
+    );
+  });
+
+  test('uses default filter when vulnerability severities is empty string', () => {
+    const { instance, executionHistory } =
+      createMockExecutionContext<IntegrationConfig>({
+        instanceConfig: {
+          vulnerabilitySeverities: '',
+        } as IntegrationConfig,
+      });
+
+    const actual = createVulnerabilityFQLFilter({
+      config: instance.config,
+      executionHistory,
+      maxDaysInPast: 10,
+    });
+
+    expect(actual).toContain(
+      `cve.severity:['CRITICAL','HIGH','MEDIUM','UNKNOWN']`,
+    );
   });
 });

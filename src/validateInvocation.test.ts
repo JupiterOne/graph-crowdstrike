@@ -87,11 +87,24 @@ describe('#validateInvocation', () => {
       instanceConfig: {
         clientId: 'not-valid',
         clientSecret: 'not-valid-secret',
-      },
+      } as IntegrationConfig,
     });
 
     await expect(validateInvocation(executionContext)).rejects.toBeInstanceOf(
       IntegrationValidationError,
+    );
+  });
+
+  test('fails to validate vulnerabilitySeverities contains invalid severity', async () => {
+    const executionContext = createMockExecutionContext<IntegrationConfig>({
+      instanceConfig: {
+        ...config,
+        vulnerabilitySeverities: 'CRITICAL,NOTGOOD',
+      },
+    });
+
+    await expect(validateInvocation(executionContext)).rejects.toThrow(
+      'Severity - NOTGOOD - is not valid. Valid vulnerability severities include CRITICAL,HIGH,MEDIUM,LOW,NONE,UNKNOWN',
     );
   });
 });
