@@ -7,6 +7,10 @@ import { Entities } from '../steps/constants';
 
 import { Device, PreventionPolicy, Vulnerability } from '../crowdstrike/types';
 
+function toCapitalCase(s: string): string {
+  return s.toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
+}
+
 function normalizeMacAddress(macAddress: string): string {
   return macAddress.replace(/-/g, ':').toLowerCase();
 }
@@ -173,12 +177,19 @@ export function createVulnerabilityEntity(source: Vulnerability) {
         name: cveId,
         displayName: cveId,
         status: source.status,
-        cveBaseScore: cve?.base_score,
-        cveDescription: cve?.description,
-        cveSeverity: cve?.severity,
-        cvePublishedDate: cve?.published_date,
+        score: cve?.base_score,
+        description: cve?.description,
+        severity: cve?.severity ? toCapitalCase(cve.severity) : undefined,
+        publishedOn: parseTimePropertyValue(cve?.published_date),
+        exploitability: cve?.exploitability_score,
+        public: true,
+        impact: cve.impact_score,
+        vector: cve?.vector,
+        references: cve.references,
+        webLink: cve.references?.length ? cve.references[0] : undefined,
+        open: source.status.includes('open'), // matches open and reopen
         cveId,
-        // TODO: Consider additional properties: webLink, apps, remediation
+        // TODO: Consider additional properties: apps, remediation
       },
     },
   });
