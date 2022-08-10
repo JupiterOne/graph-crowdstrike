@@ -167,12 +167,14 @@ export type Vulnerability = {
   cve: {
     id: string;
     base_score?: number;
-    description?: string;
-    exploit_status?: number;
-    expoitability_score?: number;
-    impact_score?: number;
     severity?: string;
-    published_date?: string;
+    exploit_status?: number;
+    exprt_rating?: string;
+    description?: string;
+    published_date?: Date;
+    references?: string[];
+    exploitability_score?: number;
+    impact_score?: number;
     vector?: string;
   };
   host_info?: {
