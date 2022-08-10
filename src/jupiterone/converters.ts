@@ -179,7 +179,7 @@ export function createVulnerabilityEntity(source: Vulnerability) {
         status: source.status,
         score: cve?.base_score,
         description: cve?.description,
-        severity: cve?.severity ? toCapitalCase(cve.severity) : undefined, // TODO proper casing
+        severity: cve?.severity ? toCapitalCase(cve.severity) : undefined,
         publishedOn: parseTimePropertyValue(cve?.published_date),
         exploitability: cve?.exploitability_score,
         public: true,
@@ -189,7 +189,7 @@ export function createVulnerabilityEntity(source: Vulnerability) {
         webLink: cve.references?.length ? cve.references[0] : undefined,
         open: source.status.includes('open'), // matches open and reopen
         cveId,
-        // TODO: Consider additional properties: webLink, apps, remediation
+        // TODO: Consider additional properties: apps, remediation
       },
     },
   });
