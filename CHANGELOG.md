@@ -8,6 +8,24 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [3.0.0] - 2022-08-10
+
+### Added
+
+- Added the ability to filter vulnerabilities by `closed` status and by
+  vulnerability `severity`.
+  - `closed` vulnerabilities will be filtered by default. They can be included
+    by passing the `INCLUDE_CLOSED_VULNERABILITIES` environment variable with
+    the value `true`.
+  - `LOW` and `NONE` level severities will be excluded by default. The included
+    vulnerability severities can be configured by passing comma separated
+    severities (e.g. "CRITICAL,HIGH,MEDIUM,LOW,NONE,UNKNOWN") in the environment
+    variable `VULNERABILITY_SEVERITIES`.
+
+### Changed
+
+- Various code style and quality updates
+
 ## [2.2.6] - 2022-08-01
 
 ### Fixed
