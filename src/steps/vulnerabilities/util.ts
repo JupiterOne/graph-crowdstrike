@@ -58,7 +58,8 @@ export function createVulnerabilityFQLFilter({
   return filter;
 }
 
-const DEFAULT_FILTER = `+cve.severity:['CRITICAL','HIGH','MEDIUM','UNKNOWN']`;
+// TODO @zemberdotnet reset to lower default after two weeks
+const DEFAULT_FILTER = `+cve.severity:['CRITICAL','HIGH','MEDIUM','LOW','NONE','UNKNOWN']`;
 function createSeverityFilter(severities: string | undefined) {
   if (!severities) {
     return DEFAULT_FILTER;

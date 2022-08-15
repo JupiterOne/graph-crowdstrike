@@ -116,7 +116,7 @@ describe('#createVulnerabilityFQLFilter', () => {
     });
 
     expect(actual).toContain(
-      `cve.severity:['CRITICAL','HIGH','MEDIUM','UNKNOWN']`,
+      `cve.severity:['CRITICAL','HIGH','MEDIUM','LOW','NONE','UNKNOWN']`,
     );
   });
 
@@ -135,7 +135,7 @@ describe('#createVulnerabilityFQLFilter', () => {
     });
 
     expect(actual).toContain(
-      `cve.severity:['CRITICAL','HIGH','MEDIUM','UNKNOWN']`,
+      `cve.severity:['CRITICAL','HIGH','MEDIUM','LOW','NONE','UNKNOWN']`,
     );
   });
 });
