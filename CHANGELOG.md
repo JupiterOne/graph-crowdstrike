@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [3.0.1] - 2022-08-15
+
+### Chagned
+
+- include all vulnerabilties by default
+
 ## [3.0.0] - 2022-08-10
 
 ### Added
