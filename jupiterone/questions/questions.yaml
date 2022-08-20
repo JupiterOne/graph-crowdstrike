@@ -39,11 +39,10 @@ questions:
               i.hostname, i.instanceId, i.osVersion, i.active, i.lastSeen         
   tags:
   - crowd-strike
-  - exclusion
 
 - id: managed-question-crowdstrike-vulnerabilities-with-exploitability
-  title: What are my public facing Crowdstrike vulnerabilities that contain exploits?
-  description: Find all public facing Crowdstrike vulnerabilities that have been exploited. 
+  title: Which custom watermarks can identify Crowdstrike's most critical vulnerabilities and exploits.
+  description: Find all critical Crowdstrike vulnerabilities that have been exploited using custom watermarks. 
   queries:
     - query: |
           FIND crowdstrike_vulnerability WITH (status ~= "open" AND public = true AND exploitability > 3 AND score > 9 and impact > 5) AS v
