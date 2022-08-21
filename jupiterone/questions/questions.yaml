@@ -41,8 +41,8 @@ questions:
   - crowd-strike
 
 - id: managed-question-crowdstrike-vulnerabilities-with-exploitability
-  title: Which custom watermarks lists Crowdstrike's most critical and exploitable vulnerabilities? 
-  description: Find all critical Crowdstrike vulnerabilities that have been exploited using custom watermarks. 
+  title: Which thresholds contain Crowdstrike's most critical and exploitable vulnerabilities? 
+  description: Find critical Crowdstrike vulnerabilities using exploitable, impact, and scored thresholds.
   queries:
     - query: |
           FIND crowdstrike_vulnerability WITH (status ~= "open" AND public = true AND exploitability > 3 AND score > 9 and impact > 5) AS v
