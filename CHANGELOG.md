@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [3.0.2] - 2022-08-24
+
+### Changed
+
+- preproces vulnerabilities to remove whitespace
+
 ## [3.0.1] - 2022-08-15
 
 ### Chagned
