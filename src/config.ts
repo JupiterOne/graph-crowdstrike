@@ -64,6 +64,8 @@ export async function validateInvocation({
   // If a vulnerability severity filter is included we should validate it
   // otherwise an empty or undefined filter will be handled at the time it is used
   if (instance.config.vulnerabilitySeverities) {
+    instance.config.vulnerabilitySeverities =
+      instance.config.vulnerabilitySeverities.replace(/\s+/g, '');
     validateSeverities(instance.config.vulnerabilitySeverities);
   }
 
