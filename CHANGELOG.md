@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [3.0.3] - 2022-08-29
+
+### Changed
+
+- set default vulnerabilities to be CRITICAL HIGH MEDIUM and UNKNOWN.
+
 ## [3.0.2] - 2022-08-24
 
 ### Changed
