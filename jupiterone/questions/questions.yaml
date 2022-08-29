@@ -28,3 +28,27 @@ questions:
   tags:
   - crowd-strike
   - compliance
+
+- id: managed-question-crowdstrike-sensor-visibility-exclusion
+  title: Which sensors have excluded an instance from nearly all Crowdstrike activity?
+  description: Find all instances that have virtually no Crowdstrike sensor visibility.
+  queries:
+    - query: |
+          FIND UNIQUE crowdstrike_sensor WITH hostHiddenStatus != "visible" AS i
+            RETURN
+              i.hostname, i.instanceId, i.osVersion, i.active, i.lastSeen         
+  tags:
+  - crowd-strike
+
+- id: managed-question-crowdstrike-vulnerabilities-with-exploitability
+  title: Which thresholds contain Crowdstrike's most critical and exploitable vulnerabilities? 
+  description: Find critical Crowdstrike vulnerabilities using exploitable, impact, and scored thresholds.
+  queries:
+    - query: |
+          FIND crowdstrike_vulnerability WITH (status ~= "open" AND public = true AND exploitability > 3 AND score > 9 and impact > 5) AS v
+            RETURN
+               v.name AS 'CVE Name', v.severity AS 'Severity',
+               v.description AS 'Description', v.aid AS 'Agent Id'
+  tags:
+  - crowd-strike
+  - vulnerability
