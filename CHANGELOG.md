@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [3.1.0] - 2022-09-23
+
+### Changed
+
+- Now using the `v2` devices api endpoint.
+
 ## [3.0.3] - 2022-08-29
 
 ### Changed
