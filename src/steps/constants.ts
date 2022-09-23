@@ -35,27 +35,27 @@ export const Entities: Record<
   ACCOUNT: {
     resourceName: 'Account',
     _type: 'crowdstrike_account',
-    _class: 'Account',
+    _class: ['Account'],
   },
   PROTECTION_SERVICE: {
     resourceName: 'Service',
     _type: 'crowdstrike_endpoint_protection',
-    _class: 'Service',
+    _class: ['Service'],
   },
   SENSOR: {
     resourceName: 'Device Sensor Agent',
     _type: 'crowdstrike_sensor',
-    _class: 'HostAgent',
+    _class: ['HostAgent'],
   },
   PREVENTION_POLICY: {
     resourceName: 'Prevention Policy',
     _type: 'crowdstrike_prevention_policy',
-    _class: 'ControlPolicy',
+    _class: ['ControlPolicy'],
   },
   VULNERABILITY: {
     resourceName: 'Vulnerability',
     _type: 'crowdstrike_vulnerability',
-    _class: 'Finding', // J1 data model considers CrowdStrike vulns as Findings. Note: this changes the billing of the entity
+    _class: ['Finding'], // J1 data model considers CrowdStrike vulns as Findings. Note: this changes the billing of the entity
     partial: true,
   },
 };

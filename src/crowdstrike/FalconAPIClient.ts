@@ -198,18 +198,15 @@ export class FalconAPIClient {
   }
 
   private async fetchDevices(ids: string[]): Promise<Device[]> {
-    const params = new URLSearchParams();
-    for (const aid of ids) {
-      params.append('ids', aid);
-    }
-
     const response = await this.executeAPIRequestWithRetries<
       ResourcesResponse<Device>
     >(
-      `https://api.${this.credentials.availabilityZone}crowdstrike.com/devices/entities/devices/v1?${params}`,
+      `https://api.${this.credentials.availabilityZone}crowdstrike.com/devices/entities/devices/v2`,
       {
-        method: 'GET',
+        method: 'POST',
+        body: JSON.stringify({ ids }),
         headers: {
+          'Content-Type': 'application/json',
           accept: 'application/json',
         },
       },
@@ -351,7 +348,7 @@ export class FalconAPIClient {
   }
 
   private async executeAPIRequestWithRetries<T>(
-    requestUrl: RequestInfo,
+    requestUrl: string,
     init: RequestInit,
   ): Promise<T> {
     await this.authenticate();
@@ -372,9 +369,9 @@ export class FalconAPIClient {
       this.rateLimitState = {
         limitRemaining: Number(response.headers.get('X-RateLimit-Remaining')),
         perMinuteLimit: Number(response.headers.get('X-RateLimit-Limit')),
-        retryAfter:
-          response.headers.get('X-RateLimit-RetryAfter') &&
-          Number(response.headers.get('X-RateLimit-RetryAfter')),
+        retryAfter: response.headers.get('X-RateLimit-RetryAfter')
+          ? Number(response.headers.get('X-RateLimit-RetryAfter'))
+          : undefined,
       };
 
       // Manually handle redirects.
@@ -388,7 +385,7 @@ export class FalconAPIClient {
       }
 
       if (response.ok) {
-        return response.json() as T;
+        return response.json();
       }
 
       if (response.status === 401) {
