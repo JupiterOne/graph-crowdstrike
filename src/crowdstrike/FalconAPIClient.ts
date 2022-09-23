@@ -1,4 +1,4 @@
-import fetch, { RequestInfo, RequestInit } from 'node-fetch';
+import fetch, { RequestInit } from 'node-fetch';
 import { retry } from '@lifeomic/attempt';
 
 import { URLSearchParams } from 'url';
