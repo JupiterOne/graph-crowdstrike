@@ -22,7 +22,7 @@ export const availabilityZoneConfig: IntegrationConfig = {
   availabilityZone: 'availabilityTestZone',
 };
 
-export function buildStepTestConfigForAPIKey(stepId: string): StepTestConfig {
+export function buildStepTestConfig(stepId: string): StepTestConfig {
   return {
     stepId,
     instanceConfig: config,
