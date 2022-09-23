@@ -1,6 +1,9 @@
 import * as dotenv from 'dotenv';
 import { IntegrationConfig } from '../src/config';
 import path from 'path';
+import { StepTestConfig } from '@jupiterone/integration-sdk-testing';
+import { invocationConfig } from '../src';
+import { IntegrationInvocationConfig } from '@jupiterone/integration-sdk-core';
 
 if (process.env.LOAD_ENV) {
   dotenv.config({
@@ -18,3 +21,11 @@ export const availabilityZoneConfig: IntegrationConfig = {
   clientSecret: process.env.CLIENT_SECRET || 'clientSecret',
   availabilityZone: 'availabilityTestZone',
 };
+
+export function buildStepTestConfig(stepId: string): StepTestConfig {
+  return {
+    stepId,
+    instanceConfig: config,
+    invocationConfig: invocationConfig as IntegrationInvocationConfig,
+  };
+}

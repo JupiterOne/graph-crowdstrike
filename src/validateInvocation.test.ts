@@ -4,11 +4,8 @@ import {
 } from '@jupiterone/integration-sdk-core';
 import { createMockExecutionContext } from '@jupiterone/integration-sdk-testing';
 import { IntegrationConfig, validateInvocation } from './config';
-import {
-  Recording,
-  setupCrowdstrikeRecording,
-} from '../test/helpers/recording';
-import { config } from '../test/integrationInstanceConfig';
+import { Recording, setupCrowdstrikeRecording } from '../test/recording';
+import { config } from '../test/config';
 
 let recording: Recording;
 

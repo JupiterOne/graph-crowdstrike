@@ -1,13 +1,7 @@
 import { createMockIntegrationLogger } from '@jupiterone/integration-sdk-testing';
 
-import {
-  Recording,
-  setupCrowdstrikeRecording,
-} from '../../test/helpers/recording';
-import {
-  config,
-  availabilityZoneConfig,
-} from '../../test/integrationInstanceConfig';
+import { Recording, setupCrowdstrikeRecording } from '../../test/recording';
+import { config, availabilityZoneConfig } from '../../test/config';
 import {
   DEFAULT_ATTEMPT_OPTIONS,
   DEFAULT_RATE_LIMIT_CONFIG,
@@ -273,52 +267,6 @@ describe('executeAPIRequest', () => {
 });
 
 describe('iterateDevices', () => {
-  test('complete set in single callback', async () => {
-    recording = setupCrowdstrikeRecording({
-      directory: __dirname,
-      name: 'iterateDevicesSinglePage',
-    });
-
-    const cbSpy = jest.fn();
-
-    await createClient().iterateDevices({
-      callback: cbSpy,
-    });
-
-    expect(cbSpy).toHaveBeenCalledWith(
-      expect.arrayContaining([
-        expect.objectContaining({ cid: expect.any(String) }),
-        expect.objectContaining({ cid: expect.any(String) }),
-        expect.objectContaining({ cid: expect.any(String) }),
-      ]),
-    );
-  }, 20000);
-
-  test('partial set in multiple callbacks', async () => {
-    recording = setupCrowdstrikeRecording({
-      directory: __dirname,
-      name: 'iterateDevicesCompletes',
-    });
-
-    const cbSpy = jest.fn();
-
-    await createClient().iterateDevices({
-      callback: cbSpy,
-    });
-
-    expect(cbSpy).toHaveBeenCalledTimes(3);
-
-    expect(cbSpy.mock.calls[0]).toEqual([
-      [expect.objectContaining({ cid: expect.any(String) })],
-    ]);
-    expect(cbSpy.mock.calls[1]).toEqual([
-      [expect.objectContaining({ cid: expect.any(String) })],
-    ]);
-    expect(cbSpy.mock.calls[2]).toEqual([
-      [expect.objectContaining({ cid: expect.any(String) })],
-    ]);
-  }, 20000);
-
   test.skip('partial set', async () => {
     recording = setupCrowdstrikeRecording({
       directory: __dirname,

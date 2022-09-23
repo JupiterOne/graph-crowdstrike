@@ -35,11 +35,12 @@
     "node-fetch": "^2.6.7"
   },
   "peerDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.22.0"
+    "@jupiterone/integration-sdk-core": "^8.24.1"
   },
   "devDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.22.0",
-    "@jupiterone/integration-sdk-dev-tools": "^8.22.0",
-    "@jupiterone/integration-sdk-testing": "^8.22.0"
+    "@jupiterone/integration-sdk-core": "^8.24.1",
+    "@jupiterone/integration-sdk-dev-tools": "^8.24.1",
+    "@jupiterone/integration-sdk-testing": "^8.24.1",
+    "@types/node-fetch": "^2.6.2"
   }
 }
