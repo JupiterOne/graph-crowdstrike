@@ -23,7 +23,9 @@
 ## Support
 
 The query used to ingest vulnerabilities limits to the date/time of the last
-successful integration or to the last 30 days for the initial run.
+successful integration or to the last 30 days for the initial run. Similarly,
+only crowdstrike_sensors seen by CrowdStrike in the last 30 days will be
+ingested.
 
 If you need help with this integration, please contact
 [JupiterOne Support](https://support.jupiterone.io).

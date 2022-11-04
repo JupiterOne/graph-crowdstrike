@@ -95,6 +95,11 @@ export function createSensorAgentEntity(source: Device) {
         ...convertProperties(source),
         _class: Entities.SENSOR._class,
         _type: Entities.SENSOR._type,
+
+        // Crowdstrike's device ID for sensors will change when the sensor
+        // version is upgraded.  This is listed in their API documentation
+        // and it notes that this means that it's a valid case for a Host to
+        // potentially have multiple sensors protecting it.
         _key: source.device_id,
         name: source.hostname,
         function: ['anti-malware', 'activity-monitor'],
