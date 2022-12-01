@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [3.1.1] - 2022-01-01
+
+### Changed
+
+- Add `exprtRating` and `exploitStatus` to `crowdstrike_vulnerability`.
+- Raise vulnerability endpoint limit to `400`.
+
 ## [3.1.0] - 2022-09-23
 
 ### Changed
