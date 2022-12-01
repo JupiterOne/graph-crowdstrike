@@ -194,6 +194,8 @@ export function createVulnerabilityEntity(source: Vulnerability) {
         webLink: cve.references?.length ? cve.references[0] : undefined,
         open: source.status.includes('open'), // matches open and reopen
         cveId,
+        exploitStatus: cve?.exploit_status,
+        exprtRating: cve?.exprt_rating,
         // TODO: Consider additional properties: apps, remediation
       },
     },

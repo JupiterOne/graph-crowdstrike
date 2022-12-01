@@ -384,6 +384,8 @@ describe('createVulnerabilityEntity', () => {
       active: undefined,
       references: ['alink'],
       webLink: 'alink',
+      exploitStatus: 0,
+      exprtRating: 'MEDIUM',
     });
   });
 });

@@ -37,7 +37,7 @@ async function fetchVulnerabilities({
   await client
     .iterateVulnerabilities({
       query: {
-        limit: '250',
+        limit: '400',
         filter,
         sort: `created_timestamp|desc`,
         facet: 'cve',
