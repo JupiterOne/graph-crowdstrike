@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+## Added
+
+- Added config properties for `vulnerabilitiesLimit` and `devicesLimit`.
+
 ## [3.1.1] - 2022-01-01
 
 ### Changed
