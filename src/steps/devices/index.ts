@@ -29,7 +29,7 @@ async function fetchDevices({
   await client.iterateDevices({
     query: {
       filter: `last_seen:>='${timestamp}'`,
-      limit: '250',
+      limit: instance.config.devicesLimit ?? '250',
     },
     callback: async (devices) => {
       logger.info(

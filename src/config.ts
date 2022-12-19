@@ -41,6 +41,14 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
     type: 'boolean',
     mask: false,
   },
+  vulnerabilitiesLimit: {
+    type: 'string',
+    mask: false,
+  },
+  devicesLimit: {
+    type: 'string',
+    mask: false,
+  },
 };
 
 export interface IntegrationConfig extends IntegrationInstanceConfig {
@@ -49,6 +57,8 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   availabilityZone?: string;
   vulnerabilitySeverities?: string;
   includeClosedVulnerabilities?: boolean;
+  vulnerabilitiesLimit?: string;
+  devicesLimit?: string;
 }
 
 export async function validateInvocation({
