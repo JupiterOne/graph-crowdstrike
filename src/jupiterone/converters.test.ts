@@ -6,13 +6,19 @@ import {
 
 import { createMockExecutionContext } from '@jupiterone/integration-sdk-testing';
 
-import { Device, PreventionPolicy, Vulnerability } from '../crowdstrike/types';
+import {
+  Application,
+  Device,
+  PreventionPolicy,
+  Vulnerability,
+} from '../crowdstrike/types';
 import {
   createAccountEntity,
   createSensorAgentEntity,
   createPreventionPolicyEntity,
   createProtectionServiceEntity,
   createVulnerabilityEntity,
+  createApplicationEntity,
 } from './converters';
 
 describe('createAccountEntity', () => {
@@ -386,6 +392,48 @@ describe('createVulnerabilityEntity', () => {
       webLink: 'alink',
       exploitStatus: 0,
       exprtRating: 'MEDIUM',
+    });
+  });
+});
+
+describe('createApplicationEntity', () => {
+  test('properties transferred', () => {
+    const source: Application = {
+      product_name_version: 'Windows Server 2016 1607',
+      sub_status: 'open',
+      remediation: {
+        ids: ['9497362a882d3be38b4505cbb9aa1e21'],
+      },
+      evaluation_logic: {
+        id: 'eae54d591fe733398ac4aaa4652c8624',
+      },
+    };
+
+    expect(createApplicationEntity(source)).toEqual({
+      _class: ['Application'],
+      _key: 'windows-server-2016-1607',
+      _rawData: [
+        {
+          name: 'default',
+          rawData: {
+            product_name_version: 'Windows Server 2016 1607',
+            sub_status: 'open',
+            remediation: {
+              ids: ['9497362a882d3be38b4505cbb9aa1e21'],
+            },
+            evaluation_logic: {
+              id: 'eae54d591fe733398ac4aaa4652c8624',
+            },
+          },
+        },
+      ],
+      _type: 'crowdstrike_application',
+      name: 'Windows Server 2016 1607',
+      displayName: 'Windows Server 2016 1607',
+      createdOn: undefined,
+      open: true,
+      remediationIds: ['9497362a882d3be38b4505cbb9aa1e21'],
+      evaluationLogicId: 'eae54d591fe733398ac4aaa4652c8624',
     });
   });
 });
