@@ -8,7 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
-## Added
+## [3.1.2] - 2022-01-05
+
+### Changed
+
+- Collection period for devices extended to 50 days from 30.
+
+### Added
 
 - Added config properties for `vulnerabilitiesLimit` and `devicesLimit`.
 
