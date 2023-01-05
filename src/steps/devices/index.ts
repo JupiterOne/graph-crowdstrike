@@ -24,7 +24,7 @@ async function fetchDevices({
 
   logger.info('Iterating devices...');
 
-  const timestamp = createFQLTimestamp(getDateInPast(30));
+  const timestamp = createFQLTimestamp(getDateInPast(50));
 
   await client.iterateDevices({
     query: {
