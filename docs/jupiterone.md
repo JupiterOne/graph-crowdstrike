@@ -96,27 +96,27 @@ https://github.com/JupiterOne/sdk/blob/main/docs/integrations/development.md
 
 The following entities are created:
 
-| Resources           | Entity `_type`                    | Entity `_class` |
-| ------------------- | --------------------------------- | --------------- |
-| Account             | `crowdstrike_account`             | `Account`       |
-| Application         | `crowdstrike_application`         | `Application`   |
-| Device Sensor Agent | `crowdstrike_sensor`              | `HostAgent`     |
-| Prevention Policy   | `crowdstrike_prevention_policy`   | `ControlPolicy` |
-| Service             | `crowdstrike_endpoint_protection` | `Service`       |
-| Vulnerability       | `crowdstrike_vulnerability`       | `Finding`       |
+| Resources           | Entity `_type`                     | Entity `_class` |
+| ------------------- | ---------------------------------- | --------------- |
+| Account             | `crowdstrike_account`              | `Account`       |
+| Application         | `crowdstrike_detected_application` | `Application`   |
+| Device Sensor Agent | `crowdstrike_sensor`               | `HostAgent`     |
+| Prevention Policy   | `crowdstrike_prevention_policy`    | `ControlPolicy` |
+| Service             | `crowdstrike_endpoint_protection`  | `Service`       |
+| Vulnerability       | `crowdstrike_vulnerability`        | `Finding`       |
 
 ### Relationships
 
 The following relationships are created:
 
-| Source Entity `_type`           | Relationship `_class` | Target Entity `_type`             |
-| ------------------------------- | --------------------- | --------------------------------- |
-| `crowdstrike_account`           | **HAS**               | `crowdstrike_endpoint_protection` |
-| `crowdstrike_account`           | **HAS**               | `crowdstrike_sensor`              |
-| `crowdstrike_application`       | **HAS**               | `crowdstrike_vulnerability`       |
-| `crowdstrike_prevention_policy` | **ENFORCES**          | `crowdstrike_endpoint_protection` |
-| `crowdstrike_sensor`            | **ASSIGNED**          | `crowdstrike_prevention_policy`   |
-| `crowdstrike_vulnerability`     | **EXPLOITS**          | `crowdstrike_sensor`              |
+| Source Entity `_type`              | Relationship `_class` | Target Entity `_type`             |
+| ---------------------------------- | --------------------- | --------------------------------- |
+| `crowdstrike_account`              | **HAS**               | `crowdstrike_endpoint_protection` |
+| `crowdstrike_account`              | **HAS**               | `crowdstrike_sensor`              |
+| `crowdstrike_detected_application` | **HAS**               | `crowdstrike_vulnerability`       |
+| `crowdstrike_prevention_policy`    | **ENFORCES**          | `crowdstrike_endpoint_protection` |
+| `crowdstrike_sensor`               | **ASSIGNED**          | `crowdstrike_prevention_policy`   |
+| `crowdstrike_vulnerability`        | **EXPLOITS**          | `crowdstrike_sensor`              |
 
 <!--
 ********************************************************************************

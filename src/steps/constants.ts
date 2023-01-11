@@ -61,8 +61,7 @@ export const Entities: Record<
   },
   APPLICATION: {
     resourceName: 'Application',
-    // this isn't really crowdstrike application, should we use mapped relationship and target some globally unique application instead?
-    _type: 'crowdstrike_application',
+    _type: 'crowdstrike_detected_application',
     _class: ['Application'],
   },
 };
@@ -112,5 +111,6 @@ export const Relationships: Record<
     sourceType: Entities.APPLICATION._type,
     _class: RelationshipClass.HAS,
     targetType: Entities.VULNERABILITY._type,
+    partial: true,
   },
 };
