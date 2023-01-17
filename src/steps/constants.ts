@@ -107,7 +107,7 @@ export const Relationships: Record<
     partial: true,
   },
   APP_HAS_VULN: {
-    _type: 'crowdstrike_application_has_vulnerability',
+    _type: 'crowdstrike_detected_application_has_vulnerability',
     sourceType: Entities.APPLICATION._type,
     _class: RelationshipClass.HAS,
     targetType: Entities.VULNERABILITY._type,

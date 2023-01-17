@@ -12,15 +12,15 @@ and this project adheres to
 
 The following entity is **now** created:
 
-| Resources   | Entity `_type`            | Entity `_class` |
-| ----------- | ------------------------- | --------------- |
-| Application | `crowdstrike_application` | `Application`   |
+| Resources   | Entity `_type`                     | Entity `_class` |
+| ----------- | ---------------------------------- | --------------- |
+| Application | `crowdstrike_detected_application` | `Application`   |
 
 The following relationship is **now** created:
 
-| Source Entity `_type`     | Relationship `_class` | Target Entity `_type`       |
-| ------------------------- | --------------------- | --------------------------- |
-| `crowdstrike_application` | **HAS**               | `crowdstrike_vulnerability` |
+| Source Entity `_type`              | Relationship `_class` | Target Entity `_type`       |
+| ---------------------------------- | --------------------- | --------------------------- |
+| `crowdstrike_detected_application` | **HAS**               | `crowdstrike_vulnerability` |
 
 ## [3.1.2] - 2022-01-05
 
