@@ -427,7 +427,7 @@ describe('createApplicationEntity', () => {
           },
         },
       ],
-      _type: 'crowdstrike_application',
+      _type: 'crowdstrike_detected_application',
       name: 'Windows Server 2016 1607',
       displayName: 'Windows Server 2016 1607',
       createdOn: undefined,
