@@ -8,13 +8,27 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+The following entity is **now** created:
+
+| Resources   | Entity `_type`                     | Entity `_class` |
+| ----------- | ---------------------------------- | --------------- |
+| Application | `crowdstrike_detected_application` | `Application`   |
+
+The following relationship is **now** created:
+
+| Source Entity `_type`              | Relationship `_class` | Target Entity `_type`       |
+| ---------------------------------- | --------------------- | --------------------------- |
+| `crowdstrike_detected_application` | **HAS**               | `crowdstrike_vulnerability` |
+
 ## [3.1.2] - 2022-01-05
 
 ### Changed
 
 - Collection period for devices extended to 50 days from 30.
 
-### Added
+## Added
 
 - Added config properties for `vulnerabilitiesLimit` and `devicesLimit`.
 

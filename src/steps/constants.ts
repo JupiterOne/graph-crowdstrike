@@ -29,7 +29,8 @@ export const Entities: Record<
   | 'PROTECTION_SERVICE'
   | 'SENSOR'
   | 'PREVENTION_POLICY'
-  | 'VULNERABILITY',
+  | 'VULNERABILITY'
+  | 'APPLICATION',
   StepEntityMetadata
 > = {
   ACCOUNT: {
@@ -58,6 +59,11 @@ export const Entities: Record<
     _class: ['Finding'], // J1 data model considers CrowdStrike vulns as Findings. Note: this changes the billing of the entity
     partial: true,
   },
+  APPLICATION: {
+    resourceName: 'Application',
+    _type: 'crowdstrike_detected_application',
+    _class: ['Application'],
+  },
 };
 
 export const Relationships: Record<
@@ -65,7 +71,8 @@ export const Relationships: Record<
   | 'ACCOUNT_HAS_SENSOR'
   | 'PREVENTION_POLICY_ENFORCES_PROTECTION_SERVICE'
   | 'SENSOR_ASSIGNED_PREVENTION_POLICY'
-  | 'VULN_EXPLOITS_SENSOR',
+  | 'VULN_EXPLOITS_SENSOR'
+  | 'APP_HAS_VULN',
   StepRelationshipMetadata
 > = {
   ACCOUNT_HAS_PROTECTION_SERVICE: {
@@ -97,6 +104,13 @@ export const Relationships: Record<
     sourceType: Entities.VULNERABILITY._type,
     _class: RelationshipClass.EXPLOITS,
     targetType: Entities.SENSOR._type,
+    partial: true,
+  },
+  APP_HAS_VULN: {
+    _type: 'crowdstrike_detected_application_has_vulnerability',
+    sourceType: Entities.APPLICATION._type,
+    _class: RelationshipClass.HAS,
+    targetType: Entities.VULNERABILITY._type,
     partial: true,
   },
 };

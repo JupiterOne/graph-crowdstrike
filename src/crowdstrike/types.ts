@@ -186,14 +186,16 @@ export type Vulnerability = {
     site_name: string;
     system_manufacturer: string;
   };
-  apps?: {
-    product_name_version: string;
-    sub_status: string;
-    remediation?: {
-      ids: string[];
-    };
-    evaluation_logic: {
-      id: string;
-    };
-  }[];
+  apps?: Application[];
+};
+
+export type Application = {
+  product_name_version: string;
+  sub_status: string;
+  remediation?: {
+    ids: string[];
+  };
+  evaluation_logic: {
+    id: string;
+  };
 };

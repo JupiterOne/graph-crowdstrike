@@ -8,7 +8,10 @@ import {
 import { IntegrationConfig } from '../../config';
 import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
 import { Entities, Relationships, StepIds } from '../constants';
-import { createVulnerabilityEntity } from '../../jupiterone/converters';
+import {
+  createApplicationEntity,
+  createVulnerabilityEntity,
+} from '../../jupiterone/converters';
 import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/src/types/logger';
 import { createVulnerabilityFQLFilter } from './util';
 
@@ -26,6 +29,7 @@ async function fetchVulnerabilities({
   const client = getOrCreateFalconAPIClient(instance.config, logger);
   let duplicateVulnerabilityKeysFoundCount = 0;
   let duplicateVulnerabilitySensorRelationshipKeysFoundCount = 0;
+  let duplicateVulnerabilityApplicationRelationshipKeysFoundCount = 0;
   let sensorEntitiesNotFoundCount = 0;
 
   const filter = createVulnerabilityFQLFilter({
@@ -71,6 +75,30 @@ async function fetchVulnerabilities({
           } else {
             await jobState.addRelationship(vulnerabilitySensorRelationship);
           }
+
+          for (const app of vulnerability.apps || []) {
+            const appEntity = createApplicationEntity(app);
+
+            // We probably don't want to count the duplicate apps, since the single app could have multiple findings (e.g. might be expected scenario)
+            if (!jobState.hasKey(appEntity._key)) {
+              await jobState.addEntity(appEntity);
+            }
+
+            const vulnerabilityApplicationRelationship =
+              createDirectRelationship({
+                from: appEntity,
+                _class: RelationshipClass.HAS,
+                to: vulnerabilityEntity,
+              });
+
+            if (jobState.hasKey(vulnerabilityApplicationRelationship._key)) {
+              duplicateVulnerabilityApplicationRelationshipKeysFoundCount++;
+            } else {
+              await jobState.addRelationship(
+                vulnerabilityApplicationRelationship,
+              );
+            }
+          }
         }
       },
     })
@@ -97,6 +125,7 @@ async function fetchVulnerabilities({
     {
       duplicateVulnerabilityKeysFoundCount,
       duplicateVulnerabilitySensorRelationshipKeysFoundCount,
+      duplicateVulnerabilityApplicationRelationshipKeysFoundCount,
       sensorEntitiesNotFoundCount,
     },
     'Vulnerability step summary',
@@ -107,8 +136,11 @@ export const vulnerabilitiesSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: StepIds.VULNERABILITIES,
     name: 'Fetch Vulnerabilities',
-    entities: [Entities.VULNERABILITY],
-    relationships: [Relationships.VULN_EXPLOITS_SENSOR],
+    entities: [Entities.VULNERABILITY, Entities.APPLICATION],
+    relationships: [
+      Relationships.VULN_EXPLOITS_SENSOR,
+      Relationships.APP_HAS_VULN,
+    ],
     dependsOn: [StepIds.DEVICES],
     executionHandler: fetchVulnerabilities,
   },

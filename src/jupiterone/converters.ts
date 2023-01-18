@@ -5,7 +5,12 @@ import {
 } from '@jupiterone/integration-sdk-core';
 import { Entities } from '../steps/constants';
 
-import { Device, PreventionPolicy, Vulnerability } from '../crowdstrike/types';
+import {
+  Application,
+  Device,
+  PreventionPolicy,
+  Vulnerability,
+} from '../crowdstrike/types';
 
 function toCapitalCase(s: string): string {
   return s.toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
@@ -197,6 +202,23 @@ export function createVulnerabilityEntity(source: Vulnerability) {
         exploitStatus: cve?.exploit_status,
         exprtRating: cve?.exprt_rating,
         // TODO: Consider additional properties: apps, remediation
+      },
+    },
+  });
+}
+
+export function createApplicationEntity(source: Application) {
+  return createIntegrationEntity({
+    entityData: {
+      source,
+      assign: {
+        _class: Entities.APPLICATION._class,
+        _type: Entities.APPLICATION._type,
+        _key: source.product_name_version.toLowerCase().replace(/\s/g, '-'),
+        name: source.product_name_version,
+        open: source.sub_status.toLowerCase() === 'open',
+        remediationIds: source.remediation?.ids,
+        evaluationLogicId: source.evaluation_logic.id,
       },
     },
   });
