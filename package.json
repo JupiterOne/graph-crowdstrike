@@ -1,6 +1,6 @@
 {
   "name": "@jupiterone/graph-crowdstrike",
-  "version": "3.1.2",
+  "version": "3.2.0",
   "description": "A graph conversion tool for the CrowdStrike API",
   "main": "src/index.js",
   "types": "src/index.d.ts",
