@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [3.2.0] - 2023-01-23
+
 ### Added
 
 The following entity is **now** created:
