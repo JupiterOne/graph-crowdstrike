@@ -15,10 +15,7 @@ import {
 import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/src/types/logger';
 import { createVulnerabilityFQLFilter } from './util';
 
-// maxDaysInPast is set to 10 days because most integrations will run at least once a week.
-// Additionally, at the time of this comment, we are just using the `created_timestamp`
-// as a filter, so the quantity of data can still be extremely large.
-const maxDaysInPast = 10;
+const maxDaysInPast = 30;
 
 async function fetchVulnerabilities({
   instance,

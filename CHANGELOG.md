@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Changed ingesting vulnerabilities timeframe from 10 to 30 days.
+
 ## [3.2.0] - 2023-01-23
 
 ### Added
