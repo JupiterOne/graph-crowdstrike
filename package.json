@@ -1,6 +1,6 @@
 {
   "name": "@jupiterone/graph-crowdstrike",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "A graph conversion tool for the CrowdStrike API",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -38,9 +38,9 @@
     "@jupiterone/integration-sdk-core": "^8.24.1"
   },
   "devDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.24.1",
-    "@jupiterone/integration-sdk-dev-tools": "^8.24.1",
-    "@jupiterone/integration-sdk-testing": "^8.24.1",
+    "@jupiterone/integration-sdk-core": "^8.31.0",
+    "@jupiterone/integration-sdk-dev-tools": "^8.31.0",
+    "@jupiterone/integration-sdk-testing": "^8.31.0",
     "@types/node-fetch": "^2.6.2"
   }
 }
