@@ -42,28 +42,34 @@ export function createVulnerabilityFQLFilter({
   executionHistory,
   maxDaysInPast,
 }: CreateVulnerabilityFQLFilterParams): string {
-  const createdTimestampFilter = createFQLTimestamp(
-    calculateCreatedFilterTime({
-      lastSuccessfulRun: executionHistory.lastSuccessful?.startedOn,
-      maxDaysInPast: maxDaysInPast,
-    }),
-  );
+  const filter: string[] = [];
 
-  let filter = `created_timestamp:>'${createdTimestampFilter}'`;
-  if (!config.includeClosedVulnerabilities) {
-    filter += `+status:!'closed'`;
+  if (!config.ingestAllVulnerabilities) {
+    const createdTimestampFilter = createFQLTimestamp(
+      calculateCreatedFilterTime({
+        lastSuccessfulRun: executionHistory.lastSuccessful?.startedOn,
+        maxDaysInPast: maxDaysInPast,
+      }),
+    );
+
+    filter.push(`created_timestamp:>'${createdTimestampFilter}'`);
   }
 
-  filter += createSeverityFilter(config.vulnerabilitySeverities);
-  return filter;
+  if (!config.includeClosedVulnerabilities) {
+    filter.push(`status:!'closed'`);
+  }
+
+  filter.push(createSeverityFilter(config.vulnerabilitySeverities));
+
+  return filter.join('+');
 }
 
-const DEFAULT_FILTER = `+cve.severity:['CRITICAL','HIGH','MEDIUM','UNKNOWN']`;
+const DEFAULT_FILTER = `cve.severity:['CRITICAL','HIGH','MEDIUM','UNKNOWN']`;
 function createSeverityFilter(severities: string | undefined) {
   if (!severities) {
     return DEFAULT_FILTER;
   }
 
   const sevFilters = severities.split(',').map((v) => `'${v}'`);
-  return `+cve.severity:[${sevFilters}]`;
+  return `cve.severity:[${sevFilters}]`;
 }
