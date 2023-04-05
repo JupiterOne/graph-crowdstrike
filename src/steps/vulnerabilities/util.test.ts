@@ -138,4 +138,36 @@ describe('#createVulnerabilityFQLFilter', () => {
       `cve.severity:['CRITICAL','HIGH','MEDIUM','UNKNOWN']`,
     );
   });
+
+  test('excludes created_timestamp if ingestAllVulnerabilities is set to true', () => {
+    const { instance, executionHistory } =
+      createMockExecutionContext<IntegrationConfig>({
+        instanceConfig: {
+          ingestAllVulnerabilities: true,
+        } as IntegrationConfig,
+      });
+
+    const actual = createVulnerabilityFQLFilter({
+      config: instance.config,
+      executionHistory,
+      maxDaysInPast: 10,
+    });
+    expect(actual).not.toContain(`created_timestamp:>`);
+  });
+
+  test('includes created_timestamp if ingestAllVulnerabilities is set to undefined', () => {
+    const { instance, executionHistory } =
+      createMockExecutionContext<IntegrationConfig>({
+        instanceConfig: {
+          ingestAllVulnerabilities: undefined,
+        } as IntegrationConfig,
+      });
+
+    const actual = createVulnerabilityFQLFilter({
+      config: instance.config,
+      executionHistory,
+      maxDaysInPast: 10,
+    });
+    expect(actual).toContain(`created_timestamp:>`);
+  });
 });

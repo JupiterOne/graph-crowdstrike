@@ -57,6 +57,7 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   availabilityZone?: string;
   vulnerabilitySeverities?: string;
   includeClosedVulnerabilities?: boolean;
+  ingestAllVulnerabilities?: boolean;
   vulnerabilitiesLimit?: string;
   devicesLimit?: string;
 }
