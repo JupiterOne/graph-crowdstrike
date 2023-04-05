@@ -159,7 +159,7 @@ describe('#createVulnerabilityFQLFilter', () => {
     const { instance, executionHistory } =
       createMockExecutionContext<IntegrationConfig>({
         instanceConfig: {
-          ingestAllVulnerabilities: true,
+          ingestAllVulnerabilities: undefined,
         } as IntegrationConfig,
       });
 
@@ -168,6 +168,6 @@ describe('#createVulnerabilityFQLFilter', () => {
       executionHistory,
       maxDaysInPast: 10,
     });
-    expect(actual).not.toContain(`created_timestamp:>`);
+    expect(actual).toContain(`created_timestamp:>`);
   });
 });
