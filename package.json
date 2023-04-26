@@ -29,9 +29,11 @@
     "build": "tsc -p tsconfig.dist.json --declaration && cp README.md dist/README.md && cp -r jupiterone/ dist/jupiterone/",
     "prepush": "yarn format:check && yarn lint && yarn type-check && jest --changedSince main",
     "validate:questions": "j1-integration validate-question-file -a $MANAGED_QUESTIONS_JUPITERONE_ACCOUNT_ID -k $MANAGED_QUESTIONS_JUPITERONE_API_KEY",
-    "validate:questions:dry": "j1-integration validate-question-file --dry-run"
+    "validate:questions:dry": "j1-integration validate-question-file --dry-run",
+    "postversion": "cp package.json ./dist/package.json"
   },
   "dependencies": {
+    "auto": "^10.46.0",
     "node-fetch": "^2.6.7"
   },
   "peerDependencies": {
@@ -42,5 +44,21 @@
     "@jupiterone/integration-sdk-dev-tools": "^8.31.0",
     "@jupiterone/integration-sdk-testing": "^8.31.0",
     "@types/node-fetch": "^2.6.2"
+  },
+  "auto": {
+    "plugins": [
+      [
+        "npm",
+        {
+          "setRcToken": false,
+          "publishFolder": "./dist"
+        }
+      ],
+      "released"
+    ],
+    "onlyPublishWithReleaseLabel": true,
+    "shipit": {
+      "prerelease": false
+    }
   }
 }
