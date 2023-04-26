@@ -367,10 +367,13 @@ export class FalconAPIClient {
         redirect: 'manual',
       });
 
-      this.logger.debug({
-        requestUrl,
-        requestDuration: Date.now() - startTime,
-      });
+      this.logger.debug(
+        {
+          requestUrl,
+          requestDuration: Date.now() - startTime,
+        },
+        'Calculated request duration',
+      );
 
       this.rateLimitState = {
         limitRemaining: Number(response.headers.get('X-RateLimit-Remaining')),
