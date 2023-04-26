@@ -1,5 +1,6 @@
 import {
   createDirectRelationship,
+  Entity,
   IntegrationProviderAuthorizationError,
   IntegrationStep,
   IntegrationStepExecutionContext,
@@ -49,11 +50,12 @@ async function fetchVulnerabilities({
       callback: async (vulns) => {
         for (const vulnerability of vulns) {
           const vulnerabilityEntity = createVulnerabilityEntity(vulnerability);
+          const iterationPromises: Promise<Entity | void | null>[] = [];
 
           if (jobState.hasKey(vulnerabilityEntity._key)) {
             duplicateVulnerabilityKeysFoundCount++;
           } else {
-            await jobState.addEntity(vulnerabilityEntity);
+            iterationPromises.push(jobState.addEntity(vulnerabilityEntity));
           }
 
           const sensor = await jobState.findEntity(vulnerability.aid);
@@ -73,7 +75,9 @@ async function fetchVulnerabilities({
           if (jobState.hasKey(vulnerabilitySensorRelationship._key)) {
             duplicateVulnerabilitySensorRelationshipKeysFoundCount++;
           } else {
-            await jobState.addRelationship(vulnerabilitySensorRelationship);
+            iterationPromises.push(
+              jobState.addRelationship(vulnerabilitySensorRelationship),
+            );
           }
 
           for (const app of vulnerability.apps || []) {
@@ -81,7 +85,7 @@ async function fetchVulnerabilities({
 
             // We probably don't want to count the duplicate apps, since the single app could have multiple findings (e.g. might be expected scenario)
             if (!jobState.hasKey(appEntity._key)) {
-              await jobState.addEntity(appEntity);
+              iterationPromises.push(jobState.addEntity(appEntity));
             }
 
             const vulnerabilityApplicationRelationship =
@@ -94,11 +98,13 @@ async function fetchVulnerabilities({
             if (jobState.hasKey(vulnerabilityApplicationRelationship._key)) {
               duplicateVulnerabilityApplicationRelationshipKeysFoundCount++;
             } else {
-              await jobState.addRelationship(
-                vulnerabilityApplicationRelationship,
+              iterationPromises.push(
+                jobState.addRelationship(vulnerabilityApplicationRelationship),
               );
             }
           }
+
+          await Promise.all(iterationPromises);
         }
       },
     })
