@@ -357,6 +357,7 @@ export class FalconAPIClient {
      * This is the logic to be retried in the case of an error.
      */
     const requestAttempt = async () => {
+      const startTime = Date.now();
       const response = await fetch(requestUrl, {
         ...init,
         headers: {
@@ -364,6 +365,11 @@ export class FalconAPIClient {
           authorization: `bearer ${this.token!.token}`,
         },
         redirect: 'manual',
+      });
+
+      this.logger.debug({
+        requestUrl,
+        requestDuration: Date.now() - startTime,
       });
 
       this.rateLimitState = {
