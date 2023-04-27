@@ -15,6 +15,7 @@ import {
 } from '../../jupiterone/converters';
 import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/src/types/logger';
 import { createVulnerabilityFQLFilter } from './util';
+import pMap from 'p-map';
 
 // maxDaysInPast is set to 10 days because most integrations will run at least once a week.
 // Additionally, at the time of this comment, we are just using the `created_timestamp`
@@ -42,70 +43,79 @@ async function fetchVulnerabilities({
   await client
     .iterateVulnerabilities({
       query: {
-        limit: instance.config.vulnerabilitiesLimit ?? '400',
+        limit: '10',
         filter,
         sort: `created_timestamp|desc`,
         facet: 'cve',
       },
       callback: async (vulns) => {
-        for (const vulnerability of vulns) {
-          const vulnerabilityEntity = createVulnerabilityEntity(vulnerability);
-          const iterationPromises: Promise<Entity | void | null>[] = [];
+        await pMap(
+          vulns,
+          async (vulnerability) => {
+            const vulnerabilityEntity =
+              createVulnerabilityEntity(vulnerability);
+            const iterationPromises: Promise<Entity | void | null>[] = [];
 
-          if (jobState.hasKey(vulnerabilityEntity._key)) {
-            duplicateVulnerabilityKeysFoundCount++;
-          } else {
-            iterationPromises.push(jobState.addEntity(vulnerabilityEntity));
-          }
-
-          const sensor = await jobState.findEntity(vulnerability.aid);
-
-          if (!sensor) {
-            sensorEntitiesNotFoundCount++;
-            continue;
-          }
-
-          // TODO: consider breaking this out into a separate step
-          const vulnerabilitySensorRelationship = createDirectRelationship({
-            from: vulnerabilityEntity,
-            _class: RelationshipClass.EXPLOITS,
-            to: sensor,
-          });
-
-          if (jobState.hasKey(vulnerabilitySensorRelationship._key)) {
-            duplicateVulnerabilitySensorRelationshipKeysFoundCount++;
-          } else {
-            iterationPromises.push(
-              jobState.addRelationship(vulnerabilitySensorRelationship),
-            );
-          }
-
-          for (const app of vulnerability.apps || []) {
-            const appEntity = createApplicationEntity(app);
-
-            // We probably don't want to count the duplicate apps, since the single app could have multiple findings (e.g. might be expected scenario)
-            if (!jobState.hasKey(appEntity._key)) {
-              iterationPromises.push(jobState.addEntity(appEntity));
+            if (jobState.hasKey(vulnerabilityEntity._key)) {
+              duplicateVulnerabilityKeysFoundCount++;
+            } else {
+              iterationPromises.push(jobState.addEntity(vulnerabilityEntity));
             }
 
-            const vulnerabilityApplicationRelationship =
-              createDirectRelationship({
-                from: appEntity,
-                _class: RelationshipClass.HAS,
-                to: vulnerabilityEntity,
-              });
+            const sensor = await jobState.findEntity(vulnerability.aid);
 
-            if (jobState.hasKey(vulnerabilityApplicationRelationship._key)) {
-              duplicateVulnerabilityApplicationRelationshipKeysFoundCount++;
+            if (!sensor) {
+              sensorEntitiesNotFoundCount++;
+              return;
+            }
+
+            // TODO: consider breaking this out into a separate step
+            const vulnerabilitySensorRelationship = createDirectRelationship({
+              from: vulnerabilityEntity,
+              _class: RelationshipClass.EXPLOITS,
+              to: sensor,
+            });
+
+            if (jobState.hasKey(vulnerabilitySensorRelationship._key)) {
+              duplicateVulnerabilitySensorRelationshipKeysFoundCount++;
             } else {
               iterationPromises.push(
-                jobState.addRelationship(vulnerabilityApplicationRelationship),
+                jobState.addRelationship(vulnerabilitySensorRelationship),
               );
             }
-          }
 
-          await Promise.all(iterationPromises);
-        }
+            for (const app of vulnerability.apps || []) {
+              const appEntity = createApplicationEntity(app);
+
+              // We probably don't want to count the duplicate apps, since the single app could have multiple findings (e.g. might be expected scenario)
+              if (!jobState.hasKey(appEntity._key)) {
+                iterationPromises.push(jobState.addEntity(appEntity));
+              }
+
+              const vulnerabilityApplicationRelationship =
+                createDirectRelationship({
+                  from: appEntity,
+                  _class: RelationshipClass.HAS,
+                  to: vulnerabilityEntity,
+                });
+
+              if (jobState.hasKey(vulnerabilityApplicationRelationship._key)) {
+                duplicateVulnerabilityApplicationRelationshipKeysFoundCount++;
+              } else {
+                iterationPromises.push(
+                  jobState.addRelationship(
+                    vulnerabilityApplicationRelationship,
+                  ),
+                );
+              }
+            }
+
+            await Promise.all(iterationPromises);
+          },
+          {
+            concurrency: 2,
+          },
+        );
       },
     })
     .catch((error) => {
