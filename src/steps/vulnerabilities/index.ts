@@ -44,11 +44,7 @@ async function fetchVulnerabilities({
         limit: instance.config.vulnerabilitiesLimit ?? '400',
         filter,
         sort: `created_timestamp|desc`,
-        facet: {
-           'cve',
-           'host_info',
-           'remediation',
-        },
+        facet: ['cve', 'host_info','remediation'],
       },
       callback: async (vulns) => {
         for (const vulnerability of vulns) {
