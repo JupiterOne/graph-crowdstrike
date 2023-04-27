@@ -1,3 +1,21 @@
+# v3.2.1 (Thu Apr 27 2023)
+
+#### 🐛 Bug Fix
+
+- INT-7809 Adding auto versioning
+  [#146](https://github.com/JupiterOne/graph-crowdstrike/pull/146)
+  ([@jroblesx](https://github.com/jroblesx))
+- INT-6631: add ingest all vulnerabilities config
+  [#144](https://github.com/JupiterOne/graph-crowdstrike/pull/144)
+  ([@gastonyelmini](https://github.com/gastonyelmini))
+
+#### Authors: 2
+
+- Gaston Yelmini ([@gastonyelmini](https://github.com/gastonyelmini))
+- Jean R. Robles G. ([@jroblesx](https://github.com/jroblesx))
+
+---
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -7,6 +25,12 @@ and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [3.2.1] - 2023-04-27
+
+### Added
+
+- Added `auto` package to help with builds, versioning and npm packaging.
 
 ## [3.2.0] - 2023-01-23
 
