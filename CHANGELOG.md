@@ -2,8 +2,12 @@
 
 #### 🐛 Bug Fix
 
-- INT-7809 Adding auto versioning [#146](https://github.com/JupiterOne/graph-crowdstrike/pull/146) ([@jroblesx](https://github.com/jroblesx))
-- INT-6631: add ingest all vulnerabilities config [#144](https://github.com/JupiterOne/graph-crowdstrike/pull/144) ([@gastonyelmini](https://github.com/gastonyelmini))
+- INT-7809 Adding auto versioning
+  [#146](https://github.com/JupiterOne/graph-crowdstrike/pull/146)
+  ([@jroblesx](https://github.com/jroblesx))
+- INT-6631: add ingest all vulnerabilities config
+  [#144](https://github.com/JupiterOne/graph-crowdstrike/pull/144)
+  ([@gastonyelmini](https://github.com/gastonyelmini))
 
 #### Authors: 2
 
