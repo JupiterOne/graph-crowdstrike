@@ -1,3 +1,17 @@
+# v3.2.1 (Thu Apr 27 2023)
+
+#### 🐛 Bug Fix
+
+- INT-7809 Adding auto versioning [#146](https://github.com/JupiterOne/graph-crowdstrike/pull/146) ([@jroblesx](https://github.com/jroblesx))
+- INT-6631: add ingest all vulnerabilities config [#144](https://github.com/JupiterOne/graph-crowdstrike/pull/144) ([@gastonyelmini](https://github.com/gastonyelmini))
+
+#### Authors: 2
+
+- Gaston Yelmini ([@gastonyelmini](https://github.com/gastonyelmini))
+- Jean R. Robles G. ([@jroblesx](https://github.com/jroblesx))
+
+---
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
