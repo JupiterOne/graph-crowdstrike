@@ -8,6 +8,12 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [3.2.1] - 2023-04-27
+
+### Added
+
+- Added `auto` package to help with builds, versioning and npm packaging.
+
 ## [3.2.0] - 2023-01-23
 
 ### Added
