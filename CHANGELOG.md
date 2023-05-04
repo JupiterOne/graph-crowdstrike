@@ -1,3 +1,17 @@
+# v3.2.4 (Thu May 04 2023)
+
+#### 🐛 Bug Fix
+
+- INT-7939: improvements (2) - Log request times [#148](https://github.com/JupiterOne/graph-crowdstrike/pull/148) ([@gastonyelmini](https://github.com/gastonyelmini))
+- INT-7809 GitHub actions integration deployment workflow [#149](https://github.com/JupiterOne/graph-crowdstrike/pull/149) ([@jroblesx](https://github.com/jroblesx))
+
+#### Authors: 2
+
+- Gaston Yelmini ([@gastonyelmini](https://github.com/gastonyelmini))
+- Jean R. Robles G. ([@jroblesx](https://github.com/jroblesx))
+
+---
+
 # v3.2.1 (Thu Apr 27 2023)
 
 #### 🐛 Bug Fix
