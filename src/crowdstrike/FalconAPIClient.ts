@@ -357,6 +357,7 @@ export class FalconAPIClient {
      * This is the logic to be retried in the case of an error.
      */
     const requestAttempt = async () => {
+      const startTime = Date.now();
       const response = await fetch(requestUrl, {
         ...init,
         headers: {
@@ -365,6 +366,14 @@ export class FalconAPIClient {
         },
         redirect: 'manual',
       });
+
+      this.logger.debug(
+        {
+          requestUrl,
+          requestDuration: Date.now() - startTime,
+        },
+        'Calculated request duration',
+      );
 
       this.rateLimitState = {
         limitRemaining: Number(response.headers.get('X-RateLimit-Remaining')),
