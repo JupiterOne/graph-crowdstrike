@@ -13,7 +13,7 @@ describe(`vulnerabilities#${StepIds.VULN_EXPLOITS_SENSOR}`, () => {
     if (recording) await recording.stop();
   });
 
-  jest.setTimeout(4500);
+  jest.setTimeout(45000);
 
   test(StepIds.VULN_EXPLOITS_SENSOR, async () => {
     recording = setupCrowdstrikeRecording({
