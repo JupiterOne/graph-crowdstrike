@@ -19,11 +19,17 @@ describe(`vulnerabilities#${StepIds.VULN_EXPLOITS_SENSOR}`, () => {
     recording = setupCrowdstrikeRecording({
       name: StepIds.VULN_EXPLOITS_SENSOR,
       directory: __dirname,
+      options: {
+        matchRequestsBy: {
+          url: false,
+        },
+      },
     });
 
     const stepConfig = buildStepTestConfig(StepIds.VULN_EXPLOITS_SENSOR);
 
     const result = await executeStepWithDependencies(stepConfig);
+
     expect(result).toMatchStepMetadata(stepConfig);
   });
 });
