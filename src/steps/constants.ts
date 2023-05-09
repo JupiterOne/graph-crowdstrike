@@ -14,7 +14,8 @@ export const StepIds: Record<
   | 'DEVICES'
   | 'PREVENTION_POLICIES'
   | 'VULNERABILITIES'
-  | 'DEVICE_POLICY_RELATIONSHIPS',
+  | 'DEVICE_POLICY_RELATIONSHIPS'
+  | 'VULN_EXPLOITS_SENSOR',
   string
 > = {
   ACCOUNT: 'get-account',
@@ -22,6 +23,7 @@ export const StepIds: Record<
   PREVENTION_POLICIES: 'fetch-prevention-policies',
   DEVICE_POLICY_RELATIONSHIPS: 'fetch-device-policies',
   VULNERABILITIES: 'fetch-vulnerabilities',
+  VULN_EXPLOITS_SENSOR: 'build-vulnerability-expoits-sensor-relationship',
 };
 
 export const Entities: Record<

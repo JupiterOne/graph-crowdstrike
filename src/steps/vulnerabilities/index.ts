@@ -1,6 +1,7 @@
 import {
   createDirectRelationship,
   Entity,
+  getRawData,
   IntegrationProviderAuthorizationError,
   IntegrationStep,
   IntegrationStepExecutionContext,
@@ -16,6 +17,7 @@ import {
 import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/src/types/logger';
 import { createVulnerabilityFQLFilter } from './util';
 import pMap from 'p-map';
+import { Vulnerability } from '../../crowdstrike/types';
 
 // maxDaysInPast is set to 10 days because most integrations will run at least once a week.
 // Additionally, at the time of this comment, we are just using the `created_timestamp`
@@ -30,9 +32,7 @@ async function fetchVulnerabilities({
 }: IntegrationStepExecutionContext<IntegrationConfig>): Promise<void> {
   const client = getOrCreateFalconAPIClient(instance.config, logger);
   let duplicateVulnerabilityKeysFoundCount = 0;
-  let duplicateVulnerabilitySensorRelationshipKeysFoundCount = 0;
   let duplicateVulnerabilityApplicationRelationshipKeysFoundCount = 0;
-  let sensorEntitiesNotFoundCount = 0;
 
   const filter = createVulnerabilityFQLFilter({
     config: instance.config,
@@ -60,28 +60,6 @@ async function fetchVulnerabilities({
               duplicateVulnerabilityKeysFoundCount++;
             } else {
               iterationPromises.push(jobState.addEntity(vulnerabilityEntity));
-            }
-
-            const sensor = await jobState.findEntity(vulnerability.aid);
-
-            if (!sensor) {
-              sensorEntitiesNotFoundCount++;
-              return;
-            }
-
-            // TODO: consider breaking this out into a separate step
-            const vulnerabilitySensorRelationship = createDirectRelationship({
-              from: vulnerabilityEntity,
-              _class: RelationshipClass.EXPLOITS,
-              to: sensor,
-            });
-
-            if (jobState.hasKey(vulnerabilitySensorRelationship._key)) {
-              duplicateVulnerabilitySensorRelationshipKeysFoundCount++;
-            } else {
-              iterationPromises.push(
-                jobState.addRelationship(vulnerabilitySensorRelationship),
-              );
             }
 
             for (const app of vulnerability.apps || []) {
@@ -140,11 +118,51 @@ async function fetchVulnerabilities({
   logger.info(
     {
       duplicateVulnerabilityKeysFoundCount,
-      duplicateVulnerabilitySensorRelationshipKeysFoundCount,
       duplicateVulnerabilityApplicationRelationshipKeysFoundCount,
-      sensorEntitiesNotFoundCount,
     },
     'Vulnerability step summary',
+  );
+}
+
+async function buildVulnerabilitySensorRelationship({
+  jobState,
+  logger,
+}: IntegrationStepExecutionContext<IntegrationConfig>): Promise<void> {
+  let duplicateVulnerabilitySensorRelationshipKeysFoundCount = 0;
+  let sensorEntitiesNotFoundCount = 0;
+
+  await jobState.iterateEntities(
+    { _type: Entities.VULNERABILITY._type },
+    async (vulnerabilityEntity) => {
+      const vulnerability = getRawData<Vulnerability>(vulnerabilityEntity);
+
+      const sensor = await jobState.findEntity(vulnerability?.aid);
+
+      if (!sensor) {
+        sensorEntitiesNotFoundCount++;
+        return;
+      }
+
+      const vulnerabilitySensorRelationship = createDirectRelationship({
+        from: vulnerabilityEntity,
+        _class: RelationshipClass.EXPLOITS,
+        to: sensor,
+      });
+
+      if (jobState.hasKey(vulnerabilitySensorRelationship._key)) {
+        duplicateVulnerabilitySensorRelationshipKeysFoundCount++;
+      } else {
+        await jobState.addRelationship(vulnerabilitySensorRelationship);
+      }
+    },
+  );
+
+  logger.info(
+    {
+      duplicateVulnerabilitySensorRelationshipKeysFoundCount,
+      sensorEntitiesNotFoundCount,
+    },
+    'Build Vunlerability -> Sensor relationship step summary',
   );
 }
 
@@ -153,11 +171,16 @@ export const vulnerabilitiesSteps: IntegrationStep<IntegrationConfig>[] = [
     id: StepIds.VULNERABILITIES,
     name: 'Fetch Vulnerabilities',
     entities: [Entities.VULNERABILITY, Entities.APPLICATION],
-    relationships: [
-      Relationships.VULN_EXPLOITS_SENSOR,
-      Relationships.APP_HAS_VULN,
-    ],
+    relationships: [Relationships.APP_HAS_VULN],
     dependsOn: [StepIds.DEVICES],
     executionHandler: fetchVulnerabilities,
+  },
+  {
+    id: StepIds.VULN_EXPLOITS_SENSOR,
+    name: 'Build Vunlerability -> Sensor relationship',
+    entities: [],
+    relationships: [Relationships.VULN_EXPLOITS_SENSOR],
+    dependsOn: [StepIds.VULNERABILITIES],
+    executionHandler: buildVulnerabilitySensorRelationship,
   },
 ];
