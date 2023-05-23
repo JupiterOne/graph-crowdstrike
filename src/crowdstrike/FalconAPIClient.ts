@@ -4,6 +4,7 @@ import { retry } from '@lifeomic/attempt';
 import { URLSearchParams } from 'url';
 
 import {
+  Application,
   Device,
   DeviceIdentifier,
   OAuth2ClientCredentials,
@@ -186,6 +187,24 @@ export class FalconAPIClient {
       resourcePath: '/zero-trust-assessment/queries/assessments/v1',
     });
   }
+  /**
+   * Iterates the known device applications, providing pages
+   * of the collection based on the provided query to the provided callback.
+   *
+   * @param input
+   * @returns Promise
+   */
+  public async iterateApplications(input: {
+    callback: FalconAPIResourceIterationCallback<Application>;
+    query?: QueryParams;
+  }): Promise<void> {
+    return this.paginateResources<Application>({
+      callback: input.callback,
+      query: input.query,
+      resourcePath: '/discover/entities/applications/v1',
+    });
+  }
+
   /**
    * Iterates prevention policies using the "combined" API, providing pages of
    * the collection to the provided callback.
