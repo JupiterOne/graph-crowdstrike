@@ -28,6 +28,7 @@
     "test:ci": "yarn format:check && yarn lint && yarn type-check && yarn test",
     "build": "tsc -p tsconfig.dist.json --declaration && cp README.md dist/README.md && cp -r jupiterone/ dist/jupiterone/",
     "prepush": "yarn format:check && yarn lint && yarn type-check && jest --changedSince main",
+    "postversion": "cp package.json ./dist/package.json",
     "validate:questions": "j1-integration validate-question-file -a $MANAGED_QUESTIONS_JUPITERONE_ACCOUNT_ID -k $MANAGED_QUESTIONS_JUPITERONE_API_KEY",
     "validate:questions:dry": "j1-integration validate-question-file --dry-run"
   },
