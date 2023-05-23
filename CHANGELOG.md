@@ -1,3 +1,15 @@
+# v3.4.0 (Tue May 23 2023)
+
+#### 🚀 Enhancement
+
+- INT-7669: including release notes property [#154](https://github.com/JupiterOne/graph-crowdstrike/pull/154) ([@sl45082](https://github.com/sl45082))
+
+#### Authors: 1
+
+- bob bisantz ([@sl45082](https://github.com/sl45082))
+
+---
+
 # v3.3.0 (Tue May 23 2023)
 
 #### 🚀 Enhancement
