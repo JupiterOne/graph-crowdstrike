@@ -1,3 +1,16 @@
+# v3.3.0 (Tue May 23 2023)
+
+#### 🚀 Enhancement
+
+- INT-7669: adding postversion hook [#152](https://github.com/JupiterOne/graph-crowdstrike/pull/152) ([@sl45082](https://github.com/sl45082))
+- INT-7669: fix publishFolder for auto [#151](https://github.com/JupiterOne/graph-crowdstrike/pull/151) ([@sl45082](https://github.com/sl45082))
+
+#### Authors: 1
+
+- bob bisantz ([@sl45082](https://github.com/sl45082))
+
+---
+
 # v3.2.4 (Thu May 04 2023)
 
 #### 🐛 Bug Fix
