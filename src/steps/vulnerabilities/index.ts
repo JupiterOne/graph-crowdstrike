@@ -136,17 +136,21 @@ async function buildVulnerabilitySensorRelationship({
     async (vulnerabilityEntity) => {
       const vulnerability = getRawData<Vulnerability>(vulnerabilityEntity);
 
-      const sensor = await jobState.findEntity(vulnerability?.aid);
+      const sensorFound = jobState.hasKey(vulnerability?.aid);
 
-      if (!sensor) {
+      if (!sensorFound) {
         sensorEntitiesNotFoundCount++;
         return;
       }
 
+      if (!vulnerability?.aid) return;
+
       const vulnerabilitySensorRelationship = createDirectRelationship({
-        from: vulnerabilityEntity,
         _class: RelationshipClass.EXPLOITS,
-        to: sensor,
+        fromKey: vulnerabilityEntity._key,
+        fromType: vulnerabilityEntity._type,
+        toKey: vulnerability?.aid,
+        toType: Entities.SENSOR._type,
       });
 
       if (jobState.hasKey(vulnerabilitySensorRelationship._key)) {
@@ -172,7 +176,6 @@ export const vulnerabilitiesSteps: IntegrationStep<IntegrationConfig>[] = [
     name: 'Fetch Vulnerabilities',
     entities: [Entities.VULNERABILITY, Entities.APPLICATION],
     relationships: [Relationships.APP_HAS_VULN],
-    dependsOn: [StepIds.DEVICES],
     executionHandler: fetchVulnerabilities,
   },
   {
@@ -180,7 +183,7 @@ export const vulnerabilitiesSteps: IntegrationStep<IntegrationConfig>[] = [
     name: 'Build Vunlerability -> Sensor relationship',
     entities: [],
     relationships: [Relationships.VULN_EXPLOITS_SENSOR],
-    dependsOn: [StepIds.VULNERABILITIES],
+    dependsOn: [StepIds.VULNERABILITIES, StepIds.DEVICES],
     executionHandler: buildVulnerabilitySensorRelationship,
   },
 ];
