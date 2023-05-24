@@ -16,6 +16,8 @@ import {
   RateLimitState,
   ResourcesResponse,
   Vulnerability,
+  ZTA_Score,
+  ZeroTrustAssessment,
 } from './types';
 import {
   IntegrationLogger,
@@ -159,7 +161,31 @@ export class FalconAPIClient {
       resourcePath: '/spotlight/combined/vulnerabilities/v1',
     });
   }
-
+  /**
+   * Iterates the known ZTA Scores
+   * https://falconpy.io/Service-Collections/Zero-Trust-Assessment.html#getassessmentsbyscorev1
+   * @param input
+   * @returns Promise
+   */
+  public async iterateZeroTrustAssessment(input: {
+    callback: FalconAPIResourceIterationCallback<ZeroTrustAssessment>;
+    query?: QueryParams;
+  }): Promise<void> {
+    return this.paginateResources<ZTA_Score>({
+      query: input.query,
+      callback: async (ztaIdScores) => {
+        let ids: string[] = [];
+        if (ztaIdScores.length) ids = ztaIdScores.map((score) => score.aid);
+        const chunkSize = 40; // This is not strictly necessary, but should make it faster, since we would have x1/40 calls
+        for (let i = 0; i < ids.length; i += chunkSize) {
+          await input.callback(
+            await this.fetchZTADetails(ids.slice(i, i + chunkSize)),
+          );
+        }
+      },
+      resourcePath: '/zero-trust-assessment/queries/assessments/v1',
+    });
+  }
   /**
    * Iterates prevention policies using the "combined" API, providing pages of
    * the collection to the provided callback.
@@ -214,7 +240,28 @@ export class FalconAPIClient {
 
     return response.resources;
   }
+  /***
+   * ZTA details
+   * https://falconpy.io/Service-Collections/Zero-Trust-Assessment.html#getassessmentv1
+   */
+  private async fetchZTADetails(ids: string[]): Promise<ZeroTrustAssessment[]> {
+    const response = await this.executeAPIRequestWithRetries<
+      ResourcesResponse<any>
+    >(
+      `https://api.${
+        this.credentials.availabilityZone
+      }crowdstrike.com/zero-trust-assessment/entities/assessments/v1?ids=${ids.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          accept: 'application/json',
+        },
+      },
+    );
 
+    return response.resources;
+  }
   private async paginateResources<ResourceType>({
     callback,
     resourcePath,
@@ -366,7 +413,6 @@ export class FalconAPIClient {
         },
         redirect: 'manual',
       });
-
       this.logger.debug(
         {
           requestUrl,

@@ -14,7 +14,8 @@ export const StepIds: Record<
   | 'DEVICES'
   | 'PREVENTION_POLICIES'
   | 'VULNERABILITIES'
-  | 'DEVICE_POLICY_RELATIONSHIPS',
+  | 'DEVICE_POLICY_RELATIONSHIPS'
+  | 'ZERO_TRUST_ASSESSMENT',
   string
 > = {
   ACCOUNT: 'get-account',
@@ -22,16 +23,20 @@ export const StepIds: Record<
   PREVENTION_POLICIES: 'fetch-prevention-policies',
   DEVICE_POLICY_RELATIONSHIPS: 'fetch-device-policies',
   VULNERABILITIES: 'fetch-vulnerabilities',
+  ZERO_TRUST_ASSESSMENT: 'fetch-zero-trust-assessments',
 };
-
+type CrowdstrikeStepEntityMetadata = StepEntityMetadata & {
+  disableClassMatch?: boolean;
+};
 export const Entities: Record<
   | 'ACCOUNT'
   | 'PROTECTION_SERVICE'
   | 'SENSOR'
   | 'PREVENTION_POLICY'
   | 'VULNERABILITY'
-  | 'APPLICATION',
-  StepEntityMetadata
+  | 'APPLICATION'
+  | 'ZERO_TRUST_ASSESSMENT',
+  CrowdstrikeStepEntityMetadata
 > = {
   ACCOUNT: {
     resourceName: 'Account',
@@ -63,6 +68,12 @@ export const Entities: Record<
     resourceName: 'Application',
     _type: 'crowdstrike_detected_application',
     _class: ['Application'],
+  },
+  ZERO_TRUST_ASSESSMENT: {
+    resourceName: 'Zero Trust Assessment',
+    _type: 'crowdstrike_zero_trust_assessment',
+    _class: ['Assessment'],
+    disableClassMatch: true,
   },
 };
 

@@ -199,3 +199,39 @@ export type Application = {
     id: string;
   };
 };
+
+export type ZTA_Score = {
+  aid: string;
+  score: number;
+};
+export type ZeroTrustAssessment = {
+  aid: string;
+  cid: string;
+  system_serial_number: string;
+  event_platform: string;
+  product_type_desc: string;
+  modified_time: Date;
+  sensor_file_status: string;
+  assessment: Assessment;
+  assessment_items: AssessmentItems;
+};
+
+export type Assessment = {
+  sensor_config: number;
+  os: number;
+  overall: number;
+  version: string;
+};
+
+export type AssessmentItems = {
+  os_signals: Signal[];
+  sensor_signals: Signal[];
+};
+
+export type Signal = {
+  signal_id: string;
+  signal_name: string;
+  group_name: string;
+  criteria: string;
+  meets_criteria: string;
+};

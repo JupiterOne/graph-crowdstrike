@@ -41,6 +41,7 @@ At a minimum, please provide Read access to the following API Scopes:
 
 - Hosts
 - Prevention policies
+- Zero Trust Assessments
 
 An additional scope is needed for ingesting vulnerabilities (Spotlight
 Vulnerabilities). Future additions may require other scopes.
@@ -96,14 +97,15 @@ https://github.com/JupiterOne/sdk/blob/main/docs/integrations/development.md
 
 The following entities are created:
 
-| Resources           | Entity `_type`                     | Entity `_class` |
-| ------------------- | ---------------------------------- | --------------- |
-| Account             | `crowdstrike_account`              | `Account`       |
-| Application         | `crowdstrike_detected_application` | `Application`   |
-| Device Sensor Agent | `crowdstrike_sensor`               | `HostAgent`     |
-| Prevention Policy   | `crowdstrike_prevention_policy`    | `ControlPolicy` |
-| Service             | `crowdstrike_endpoint_protection`  | `Service`       |
-| Vulnerability       | `crowdstrike_vulnerability`        | `Finding`       |
+| Resources             | Entity `_type`                      | Entity `_class` |
+| --------------------- | ----------------------------------- | --------------- |
+| Account               | `crowdstrike_account`               | `Account`       |
+| Application           | `crowdstrike_detected_application`  | `Application`   |
+| Device Sensor Agent   | `crowdstrike_sensor`                | `HostAgent`     |
+| Prevention Policy     | `crowdstrike_prevention_policy`     | `ControlPolicy` |
+| Service               | `crowdstrike_endpoint_protection`   | `Service`       |
+| Vulnerability         | `crowdstrike_vulnerability`         | `Finding`       |
+| Zero Trust Assessment | `crowdstrike_zero_trust_assessment` | `Assessment`    |
 
 ### Relationships
 

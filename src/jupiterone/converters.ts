@@ -10,6 +10,7 @@ import {
   Device,
   PreventionPolicy,
   Vulnerability,
+  ZeroTrustAssessment,
 } from '../crowdstrike/types';
 
 function toCapitalCase(s: string): string {
@@ -219,6 +220,45 @@ export function createApplicationEntity(source: Application) {
         open: source.sub_status.toLowerCase() === 'open',
         remediationIds: source.remediation?.ids,
         evaluationLogicId: source.evaluation_logic.id,
+      },
+    },
+  });
+}
+export function createZeroTrustAssessmentEntity(source: ZeroTrustAssessment) {
+  const unmet_os_signals = source.assessment_items.os_signals.filter(
+    (s) => s.meets_criteria == 'no',
+  );
+  const met_os_signals = source.assessment_items.os_signals.filter(
+    (s) => s.meets_criteria == 'yes',
+  );
+  const unmet_sensor_signals = source.assessment_items.sensor_signals.filter(
+    (s) => s.meets_criteria == 'no',
+  );
+  const met_sensor_signals = source.assessment_items.sensor_signals.filter(
+    (s) => s.meets_criteria == 'yes',
+  );
+  return createIntegrationEntity({
+    entityData: {
+      source,
+      assign: {
+        _class: Entities.ZERO_TRUST_ASSESSMENT._class,
+        _type: Entities.ZERO_TRUST_ASSESSMENT._type,
+        _key: `${Entities.ZERO_TRUST_ASSESSMENT._type}|${source.aid}`,
+        updatedOn: parseTimePropertyValue(source.modified_time),
+        cid: source.cid,
+        aid: source.aid,
+        product_type_description: source.product_type_desc,
+        sensor_file_status: source.sensor_file_status,
+        system_serial_number: source.system_serial_number,
+        sensor_config_score: source.assessment.sensor_config,
+        os_score: source.assessment.os,
+        overall_score: source.assessment.overall,
+        version: source.assessment.version,
+        event_platform: source.event_platform,
+        met_sensor_signals: met_sensor_signals.map((s) => s.signal_id),
+        unmet_sensor_signals: unmet_sensor_signals.map((s) => s.signal_id),
+        met_os_signals: met_os_signals.map((s) => s.signal_id),
+        unmet_os_signals: unmet_os_signals.map((s) => s.signal_id),
       },
     },
   });
