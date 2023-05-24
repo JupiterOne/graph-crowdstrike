@@ -17,8 +17,7 @@ async function fetchZeroTrustAssessments({
   await client.iterateZeroTrustAssessment({
     query: {
       limit: '250',
-      filter: 'score:<100',
-      sort: `score|desc`,
+      filter: 'score:<=100', // Score is the only filter possible. We must include a filter. Score is between [0,100]
     },
     callback: async (zeroTrustAssessments) => {
       for (const zta of zeroTrustAssessments) {
