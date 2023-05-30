@@ -27,8 +27,12 @@
 
 #### 🐛 Bug Fix
 
-- INT-7939: improvements (2) - Log request times [#148](https://github.com/JupiterOne/graph-crowdstrike/pull/148) ([@gastonyelmini](https://github.com/gastonyelmini))
-- INT-7809 GitHub actions integration deployment workflow [#149](https://github.com/JupiterOne/graph-crowdstrike/pull/149) ([@jroblesx](https://github.com/jroblesx))
+- INT-7939: improvements (2) - Log request times
+  [#148](https://github.com/JupiterOne/graph-crowdstrike/pull/148)
+  ([@gastonyelmini](https://github.com/gastonyelmini))
+- INT-7809 GitHub actions integration deployment workflow
+  [#149](https://github.com/JupiterOne/graph-crowdstrike/pull/149)
+  ([@jroblesx](https://github.com/jroblesx))
 
 #### Authors: 2
 
