@@ -15,6 +15,8 @@ export const StepIds: Record<
   | 'PREVENTION_POLICIES'
   | 'VULNERABILITIES'
   | 'DEVICE_POLICY_RELATIONSHIPS'
+  | 'ZERO_TRUST_ASSESSMENT'
+  | 'ZERO_TRUST_ASSESSMENT_SENSOR_RELATIONSHIPS'
   | 'VULN_EXPLOITS_SENSOR',
   string
 > = {
@@ -23,17 +25,22 @@ export const StepIds: Record<
   PREVENTION_POLICIES: 'fetch-prevention-policies',
   DEVICE_POLICY_RELATIONSHIPS: 'fetch-device-policies',
   VULNERABILITIES: 'fetch-vulnerabilities',
+  ZERO_TRUST_ASSESSMENT: 'fetch-zero-trust-assessments',
+  ZERO_TRUST_ASSESSMENT_SENSOR_RELATIONSHIPS: 'fetch_zta_sensor_relationships',
   VULN_EXPLOITS_SENSOR: 'build-vulnerability-expoits-sensor-relationship',
 };
-
+type CrowdstrikeStepEntityMetadata = StepEntityMetadata & {
+  disableClassMatch?: boolean;
+};
 export const Entities: Record<
   | 'ACCOUNT'
   | 'PROTECTION_SERVICE'
   | 'SENSOR'
   | 'PREVENTION_POLICY'
   | 'VULNERABILITY'
-  | 'APPLICATION',
-  StepEntityMetadata
+  | 'APPLICATION'
+  | 'ZERO_TRUST_ASSESSMENT',
+  CrowdstrikeStepEntityMetadata
 > = {
   ACCOUNT: {
     resourceName: 'Account',
@@ -66,6 +73,12 @@ export const Entities: Record<
     _type: 'crowdstrike_detected_application',
     _class: ['Application'],
   },
+  ZERO_TRUST_ASSESSMENT: {
+    resourceName: 'Zero Trust Assessment',
+    _type: 'crowdstrike_zero_trust_assessment',
+    _class: ['Assessment'],
+    disableClassMatch: true,
+  },
 };
 
 export const Relationships: Record<
@@ -74,7 +87,8 @@ export const Relationships: Record<
   | 'PREVENTION_POLICY_ENFORCES_PROTECTION_SERVICE'
   | 'SENSOR_ASSIGNED_PREVENTION_POLICY'
   | 'VULN_EXPLOITS_SENSOR'
-  | 'APP_HAS_VULN',
+  | 'APP_HAS_VULN'
+  | 'SENSOR_HAS_ZERO_TRUST_ASSESSMENT',
   StepRelationshipMetadata
 > = {
   ACCOUNT_HAS_PROTECTION_SERVICE: {
@@ -114,5 +128,11 @@ export const Relationships: Record<
     _class: RelationshipClass.HAS,
     targetType: Entities.VULNERABILITY._type,
     partial: true,
+  },
+  SENSOR_HAS_ZERO_TRUST_ASSESSMENT: {
+    _type: 'crowdstrike_sensor_has_zero_trust_assessment',
+    sourceType: Entities.SENSOR._type,
+    _class: RelationshipClass.HAS,
+    targetType: Entities.ZERO_TRUST_ASSESSMENT._type,
   },
 };
