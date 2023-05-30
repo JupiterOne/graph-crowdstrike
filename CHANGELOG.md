@@ -1,3 +1,15 @@
+# v3.6.0 (Tue May 30 2023)
+
+#### 🚀 Enhancement
+
+- INT-7920 Adding zero trust assessment [#155](https://github.com/JupiterOne/graph-crowdstrike/pull/155) (gonzaloavalosribas@Gonzalos-MacBook-Pro.local)
+
+#### Authors: 1
+
+- Gonzalo Avalos Ribas ([@Gonzalo-Avalos-Ribas](https://github.com/Gonzalo-Avalos-Ribas))
+
+---
+
 # v3.5.0 (Tue May 30 2023)
 
 #### 🚀 Enhancement
