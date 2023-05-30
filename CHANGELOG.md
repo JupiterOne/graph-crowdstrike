@@ -1,9 +1,50 @@
+# v3.5.0 (Tue May 30 2023)
+
+#### 🚀 Enhancement
+
+- INT-7939: improvements (1) - Run job states tasks in parallel and split steps [#147](https://github.com/JupiterOne/graph-crowdstrike/pull/147) ([@gastonyelmini](https://github.com/gastonyelmini))
+
+#### Authors: 1
+
+- Gaston Yelmini ([@gastonyelmini](https://github.com/gastonyelmini))
+
+---
+
+# v3.4.0 (Tue May 23 2023)
+
+#### 🚀 Enhancement
+
+- INT-7669: including release notes property [#154](https://github.com/JupiterOne/graph-crowdstrike/pull/154) ([@sl45082](https://github.com/sl45082))
+
+#### Authors: 1
+
+- bob bisantz ([@sl45082](https://github.com/sl45082))
+
+---
+
+# v3.3.0 (Tue May 23 2023)
+
+#### 🚀 Enhancement
+
+- INT-7669: adding postversion hook [#152](https://github.com/JupiterOne/graph-crowdstrike/pull/152) ([@sl45082](https://github.com/sl45082))
+- INT-7669: fix publishFolder for auto [#151](https://github.com/JupiterOne/graph-crowdstrike/pull/151) ([@sl45082](https://github.com/sl45082))
+
+#### Authors: 1
+
+- bob bisantz ([@sl45082](https://github.com/sl45082))
+
+---
+
 # v3.2.4 (Thu May 04 2023)
 
 #### 🐛 Bug Fix
 
-- INT-7939: improvements (2) - Log request times [#148](https://github.com/JupiterOne/graph-crowdstrike/pull/148) ([@gastonyelmini](https://github.com/gastonyelmini))
-- INT-7809 GitHub actions integration deployment workflow [#149](https://github.com/JupiterOne/graph-crowdstrike/pull/149) ([@jroblesx](https://github.com/jroblesx))
+- INT-7939: improvements (2) - Log request times
+  [#148](https://github.com/JupiterOne/graph-crowdstrike/pull/148)
+  ([@gastonyelmini](https://github.com/gastonyelmini))
+- INT-7809 GitHub actions integration deployment workflow
+  [#149](https://github.com/JupiterOne/graph-crowdstrike/pull/149)
+  ([@jroblesx](https://github.com/jroblesx))
 
 #### Authors: 2
 
@@ -29,16 +70,6 @@
 - Jean R. Robles G. ([@jroblesx](https://github.com/jroblesx))
 
 ---
-
-# Changelog
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to
-[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
 
 ## [3.2.1] - 2023-04-27
 

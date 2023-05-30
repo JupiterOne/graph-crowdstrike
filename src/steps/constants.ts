@@ -16,7 +16,8 @@ export const StepIds: Record<
   | 'VULNERABILITIES'
   | 'DEVICE_POLICY_RELATIONSHIPS'
   | 'ZERO_TRUST_ASSESSMENT'
-  | 'ZERO_TRUST_ASSESSMENT_SENSOR_RELATIONSHIPS',
+  | 'ZERO_TRUST_ASSESSMENT_SENSOR_RELATIONSHIPS'
+  | 'VULN_EXPLOITS_SENSOR',
   string
 > = {
   ACCOUNT: 'get-account',
@@ -26,6 +27,7 @@ export const StepIds: Record<
   VULNERABILITIES: 'fetch-vulnerabilities',
   ZERO_TRUST_ASSESSMENT: 'fetch-zero-trust-assessments',
   ZERO_TRUST_ASSESSMENT_SENSOR_RELATIONSHIPS: 'fetch_zta_sensor_relationships',
+  VULN_EXPLOITS_SENSOR: 'build-vulnerability-expoits-sensor-relationship',
 };
 type CrowdstrikeStepEntityMetadata = StepEntityMetadata & {
   disableClassMatch?: boolean;
