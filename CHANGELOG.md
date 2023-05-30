@@ -1,3 +1,15 @@
+# v3.5.0 (Tue May 30 2023)
+
+#### 🚀 Enhancement
+
+- INT-7939: improvements (1) - Run job states tasks in parallel and split steps [#147](https://github.com/JupiterOne/graph-crowdstrike/pull/147) ([@gastonyelmini](https://github.com/gastonyelmini))
+
+#### Authors: 1
+
+- Gaston Yelmini ([@gastonyelmini](https://github.com/gastonyelmini))
+
+---
+
 # v3.4.0 (Tue May 23 2023)
 
 #### 🚀 Enhancement
