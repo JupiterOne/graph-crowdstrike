@@ -42,7 +42,7 @@ async function fetchZTASensorRelationships({
       await jobState.addRelationship(
         createDirectRelationship({
           from: deviceEntity,
-          _class: Relationships.SENSOR_HAS_ZERO_TRUS_ASSESSMENT._class,
+          _class: Relationships.SENSOR_HAS_ZERO_TRUST_ASSESSMENT._class,
           to: zeroTrustEntity,
         }),
       );
@@ -61,9 +61,9 @@ export const ZTASteps: IntegrationStep<IntegrationConfig>[] = [
   },
   {
     id: StepIds.ZERO_TRUST_ASSESSMENT_SENSOR_RELATIONSHIPS,
-    name: 'Fetch Zero Trust Sensor Relationship',
+    name: 'Build Zero Trust Sensor Relationship',
     entities: [],
-    relationships: [Relationships.SENSOR_HAS_ZERO_TRUS_ASSESSMENT],
+    relationships: [Relationships.SENSOR_HAS_ZERO_TRUST_ASSESSMENT],
     dependsOn: [StepIds.DEVICES, StepIds.ZERO_TRUST_ASSESSMENT],
     executionHandler: fetchZTASensorRelationships,
   },

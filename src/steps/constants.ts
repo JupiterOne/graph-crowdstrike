@@ -86,7 +86,7 @@ export const Relationships: Record<
   | 'SENSOR_ASSIGNED_PREVENTION_POLICY'
   | 'VULN_EXPLOITS_SENSOR'
   | 'APP_HAS_VULN'
-  | 'SENSOR_HAS_ZERO_TRUS_ASSESSMENT',
+  | 'SENSOR_HAS_ZERO_TRUST_ASSESSMENT',
   StepRelationshipMetadata
 > = {
   ACCOUNT_HAS_PROTECTION_SERVICE: {
@@ -127,7 +127,7 @@ export const Relationships: Record<
     targetType: Entities.VULNERABILITY._type,
     partial: true,
   },
-  SENSOR_HAS_ZERO_TRUS_ASSESSMENT: {
+  SENSOR_HAS_ZERO_TRUST_ASSESSMENT: {
     _type: 'crowdstrike_sensor_has_zero_trust_assessment',
     sourceType: Entities.SENSOR._type,
     _class: RelationshipClass.HAS,
