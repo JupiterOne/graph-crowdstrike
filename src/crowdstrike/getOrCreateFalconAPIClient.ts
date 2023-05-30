@@ -2,7 +2,7 @@ import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 import { IntegrationConfig } from '../config';
 import { FalconAPIClient } from './FalconAPIClient';
 
-let client: FalconAPIClient;
+let client: FalconAPIClient | undefined;
 
 export default function getOrCreateFalconAPIClient(
   config: IntegrationConfig,
@@ -15,4 +15,8 @@ export default function getOrCreateFalconAPIClient(
     });
   }
   return client;
+}
+
+export function resetFalconAPIClient() {
+  client = undefined;
 }

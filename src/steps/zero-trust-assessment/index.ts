@@ -1,17 +1,19 @@
 import {
   IntegrationStep,
   IntegrationStepExecutionContext,
+  createDirectRelationship,
+  getRawData,
 } from '@jupiterone/integration-sdk-core';
 import { IntegrationConfig } from '../../config';
-import { Entities, StepIds } from '../constants';
+import { Entities, Relationships, StepIds } from '../constants';
 import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
 import { createZeroTrustAssessmentEntity } from '../../jupiterone/converters';
+import { ZeroTrustAssessment } from '../../crowdstrike/types';
 
 async function fetchZeroTrustAssessments({
   instance,
   jobState,
   logger,
-  executionHistory,
 }: IntegrationStepExecutionContext<IntegrationConfig>): Promise<void> {
   const client = getOrCreateFalconAPIClient(instance.config, logger);
   await client.iterateZeroTrustAssessment({
@@ -26,6 +28,28 @@ async function fetchZeroTrustAssessments({
     },
   });
 }
+
+async function fetchZTASensorRelationships({
+  jobState,
+}: IntegrationStepExecutionContext<IntegrationConfig>): Promise<void> {
+  await jobState.iterateEntities(
+    { _type: Entities.ZERO_TRUST_ASSESSMENT._type },
+    async (zeroTrustEntity) => {
+      const zta = getRawData<ZeroTrustAssessment>(zeroTrustEntity);
+      if (!zta) return;
+      const deviceEntity = await jobState.findEntity(zta.aid);
+      if (!deviceEntity) return;
+      await jobState.addRelationship(
+        createDirectRelationship({
+          from: deviceEntity,
+          _class: Relationships.SENSOR_HAS_ZERO_TRUS_ASSESSMENT._class,
+          to: zeroTrustEntity,
+        }),
+      );
+    },
+  );
+}
+
 export const ZTASteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: StepIds.ZERO_TRUST_ASSESSMENT,
@@ -34,5 +58,13 @@ export const ZTASteps: IntegrationStep<IntegrationConfig>[] = [
     relationships: [],
     dependsOn: [],
     executionHandler: fetchZeroTrustAssessments,
+  },
+  {
+    id: StepIds.ZERO_TRUST_ASSESSMENT_SENSOR_RELATIONSHIPS,
+    name: 'Fetch Zero Trust Sensor Relationship',
+    entities: [],
+    relationships: [Relationships.SENSOR_HAS_ZERO_TRUS_ASSESSMENT],
+    dependsOn: [StepIds.DEVICES, StepIds.ZERO_TRUST_ASSESSMENT],
+    executionHandler: fetchZTASensorRelationships,
   },
 ];

@@ -111,14 +111,15 @@ The following entities are created:
 
 The following relationships are created:
 
-| Source Entity `_type`              | Relationship `_class` | Target Entity `_type`             |
-| ---------------------------------- | --------------------- | --------------------------------- |
-| `crowdstrike_account`              | **HAS**               | `crowdstrike_endpoint_protection` |
-| `crowdstrike_account`              | **HAS**               | `crowdstrike_sensor`              |
-| `crowdstrike_detected_application` | **HAS**               | `crowdstrike_vulnerability`       |
-| `crowdstrike_prevention_policy`    | **ENFORCES**          | `crowdstrike_endpoint_protection` |
-| `crowdstrike_sensor`               | **ASSIGNED**          | `crowdstrike_prevention_policy`   |
-| `crowdstrike_vulnerability`        | **EXPLOITS**          | `crowdstrike_sensor`              |
+| Source Entity `_type`              | Relationship `_class` | Target Entity `_type`               |
+| ---------------------------------- | --------------------- | ----------------------------------- |
+| `crowdstrike_account`              | **HAS**               | `crowdstrike_endpoint_protection`   |
+| `crowdstrike_account`              | **HAS**               | `crowdstrike_sensor`                |
+| `crowdstrike_detected_application` | **HAS**               | `crowdstrike_vulnerability`         |
+| `crowdstrike_prevention_policy`    | **ENFORCES**          | `crowdstrike_endpoint_protection`   |
+| `crowdstrike_sensor`               | **ASSIGNED**          | `crowdstrike_prevention_policy`     |
+| `crowdstrike_sensor`               | **HAS**               | `crowdstrike_zero_trust_assessment` |
+| `crowdstrike_vulnerability`        | **EXPLOITS**          | `crowdstrike_sensor`                |
 
 <!--
 ********************************************************************************
