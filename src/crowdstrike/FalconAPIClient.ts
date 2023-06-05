@@ -245,16 +245,19 @@ export class FalconAPIClient {
    * https://falconpy.io/Service-Collections/Zero-Trust-Assessment.html#getassessmentv1
    */
   private async fetchZTADetails(ids: string[]): Promise<ZeroTrustAssessment[]> {
+    const searchParams = new URLSearchParams();
+    for (const id of ids) {
+      searchParams.append('ids', id);
+    }
+
     const response = await this.executeAPIRequestWithRetries<
       ResourcesResponse<any>
     >(
-      `https://api.${
-        this.credentials.availabilityZone
-      }crowdstrike.com/zero-trust-assessment/entities/assessments/v1?ids=${ids.toString()}`,
+      `https://api.${this.credentials.availabilityZone}crowdstrike.com/zero-trust-assessment/entities/assessments/v1?` +
+        searchParams,
       {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           accept: 'application/json',
         },
       },

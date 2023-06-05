@@ -23,7 +23,11 @@ async function fetchZeroTrustAssessments({
     },
     callback: async (zeroTrustAssessments) => {
       for (const zta of zeroTrustAssessments) {
-        await jobState.addEntity(createZeroTrustAssessmentEntity(zta));
+        if (
+          !jobState.hasKey(`${Entities.ZERO_TRUST_ASSESSMENT._type}|${zta.aid}`)
+        ) {
+          await jobState.addEntity(createZeroTrustAssessmentEntity(zta));
+        }
       }
     },
   });
