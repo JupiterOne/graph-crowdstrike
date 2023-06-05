@@ -27,6 +27,8 @@ async function fetchZeroTrustAssessments({
           !jobState.hasKey(`${Entities.ZERO_TRUST_ASSESSMENT._type}|${zta.aid}`)
         ) {
           await jobState.addEntity(createZeroTrustAssessmentEntity(zta));
+        } else {
+          logger.warn({ zta }, `Duplicated key detected.`);
         }
       }
     },
