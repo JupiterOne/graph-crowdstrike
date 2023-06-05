@@ -1,3 +1,15 @@
+# v3.6.1 (Mon Jun 05 2023)
+
+#### 🐛 Bug Fix
+
+- Fixes to the logic when multiple aid exist [#156](https://github.com/JupiterOne/graph-crowdstrike/pull/156) (gonzaloavalosribas@Gonzalos-MacBook-Pro.local)
+
+#### Authors: 1
+
+- Gonzalo Avalos Ribas ([@Gonzalo-Avalos-Ribas](https://github.com/Gonzalo-Avalos-Ribas))
+
+---
+
 # v3.6.0 (Tue May 30 2023)
 
 #### 🚀 Enhancement
