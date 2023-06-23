@@ -7,6 +7,7 @@ import { Entities } from '../steps/constants';
 
 import {
   Application,
+  DetectedApplication,
   Device,
   PreventionPolicy,
   Vulnerability,
@@ -208,13 +209,13 @@ export function createVulnerabilityEntity(source: Vulnerability) {
   });
 }
 
-export function createApplicationEntity(source: Application) {
+export function createDetectedApplicationEntity(source: DetectedApplication) {
   return createIntegrationEntity({
     entityData: {
       source,
       assign: {
-        _class: Entities.APPLICATION._class,
-        _type: Entities.APPLICATION._type,
+        _class: Entities.DETECTED_APPLICATION._class,
+        _type: Entities.DETECTED_APPLICATION._type,
         _key: source.product_name_version.toLowerCase().replace(/\s/g, '-'),
         name: source.product_name_version,
         open: source.sub_status.toLowerCase() === 'open',
@@ -224,6 +225,54 @@ export function createApplicationEntity(source: Application) {
     },
   });
 }
+
+export function createApplicationEntity(source: Application) {
+  return createIntegrationEntity({
+    entityData: {
+      source,
+      assign: {
+        _class: Entities.APPLICATION._class,
+        _type: Entities.APPLICATION._type,
+        _key: source.id,
+        name: source.name || source.name_vendor,
+        id: source.id,
+        vendor: source.vendor,
+        version: source.version,
+        nameVendor: source.name_vendor,
+        nameVendorVersion: source.name_vendor,
+        versioningScheme: source.versioning_scheme,
+        architectures: source.architectures,
+        isSuspicious: source.is_suspicious,
+        isNormalized: source.is_normalized,
+        installationPaths: source.installation_paths?.map(
+          (installationPath) => installationPath,
+        ),
+        installationTimestamp: parseTimePropertyValue(
+          source.installation_timestamp,
+        ),
+        firstSeenTimestamp: parseTimePropertyValue(source.first_seen_timestamp),
+        lastUpdatedTimestamp: parseTimePropertyValue(
+          source.last_updated_timestamp,
+        ),
+        'host.id': source?.host?.id,
+        'host.aid': source?.host?.aid,
+        'host.country': source?.host?.country,
+        'host.platformName': source?.host?.platform_name,
+        'host.osVersion': source?.host?.os_version,
+        'host.kernelVersion': source?.host?.kernel_version,
+        'host.productTypeDesc': source?.host?.product_type_desc,
+        'host.systemManufacturer': source?.host?.system_manufacturer,
+        'host.agentVersion': source?.host?.agent_version,
+        'host.externalIp': source?.host?.external_ip,
+        'host.hostname': source?.host?.hostname,
+        'host.currentMacAddress': source?.host?.current_mac_address,
+        'host.currentNetworkPrefix': source?.host?.current_network_prefix,
+        'host.internetExposure': source?.host?.internet_exposure,
+      },
+    },
+  });
+}
+
 export function createZeroTrustAssessmentEntity(source: ZeroTrustAssessment) {
   const unmet_os_signals = source.assessment_items.os_signals.filter(
     (s) => s.meets_criteria == 'no',

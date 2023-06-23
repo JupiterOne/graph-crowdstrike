@@ -5,6 +5,7 @@ import { URLSearchParams } from 'url';
 
 import {
   Application,
+  ApplicationIdentifier,
   Device,
   DeviceIdentifier,
   OAuth2ClientCredentials,
@@ -187,6 +188,7 @@ export class FalconAPIClient {
       resourcePath: '/zero-trust-assessment/queries/assessments/v1',
     });
   }
+
   /**
    * Iterates the known device applications, providing pages
    * of the collection based on the provided query to the provided callback.
@@ -198,10 +200,14 @@ export class FalconAPIClient {
     callback: FalconAPIResourceIterationCallback<Application>;
     query?: QueryParams;
   }): Promise<void> {
-    return this.paginateResources<Application>({
-      callback: input.callback,
+    return this.paginateResources<ApplicationIdentifier>({
+      callback: async (appsIds) => {
+        if (appsIds.length) {
+          return input.callback(await this.fetchApplications(appsIds));
+        }
+      },
       query: input.query,
-      resourcePath: '/discover/entities/applications/v1',
+      resourcePath: '/discover/queries/applications/v1',
     });
   }
 
@@ -259,6 +265,7 @@ export class FalconAPIClient {
 
     return response.resources;
   }
+
   /***
    * ZTA details
    * https://falconpy.io/Service-Collections/Zero-Trust-Assessment.html#getassessmentv1
@@ -270,7 +277,7 @@ export class FalconAPIClient {
     }
 
     const response = await this.executeAPIRequestWithRetries<
-      ResourcesResponse<any>
+      ResourcesResponse<ZeroTrustAssessment>
     >(
       `https://api.${this.credentials.availabilityZone}crowdstrike.com/zero-trust-assessment/entities/assessments/v1?` +
         searchParams,
@@ -284,6 +291,31 @@ export class FalconAPIClient {
 
     return response.resources;
   }
+
+  /**
+   * Discover Service - applications.
+   * Swagger: https://assets.falcon.us-2.crowdstrike.com/support/api/swagger-us2.html#/discover/get-applications
+   */
+  private async fetchApplications(ids: string[]): Promise<Application[]> {
+    const response = await this.executeAPIRequestWithRetries<
+      ResourcesResponse<Application>
+    >(
+      `https://api.${
+        this.credentials.availabilityZone
+      }crowdstrike.com/discover/entities/applications/v1?ids=${ids.join(
+        '&ids=',
+      )}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          accept: 'application/json',
+        },
+      },
+    );
+    return response.resources;
+  }
+
   private async paginateResources<ResourceType>({
     callback,
     resourcePath,
@@ -340,8 +372,14 @@ export class FalconAPIClient {
         'pagination response details',
       );
 
-      paginationParams = response.meta.pagination as PaginationMeta;
       seen += response.resources.length;
+
+      paginationParams = {
+        ...response.meta.pagination,
+        offset:
+          response.meta.pagination?.offset !== undefined ? seen : undefined,
+      } as PaginationMeta;
+
       total = paginationParams.total!;
       finished = seen === 0 || seen >= total;
 
