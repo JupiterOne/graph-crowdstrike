@@ -176,7 +176,7 @@ export class FalconAPIClient {
       callback: async (ztaIdScores) => {
         let ids: string[] = [];
         if (ztaIdScores.length) ids = ztaIdScores.map((score) => score.aid);
-        const chunkSize = 40; // This is not strictly necessary, but should make it faster, since we would have x1/40 calls
+        const chunkSize = 25; // This is not strictly necessary, but should make it faster, since we would have x1/40 calls
         for (let i = 0; i < ids.length; i += chunkSize) {
           await input.callback(
             await this.fetchZTADetails(ids.slice(i, i + chunkSize)),
