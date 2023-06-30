@@ -1,3 +1,15 @@
+# v3.6.3 (Fri Jun 30 2023)
+
+#### 🐛 Bug Fix
+
+- Added log of body for when 400 happens [#159](https://github.com/JupiterOne/graph-crowdstrike/pull/159) (gonzaloavalosribas@Gonzalos-MacBook-Pro.local)
+
+#### Authors: 1
+
+- Gonzalo Avalos Ribas ([@Gonzalo-Avalos-Ribas](https://github.com/Gonzalo-Avalos-Ribas))
+
+---
+
 # v3.6.2 (Tue Jun 27 2023)
 
 #### 🐛 Bug Fix
