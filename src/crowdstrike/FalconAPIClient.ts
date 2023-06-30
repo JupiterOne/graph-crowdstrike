@@ -460,7 +460,15 @@ export class FalconAPIClient {
           endpoint: requestUrl,
         });
       }
-
+      if (response.status == 400) {
+        const body = response.body;
+        this.logger.info(
+          {
+            body,
+          },
+          '400 error response',
+        );
+      }
       throw new IntegrationProviderAPIError({
         status: response.status,
         statusText: response.statusText,
