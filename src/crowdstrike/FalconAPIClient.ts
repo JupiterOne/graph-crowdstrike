@@ -461,7 +461,7 @@ export class FalconAPIClient {
         });
       }
       if (response.status == 400) {
-        const body = response.body;
+        const body = await response.text();
         this.logger.info(
           {
             body,
