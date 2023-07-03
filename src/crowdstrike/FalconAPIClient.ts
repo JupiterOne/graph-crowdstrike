@@ -566,7 +566,7 @@ export class FalconAPIClient {
 }
 
 function isValidToken(token: OAuth2Token): boolean {
-  return token && token.expiresAt > getUnixTimeNow();
+  return token && token.expiresAt > getUnixTimeNow() + 60; // Will the token be valid in 60 seconds?
 }
 
 function toQueryString(
