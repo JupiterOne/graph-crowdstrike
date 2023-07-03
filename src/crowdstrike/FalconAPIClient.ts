@@ -401,12 +401,13 @@ export class FalconAPIClient {
     requestUrl: string,
     init: RequestInit,
   ): Promise<T> {
-    await this.authenticate();
+
 
     /**
      * This is the logic to be retried in the case of an error.
      */
     const requestAttempt = async () => {
+      await this.authenticate();
       const startTime = Date.now();
       const response = await fetch(requestUrl, {
         ...init,
@@ -431,7 +432,6 @@ export class FalconAPIClient {
           ? Number(response.headers.get('X-RateLimit-RetryAfter'))
           : undefined,
       };
-
       // Manually handle redirects.
       if ([301, 302, 308].includes(response.status)) {
         return this.handleRedirects(response, (redirectLocationUrl) => {
@@ -459,15 +459,6 @@ export class FalconAPIClient {
           statusText: response.statusText,
           endpoint: requestUrl,
         });
-      }
-      if (response.status == 400) {
-        const body = await response.text();
-        this.logger.info(
-          {
-            body,
-          },
-          '400 error response',
-        );
       }
       throw new IntegrationProviderAPIError({
         status: response.status,
