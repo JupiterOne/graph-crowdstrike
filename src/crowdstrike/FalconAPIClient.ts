@@ -401,8 +401,6 @@ export class FalconAPIClient {
     requestUrl: string,
     init: RequestInit,
   ): Promise<T> {
-
-
     /**
      * This is the logic to be retried in the case of an error.
      */
