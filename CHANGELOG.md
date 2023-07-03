@@ -1,3 +1,15 @@
+# v3.6.4 (Mon Jul 03 2023)
+
+#### 🐛 Bug Fix
+
+- Changing when we authenticate [#160](https://github.com/JupiterOne/graph-crowdstrike/pull/160) (gonzaloavalosribas@Gonzalos-MacBook-Pro.local)
+
+#### Authors: 1
+
+- Gonzalo Avalos Ribas ([@Gonzalo-Avalos-Ribas](https://github.com/Gonzalo-Avalos-Ribas))
+
+---
+
 # v3.6.3 (Fri Jun 30 2023)
 
 #### 🐛 Bug Fix
