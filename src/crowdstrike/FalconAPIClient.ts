@@ -53,6 +53,7 @@ export const DEFAULT_ATTEMPT_OPTIONS = {
   timeout: 180_000,
   factor: 2,
 };
+export const BUFFER_RE_AUTHETICATION_TIME = 60; //seconds
 
 export type FalconAPIClientConfig = {
   credentials: OAuth2ClientCredentials;
@@ -566,7 +567,9 @@ export class FalconAPIClient {
 }
 
 function isValidToken(token: OAuth2Token): boolean {
-  return token && token.expiresAt > getUnixTimeNow() + 60; // Will the token be valid in 60 seconds?
+  return (
+    token && token.expiresAt > getUnixTimeNow() + BUFFER_RE_AUTHETICATION_TIME
+  ); // Will the token be valid in [number] seconds?
 }
 
 function toQueryString(
