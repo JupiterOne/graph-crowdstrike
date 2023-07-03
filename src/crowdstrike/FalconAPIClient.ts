@@ -53,6 +53,7 @@ export const DEFAULT_ATTEMPT_OPTIONS = {
   timeout: 180_000,
   factor: 2,
 };
+export const BUFFER_RE_AUTHETICATION_TIME = 60; //seconds
 
 export type FalconAPIClientConfig = {
   credentials: OAuth2ClientCredentials;
@@ -401,12 +402,11 @@ export class FalconAPIClient {
     requestUrl: string,
     init: RequestInit,
   ): Promise<T> {
-    await this.authenticate();
-
     /**
      * This is the logic to be retried in the case of an error.
      */
     const requestAttempt = async () => {
+      await this.authenticate();
       const startTime = Date.now();
       const response = await fetch(requestUrl, {
         ...init,
@@ -431,7 +431,6 @@ export class FalconAPIClient {
           ? Number(response.headers.get('X-RateLimit-RetryAfter'))
           : undefined,
       };
-
       // Manually handle redirects.
       if ([301, 302, 308].includes(response.status)) {
         return this.handleRedirects(response, (redirectLocationUrl) => {
@@ -459,15 +458,6 @@ export class FalconAPIClient {
           statusText: response.statusText,
           endpoint: requestUrl,
         });
-      }
-      if (response.status == 400) {
-        const body = await response.text();
-        this.logger.info(
-          {
-            body,
-          },
-          '400 error response',
-        );
       }
       throw new IntegrationProviderAPIError({
         status: response.status,
@@ -577,7 +567,9 @@ export class FalconAPIClient {
 }
 
 function isValidToken(token: OAuth2Token): boolean {
-  return token && token.expiresAt > getUnixTimeNow();
+  return (
+    token && token.expiresAt > getUnixTimeNow() + BUFFER_RE_AUTHETICATION_TIME
+  ); // Will the token be valid in [number] seconds?
 }
 
 function toQueryString(
