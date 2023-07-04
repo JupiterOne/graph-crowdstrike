@@ -27,6 +27,7 @@ import {
 } from '@jupiterone/integration-sdk-core';
 import { URL } from 'url';
 import { IFalconApiClientQueryBuilder } from './FalconApiClientQueryBuilder';
+import { Total } from './Total';
 
 function getUnixTimeNow() {
   return Date.now() / 1000;
@@ -75,7 +76,7 @@ export class FalconAPIClient {
   private rateLimitState: RateLimitState;
   private attemptOptions: AttemptOptions;
   private queryBuilder: IFalconApiClientQueryBuilder;
-  private totalCache: any = {};
+  private total: Total;
 
   constructor({
     credentials,
@@ -93,6 +94,7 @@ export class FalconAPIClient {
     this.logger = logger;
     this.attemptOptions = attemptOptions ?? DEFAULT_ATTEMPT_OPTIONS;
     this.queryBuilder = queryBuilder;
+    this.total = new Total();
   }
 
   public async authenticate(): Promise<OAuth2Token> {
@@ -336,11 +338,15 @@ export class FalconAPIClient {
       paginationParams = response.meta.pagination as PaginationMeta;
       seen += response.resources.length;
 
-      if (this.totalCache[url] === undefined) {
-        this.totalCache[url] = paginationParams.total!;
-      }
+      const baseUrl = this.queryBuilder.buildResourcePathUrl(
+        this.credentials.availabilityZone,
+        resourcePath,
+      );
 
-      total = this.totalCache[url];
+      this.total.setValue(baseUrl, paginationParams?.total);
+
+      total = this.total.getValue(baseUrl);
+
       finished = seen === 0 || seen >= total;
 
       this.logger.info(
