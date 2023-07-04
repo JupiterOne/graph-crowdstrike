@@ -26,6 +26,7 @@ import {
   IntegrationProviderAuthorizationError,
 } from '@jupiterone/integration-sdk-core';
 import { URL } from 'url';
+import { IFalconApiClientQueryBuilder } from './FalconApiClientQueryBuilder';
 
 function getUnixTimeNow() {
   return Date.now() / 1000;
@@ -59,6 +60,7 @@ export type FalconAPIClientConfig = {
   credentials: OAuth2ClientCredentials;
   logger: IntegrationLogger;
   attemptOptions?: AttemptOptions;
+  queryBuilder: IFalconApiClientQueryBuilder;
 };
 
 export type FalconAPIResourceIterationCallback<T> = (
@@ -72,8 +74,15 @@ export class FalconAPIClient {
   private readonly rateLimitConfig: RateLimitConfig = DEFAULT_RATE_LIMIT_CONFIG;
   private rateLimitState: RateLimitState;
   private attemptOptions: AttemptOptions;
+  private queryBuilder: IFalconApiClientQueryBuilder;
+  private totalCache: any = {};
 
-  constructor({ credentials, logger, attemptOptions }: FalconAPIClientConfig) {
+  constructor({
+    credentials,
+    logger,
+    attemptOptions,
+    queryBuilder,
+  }: FalconAPIClientConfig) {
     this.credentials = credentials;
 
     // If an availability zone is specified, prepare it for inclusion in the URL
@@ -83,6 +92,7 @@ export class FalconAPIClient {
 
     this.logger = logger;
     this.attemptOptions = attemptOptions ?? DEFAULT_ATTEMPT_OPTIONS;
+    this.queryBuilder = queryBuilder;
   }
 
   public async authenticate(): Promise<OAuth2Token> {
@@ -266,6 +276,7 @@ export class FalconAPIClient {
 
     return response.resources;
   }
+
   private async paginateResources<ResourceType>({
     callback,
     resourcePath,
@@ -282,12 +293,12 @@ export class FalconAPIClient {
     let paginationParams: PaginationParams | undefined = undefined;
 
     do {
-      const url = `https://api.${
-        this.credentials.availabilityZone
-      }crowdstrike.com${resourcePath}?${toQueryString(
+      const url = this.queryBuilder.buildResourcePathUrl(
+        this.credentials.availabilityZone,
+        resourcePath,
         paginationParams,
         query,
-      )}`;
+      );
 
       this.logger.info({ requestUrl: url, paginationParams });
       const response: ResourcesResponse<ResourceType> =
@@ -324,7 +335,12 @@ export class FalconAPIClient {
 
       paginationParams = response.meta.pagination as PaginationMeta;
       seen += response.resources.length;
-      total = paginationParams.total!;
+
+      if (this.totalCache[url] === undefined) {
+        this.totalCache[url] = paginationParams.total!;
+      }
+
+      total = this.totalCache[url];
       finished = seen === 0 || seen >= total;
 
       this.logger.info(
@@ -570,35 +586,4 @@ function isValidToken(token: OAuth2Token): boolean {
   return (
     token && token.expiresAt > getUnixTimeNow() + BUFFER_RE_AUTHETICATION_TIME
   ); // Will the token be valid in [number] seconds?
-}
-
-function toQueryString(
-  pagination?: {
-    limit?: number;
-    offset?: number | string;
-    after?: number | string;
-  },
-  queryParams?: object,
-): URLSearchParams {
-  const params = new URLSearchParams();
-
-  if (queryParams) {
-    for (const e of Object.entries(queryParams)) {
-      params.append(e[0], String(e[1]));
-    }
-  }
-
-  if (pagination) {
-    if (typeof pagination.limit === 'number') {
-      params.set('limit', String(pagination.limit));
-    }
-    if (pagination.offset !== undefined) {
-      params.set('offset', String(pagination.offset));
-    }
-    if (pagination.after !== undefined) {
-      params.set('after', String(pagination.after));
-    }
-  }
-
-  return params;
 }

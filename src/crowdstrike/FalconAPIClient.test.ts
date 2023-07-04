@@ -7,6 +7,7 @@ import {
   DEFAULT_RATE_LIMIT_CONFIG,
   FalconAPIClient,
 } from './FalconAPIClient';
+import { FalconApiClientQueryBuilder } from './FalconApiClientQueryBuilder';
 
 let recording: Recording;
 
@@ -14,6 +15,7 @@ const createClient = (): FalconAPIClient => {
   return new FalconAPIClient({
     credentials: config,
     logger: createMockIntegrationLogger(),
+    queryBuilder: new FalconApiClientQueryBuilder(),
     attemptOptions: {
       ...DEFAULT_ATTEMPT_OPTIONS,
       delay: 2,
@@ -111,6 +113,7 @@ describe('authenticate', () => {
         clientSecret: 'test-error-handling',
       },
       logger: createMockIntegrationLogger(),
+      queryBuilder: new FalconApiClientQueryBuilder(),
     });
     try {
       await client.authenticate();
@@ -254,6 +257,7 @@ describe('executeAPIRequest', () => {
     const client = new FalconAPIClient({
       credentials: config,
       logger: createMockIntegrationLogger(),
+      queryBuilder: new FalconApiClientQueryBuilder(),
     });
 
     const startTime = Date.now();
@@ -611,6 +615,7 @@ describe('test availability zones', () => {
     const client = new FalconAPIClient({
       credentials: availabilityZoneConfig,
       logger: createMockIntegrationLogger(),
+      queryBuilder: new FalconApiClientQueryBuilder(),
       attemptOptions: {
         ...DEFAULT_ATTEMPT_OPTIONS,
         delay: 2,
