@@ -1,17 +1,21 @@
 import { Headers } from 'node-fetch';
 import { CrowdStrikeApiGateway } from './CrowdStrikeApiGateway';
 import * as sinon from 'sinon';
+import { config } from '../../test/config';
 
 const noop = () => {
   // does nothing
 };
 
 describe('CrowdStrikeApiGateway', () => {
-  const apiGateway = new CrowdStrikeApiGateway();
-
   describe('handleRedirects', () => {
     describe('given a response with the crowdstrike api domain', () => {
       it('should invoke the handler', () => {
+        const logger = {
+          warn: noop,
+          info: noop,
+        };
+        const apiGateway = new CrowdStrikeApiGateway(config, logger as any);
         const headers = new Headers();
         headers.set('location', '/');
 
@@ -20,16 +24,11 @@ describe('CrowdStrikeApiGateway', () => {
           url: 'https://api.crowdstrike.com',
         };
 
-        const logger = {
-          warn: noop,
-          info: noop,
-        };
-
         const handler = (value) => {
           expect(value.href).toBe('https://api.crowdstrike.com/');
         };
 
-        apiGateway.handleRedirects(response, handler, logger);
+        apiGateway.handleRedirects(response, handler);
       });
     });
 
@@ -53,9 +52,11 @@ describe('CrowdStrikeApiGateway', () => {
           info: noop,
         };
 
+        const apiGateway = new CrowdStrikeApiGateway(config, logger as any);
+
         const handler = noop;
 
-        apiGateway.handleRedirects(response, handler, logger);
+        apiGateway.handleRedirects(response, handler);
       });
     });
   });
@@ -63,23 +64,22 @@ describe('CrowdStrikeApiGateway', () => {
   describe('handle429Error', () => {
     describe('given a limitRemaining less than the reserveLimit', () => {
       it('should wait for the cooldwon period', async () => {
-        const apiGateway = new CrowdStrikeApiGateway();
-
         const logger = {
           warn: noop,
           info: sinon.spy(),
         };
+        const apiGateway = new CrowdStrikeApiGateway(config, logger as any);
 
-        await apiGateway.handle429Error(
-          { retryAfter: 100, limitRemaining: 10, perMinuteLimit: 10 },
-          { cooldownPeriod: 100, reserveLimit: 100 },
-          logger as any,
-        );
+        await apiGateway.handle429Error({
+          retryAfter: 100,
+          limitRemaining: 10,
+          perMinuteLimit: 10,
+        });
 
         expect(logger.info.callCount).toBe(2);
         expect(logger.info.firstCall.args[0].rateLimitConfig).toEqual({
-          cooldownPeriod: 100,
-          reserveLimit: 100,
+          cooldownPeriod: 1000,
+          reserveLimit: 30,
         });
         expect(logger.info.firstCall.args[0].rateLimitState).toEqual({
           limitRemaining: 10,
@@ -92,8 +92,8 @@ describe('CrowdStrikeApiGateway', () => {
 
         expect(logger.info.secondCall.args[0]).toEqual({
           rateLimitConfig: {
-            cooldownPeriod: 100,
-            reserveLimit: 100,
+            cooldownPeriod: 1000,
+            reserveLimit: 30,
           },
           rateLimitState: {
             limitRemaining: 10,

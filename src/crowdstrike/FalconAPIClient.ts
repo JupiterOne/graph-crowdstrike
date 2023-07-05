@@ -12,7 +12,6 @@ import {
   PaginationParams,
   PreventionPolicy,
   QueryParams,
-  RateLimitConfig,
   RateLimitState,
   ResourcesResponse,
   Vulnerability,
@@ -28,15 +27,6 @@ import {
 import { IFalconApiClientQueryBuilder } from './FalconApiClientQueryBuilder';
 import { Total } from './Total';
 import { CrowdStrikeApiGateway } from './CrowdStrikeApiGateway';
-
-function getUnixTimeNow() {
-  return Date.now() / 1000;
-}
-
-export const DEFAULT_RATE_LIMIT_CONFIG: RateLimitConfig = {
-  reserveLimit: 30,
-  cooldownPeriod: 1000,
-};
 
 type AttemptOptions = {
   maxAttempts: number;
@@ -67,9 +57,7 @@ export type FalconAPIResourceIterationCallback<T> = (
 
 export class FalconAPIClient {
   private credentials: OAuth2ClientCredentials;
-  private token: OAuth2Token | undefined;
   private logger: IntegrationLogger;
-  private readonly rateLimitConfig: RateLimitConfig = DEFAULT_RATE_LIMIT_CONFIG;
   private rateLimitState: RateLimitState;
   private attemptOptions: AttemptOptions;
   private queryBuilder: IFalconApiClientQueryBuilder;
@@ -98,10 +86,7 @@ export class FalconAPIClient {
   }
 
   public async authenticate(): Promise<OAuth2Token> {
-    if (!this.token || !isValidToken(this.token)) {
-      this.token = await this.requestOAuth2Token();
-    }
-    return this.token;
+    return this.crowdStrikeApiGateway.authenticate();
   }
 
   /**
@@ -356,70 +341,6 @@ export class FalconAPIClient {
     } while (!finished);
   }
 
-  private async requestOAuth2Token(): Promise<OAuth2Token> {
-    this.logger.info('Fetching new access token');
-
-    const params = new URLSearchParams();
-    params.append('client_id', this.credentials.clientId);
-    params.append('client_secret', this.credentials.clientSecret);
-
-    const authRequestAttempt = async () => {
-      const endpoint = `https://api.${this.credentials.availabilityZone}crowdstrike.com/oauth2/token`;
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          accept: 'application/json',
-        },
-        body: params,
-      });
-
-      if (response.ok) {
-        return response.json();
-      } else {
-        throw new IntegrationProviderAPIError({
-          status: response.status,
-          statusText: response.statusText,
-          endpoint,
-        });
-      }
-    };
-
-    const response = await retry(authRequestAttempt, {
-      ...this.attemptOptions,
-      handleError: (error, attemptContext) => {
-        if (error.status === 400) {
-          attemptContext.abort();
-          return;
-        }
-        if (error.status === 403) {
-          throw new IntegrationProviderAuthenticationError({
-            status: error.status,
-            statusText: error.statusText,
-            endpoint: error.endpoint,
-          });
-        }
-
-        this.logger.warn(
-          { attemptContext, error },
-          `Hit a possibly recoverable error when authenticating. Waiting before trying again.`,
-        );
-      },
-    });
-
-    const expiresAt = getUnixTimeNow() + response.expires_in;
-    this.logger.info(
-      {
-        expiresAt,
-        expires_in: response.expires_in,
-      },
-      'Fetched new access token',
-    );
-    return {
-      token: response.access_token,
-      expiresAt,
-    };
-  }
-
   private async executeAPIRequestWithRetries<T>(
     requestUrl: string,
     init: RequestInit,
@@ -428,13 +349,13 @@ export class FalconAPIClient {
      * This is the logic to be retried in the case of an error.
      */
     const requestAttempt = async () => {
-      await this.authenticate();
+      const token = await this.crowdStrikeApiGateway.authenticate();
       const startTime = Date.now();
       const response = await fetch(requestUrl, {
         ...init,
         headers: {
           ...init.headers,
-          authorization: `bearer ${this.token!.token}`,
+          authorization: `bearer ${token!.token}`,
         },
         redirect: 'manual',
       });
@@ -463,7 +384,6 @@ export class FalconAPIClient {
               init,
             );
           },
-          this.logger,
         );
       }
 
@@ -505,7 +425,7 @@ export class FalconAPIClient {
             attemptContext.abort();
             return;
           } else {
-            await this.authenticate();
+            await this.crowdStrikeApiGateway.authenticate();
           }
         }
         if (error.status === 403) {
@@ -513,11 +433,7 @@ export class FalconAPIClient {
           return;
         }
         if (error.status === 429) {
-          await this.crowdStrikeApiGateway.handle429Error(
-            this.rateLimitState,
-            this.rateLimitConfig,
-            this.logger,
-          );
+          await this.crowdStrikeApiGateway.handle429Error(this.rateLimitState);
         }
 
         this.logger.warn(
@@ -527,10 +443,4 @@ export class FalconAPIClient {
       },
     });
   }
-}
-
-function isValidToken(token: OAuth2Token): boolean {
-  return (
-    token && token.expiresAt > getUnixTimeNow() + BUFFER_RE_AUTHETICATION_TIME
-  ); // Will the token be valid in [number] seconds?
 }

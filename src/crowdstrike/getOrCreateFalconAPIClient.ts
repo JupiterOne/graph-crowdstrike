@@ -15,7 +15,7 @@ export default function getOrCreateFalconAPIClient(
       credentials: config,
       logger,
       queryBuilder: new FalconApiClientQueryBuilder(),
-      crowdStrikeApiGateway: new CrowdStrikeApiGateway(),
+      crowdStrikeApiGateway: new CrowdStrikeApiGateway(config, logger),
     });
   }
   return client;
