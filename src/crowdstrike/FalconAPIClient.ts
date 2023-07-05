@@ -1,6 +1,3 @@
-import fetch, { RequestInit } from 'node-fetch';
-import { retry } from '@lifeomic/attempt';
-
 import { URLSearchParams } from 'url';
 
 import {
@@ -11,28 +8,15 @@ import {
   PaginationParams,
   PreventionPolicy,
   QueryParams,
-  RateLimitState,
   ResourcesResponse,
   Vulnerability,
   ZTA_Score,
   ZeroTrustAssessment,
 } from './types';
-import {
-  IntegrationLogger,
-  IntegrationProviderAPIError,
-  IntegrationProviderAuthenticationError,
-  IntegrationProviderAuthorizationError,
-} from '@jupiterone/integration-sdk-core';
+import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 import { IFalconApiClientQueryBuilder } from './FalconApiClientQueryBuilder';
 import { Total } from './Total';
 import { CrowdStrikeApiGateway } from './CrowdStrikeApiGateway';
-
-type AttemptOptions = {
-  maxAttempts: number;
-  delay: number;
-  timeout: number;
-  factor: number;
-};
 
 export const DEFAULT_ATTEMPT_OPTIONS = {
   maxAttempts: 5,
@@ -44,7 +28,6 @@ export const BUFFER_RE_AUTHETICATION_TIME = 60; //seconds
 
 export type FalconAPIClientConfig = {
   logger: IntegrationLogger;
-  attemptOptions?: AttemptOptions;
   queryBuilder: IFalconApiClientQueryBuilder;
   crowdStrikeApiGateway: CrowdStrikeApiGateway;
 };
@@ -55,20 +38,16 @@ export type FalconAPIResourceIterationCallback<T> = (
 
 export class FalconAPIClient {
   private logger: IntegrationLogger;
-  private rateLimitState: RateLimitState;
-  private attemptOptions: AttemptOptions;
   private queryBuilder: IFalconApiClientQueryBuilder;
   private total: Total;
   private crowdStrikeApiGateway: CrowdStrikeApiGateway;
 
   constructor({
     logger,
-    attemptOptions,
     queryBuilder,
     crowdStrikeApiGateway,
   }: FalconAPIClientConfig) {
     this.logger = logger;
-    this.attemptOptions = attemptOptions ?? DEFAULT_ATTEMPT_OPTIONS;
     this.queryBuilder = queryBuilder;
     this.total = new Total();
     this.crowdStrikeApiGateway = crowdStrikeApiGateway;
@@ -212,19 +191,20 @@ export class FalconAPIClient {
 
   private async fetchDevices(ids: string[]): Promise<Device[]> {
     const availabilityZone = this.crowdStrikeApiGateway.getAvailabilityZone();
-    const response = await this.executeAPIRequestWithRetries<
-      ResourcesResponse<Device>
-    >(
-      `https://api.${availabilityZone}crowdstrike.com/devices/entities/devices/v2`,
-      {
-        method: 'POST',
-        body: JSON.stringify({ ids }),
-        headers: {
-          'Content-Type': 'application/json',
-          accept: 'application/json',
+    const response =
+      await this.crowdStrikeApiGateway.executeAPIRequestWithRetries<
+        ResourcesResponse<Device>
+      >(
+        `https://api.${availabilityZone}crowdstrike.com/devices/entities/devices/v2`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ ids }),
+          headers: {
+            'Content-Type': 'application/json',
+            accept: 'application/json',
+          },
         },
-      },
-    );
+      );
 
     return response.resources;
   }
@@ -239,18 +219,19 @@ export class FalconAPIClient {
     }
 
     const availabilityZone = this.crowdStrikeApiGateway.getAvailabilityZone();
-    const response = await this.executeAPIRequestWithRetries<
-      ResourcesResponse<any>
-    >(
-      `https://api.${availabilityZone}crowdstrike.com/zero-trust-assessment/entities/assessments/v1?` +
-        searchParams,
-      {
-        method: 'GET',
-        headers: {
-          accept: 'application/json',
+    const response =
+      await this.crowdStrikeApiGateway.executeAPIRequestWithRetries<
+        ResourcesResponse<any>
+      >(
+        `https://api.${availabilityZone}crowdstrike.com/zero-trust-assessment/entities/assessments/v1?` +
+          searchParams,
+        {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+          },
         },
-      },
-    );
+      );
 
     return response.resources;
   }
@@ -281,7 +262,7 @@ export class FalconAPIClient {
 
       this.logger.info({ requestUrl: url, paginationParams });
       const response: ResourcesResponse<ResourceType> =
-        await this.executeAPIRequestWithRetries<
+        await this.crowdStrikeApiGateway.executeAPIRequestWithRetries<
           ResourcesResponse<ResourceType>
         >(url, {
           method: 'GET',
@@ -331,108 +312,5 @@ export class FalconAPIClient {
         'post-request pagination state',
       );
     } while (!finished);
-  }
-
-  private async executeAPIRequestWithRetries<T>(
-    requestUrl: string,
-    init: RequestInit,
-  ): Promise<T> {
-    /**
-     * This is the logic to be retried in the case of an error.
-     */
-    const requestAttempt = async () => {
-      const token = await this.crowdStrikeApiGateway.authenticate();
-      const startTime = Date.now();
-      const response = await fetch(requestUrl, {
-        ...init,
-        headers: {
-          ...init.headers,
-          authorization: `bearer ${token!.token}`,
-        },
-        redirect: 'manual',
-      });
-      this.logger.debug(
-        {
-          requestUrl,
-          requestDuration: Date.now() - startTime,
-        },
-        'Calculated request duration',
-      );
-
-      this.rateLimitState = {
-        limitRemaining: Number(response.headers.get('X-RateLimit-Remaining')),
-        perMinuteLimit: Number(response.headers.get('X-RateLimit-Limit')),
-        retryAfter: response.headers.get('X-RateLimit-RetryAfter')
-          ? Number(response.headers.get('X-RateLimit-RetryAfter'))
-          : undefined,
-      };
-      // Manually handle redirects.
-      if ([301, 302, 308].includes(response.status)) {
-        return this.crowdStrikeApiGateway.handleRedirects(
-          response,
-          (redirectLocationUrl) => {
-            return this.executeAPIRequestWithRetries<T>(
-              redirectLocationUrl,
-              init,
-            );
-          },
-        );
-      }
-
-      if (response.ok) {
-        return response.json();
-      }
-
-      if (response.status === 401) {
-        throw new IntegrationProviderAuthenticationError({
-          status: response.status,
-          statusText: response.statusText,
-          endpoint: requestUrl,
-        });
-      }
-      if (response.status === 403) {
-        throw new IntegrationProviderAuthorizationError({
-          status: response.status,
-          statusText: response.statusText,
-          endpoint: requestUrl,
-        });
-      }
-      throw new IntegrationProviderAPIError({
-        status: response.status,
-        statusText: response.statusText,
-        endpoint: requestUrl,
-      });
-    };
-
-    return retry(requestAttempt, {
-      ...this.attemptOptions,
-      handleError: async (error, attemptContext) => {
-        this.logger.debug(
-          { error, attemptContext },
-          'Error being handled in handleError.',
-        );
-
-        if (error.status === 401) {
-          if (attemptContext.attemptNum > 1) {
-            attemptContext.abort();
-            return;
-          } else {
-            await this.crowdStrikeApiGateway.authenticate();
-          }
-        }
-        if (error.status === 403) {
-          attemptContext.abort();
-          return;
-        }
-        if (error.status === 429) {
-          await this.crowdStrikeApiGateway.handle429Error(this.rateLimitState);
-        }
-
-        this.logger.warn(
-          { attemptContext, error },
-          `Hit a possibly recoverable error when requesting data. Waiting before trying again.`,
-        );
-      },
-    });
   }
 }

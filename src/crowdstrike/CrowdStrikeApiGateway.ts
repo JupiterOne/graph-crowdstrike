@@ -2,6 +2,7 @@ import {
   IntegrationLogger,
   IntegrationProviderAPIError,
   IntegrationProviderAuthenticationError,
+  IntegrationProviderAuthorizationError,
 } from '@jupiterone/integration-sdk-core';
 import { retry } from '@lifeomic/attempt';
 import {
@@ -10,7 +11,7 @@ import {
   RateLimitConfig,
   RateLimitState,
 } from './types';
-import fetch from 'node-fetch';
+import fetch, { RequestInit } from 'node-fetch';
 
 function getUnixTimeNow() {
   return Date.now() / 1000;
@@ -40,6 +41,7 @@ export const DEFAULT_RATE_LIMIT_CONFIG: RateLimitConfig = {
 };
 
 export class CrowdStrikeApiGateway {
+  private rateLimitState: RateLimitState;
   private token: OAuth2Token | undefined;
   private credentials: OAuth2ClientCredentials;
   private attemptOptions: AttemptOptions;
@@ -203,6 +205,106 @@ export class CrowdStrikeApiGateway {
       token: response.access_token,
       expiresAt,
     };
+  }
+
+  public async executeAPIRequestWithRetries<T>(
+    requestUrl: string,
+    init: RequestInit,
+  ): Promise<T> {
+    /**
+     * This is the logic to be retried in the case of an error.
+     */
+    const requestAttempt = async () => {
+      const token = await this.authenticate();
+      const startTime = Date.now();
+      const response = await fetch(requestUrl, {
+        ...init,
+        headers: {
+          ...init.headers,
+          authorization: `bearer ${token!.token}`,
+        },
+        redirect: 'manual',
+      });
+      this.logger.debug(
+        {
+          requestUrl,
+          requestDuration: Date.now() - startTime,
+        },
+        'Calculated request duration',
+      );
+
+      this.rateLimitState = {
+        limitRemaining: Number(response.headers.get('X-RateLimit-Remaining')),
+        perMinuteLimit: Number(response.headers.get('X-RateLimit-Limit')),
+        retryAfter: response.headers.get('X-RateLimit-RetryAfter')
+          ? Number(response.headers.get('X-RateLimit-RetryAfter'))
+          : undefined,
+      };
+      // Manually handle redirects.
+      if ([301, 302, 308].includes(response.status)) {
+        return this.handleRedirects(response, (redirectLocationUrl) => {
+          return this.executeAPIRequestWithRetries<T>(
+            redirectLocationUrl,
+            init,
+          );
+        });
+      }
+
+      if (response.ok) {
+        return response.json();
+      }
+
+      if (response.status === 401) {
+        throw new IntegrationProviderAuthenticationError({
+          status: response.status,
+          statusText: response.statusText,
+          endpoint: requestUrl,
+        });
+      }
+      if (response.status === 403) {
+        throw new IntegrationProviderAuthorizationError({
+          status: response.status,
+          statusText: response.statusText,
+          endpoint: requestUrl,
+        });
+      }
+      throw new IntegrationProviderAPIError({
+        status: response.status,
+        statusText: response.statusText,
+        endpoint: requestUrl,
+      });
+    };
+
+    return retry(requestAttempt, {
+      ...this.attemptOptions,
+      handleError: async (error, attemptContext) => {
+        this.logger.debug(
+          { error, attemptContext },
+          'Error being handled in handleError.',
+        );
+
+        if (error.status === 401) {
+          if (attemptContext.attemptNum > 1) {
+            attemptContext.abort();
+            return;
+          } else {
+            await this.authenticate();
+          }
+        }
+        if (error.status === 403) {
+          attemptContext.abort();
+          return;
+        }
+        if (error.status === 429) {
+          await this.handle429Error(this.rateLimitState);
+        }
+
+        this.logger.warn(
+          { attemptContext, error },
+          `Hit a possibly recoverable error when requesting data. Waiting before trying again.`,
+        );
+      },
+    });
   }
 }
 
