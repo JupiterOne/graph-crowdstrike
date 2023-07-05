@@ -33,9 +33,11 @@
     "validate:questions:dry": "j1-integration validate-question-file --dry-run"
   },
   "dependencies": {
+    "@types/sinon": "^10.0.15",
     "auto": "^10.46.0",
     "node-fetch": "^2.6.7",
-    "p-map": "^4.0.0"
+    "p-map": "^4.0.0",
+    "sinon": "^15.2.0"
   },
   "peerDependencies": {
     "@jupiterone/integration-sdk-core": "^8.24.1"

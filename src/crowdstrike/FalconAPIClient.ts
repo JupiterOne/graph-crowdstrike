@@ -33,10 +33,6 @@ function getUnixTimeNow() {
   return Date.now() / 1000;
 }
 
-async function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export const DEFAULT_RATE_LIMIT_CONFIG: RateLimitConfig = {
   reserveLimit: 30,
   cooldownPeriod: 1000,
@@ -517,7 +513,11 @@ export class FalconAPIClient {
           return;
         }
         if (error.status === 429) {
-          await this.handle429Error();
+          await this.crowdStrikeApiGateway.handle429Error(
+            this.rateLimitState,
+            this.rateLimitConfig,
+            this.logger,
+          );
         }
 
         this.logger.warn(
@@ -526,48 +526,6 @@ export class FalconAPIClient {
         );
       },
     });
-  }
-
-  private async handle429Error() {
-    const unixTimeNow = getUnixTimeNow();
-    /**
-     * We have seen in the wild that waiting until the
-     * `x-ratelimit-retryafter` unix timestamp before retrying requests
-     * does often still result in additional 429 errors. This may be caused
-     * by incorrect logic on the API server, out-of-sync clocks between
-     * client and server, or something else. However, we have seen that
-     * waiting an additional minute does result in successful invocations.
-     *
-     * `timeToSleepInSeconds` adds 60s to the `retryAfter` property, but
-     * may be reduced in the future.
-     */
-    const timeToSleepInSeconds = this.rateLimitState.retryAfter
-      ? this.rateLimitState.retryAfter + 60 - unixTimeNow
-      : 0;
-    this.logger.info(
-      {
-        unixTimeNow,
-        timeToSleepInSeconds,
-        rateLimitState: this.rateLimitState,
-        rateLimitConfig: this.rateLimitConfig,
-      },
-      'Encountered 429 response. Waiting to retry request.',
-    );
-    await sleep(timeToSleepInSeconds * 1000);
-
-    if (
-      this.rateLimitState.limitRemaining &&
-      this.rateLimitState.limitRemaining <= this.rateLimitConfig.reserveLimit
-    ) {
-      this.logger.info(
-        {
-          rateLimitState: this.rateLimitState,
-          rateLimitConfig: this.rateLimitConfig,
-        },
-        'Rate limit remaining is less than reserve limit. Waiting for cooldown period.',
-      );
-      await sleep(this.rateLimitConfig.cooldownPeriod);
-    }
   }
 }
 

@@ -1,5 +1,6 @@
 import { Headers } from 'node-fetch';
 import { CrowdStrikeApiGateway } from './CrowdStrikeApiGateway';
+import * as sinon from 'sinon';
 
 const noop = () => {
   // does nothing
@@ -55,6 +56,54 @@ describe('CrowdStrikeApiGateway', () => {
         const handler = noop;
 
         apiGateway.handleRedirects(response, handler, logger);
+      });
+    });
+  });
+
+  describe('handle429Error', () => {
+    describe('given a limitRemaining less than the reserveLimit', () => {
+      it('should wait for the cooldwon period', async () => {
+        const apiGateway = new CrowdStrikeApiGateway();
+
+        const logger = {
+          warn: noop,
+          info: sinon.spy(),
+        };
+
+        await apiGateway.handle429Error(
+          { retryAfter: 100, limitRemaining: 10, perMinuteLimit: 10 },
+          { cooldownPeriod: 100, reserveLimit: 100 },
+          logger as any,
+        );
+
+        expect(logger.info.callCount).toBe(2);
+        expect(logger.info.firstCall.args[0].rateLimitConfig).toEqual({
+          cooldownPeriod: 100,
+          reserveLimit: 100,
+        });
+        expect(logger.info.firstCall.args[0].rateLimitState).toEqual({
+          limitRemaining: 10,
+          retryAfter: 100,
+          perMinuteLimit: 10,
+        });
+        expect(logger.info.firstCall.args[1]).toEqual(
+          'Encountered 429 response. Waiting to retry request.',
+        );
+
+        expect(logger.info.secondCall.args[0]).toEqual({
+          rateLimitConfig: {
+            cooldownPeriod: 100,
+            reserveLimit: 100,
+          },
+          rateLimitState: {
+            limitRemaining: 10,
+            retryAfter: 100,
+            perMinuteLimit: 10,
+          },
+        });
+        expect(logger.info.secondCall.args[1]).toEqual(
+          'Rate limit remaining is less than reserve limit. Waiting for cooldown period.',
+        );
       });
     });
   });
