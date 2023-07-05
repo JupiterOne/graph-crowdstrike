@@ -6,7 +6,6 @@ import { URLSearchParams } from 'url';
 import {
   Device,
   DeviceIdentifier,
-  OAuth2ClientCredentials,
   OAuth2Token,
   PaginationMeta,
   PaginationParams,
@@ -44,7 +43,6 @@ export const DEFAULT_ATTEMPT_OPTIONS = {
 export const BUFFER_RE_AUTHETICATION_TIME = 60; //seconds
 
 export type FalconAPIClientConfig = {
-  credentials: OAuth2ClientCredentials;
   logger: IntegrationLogger;
   attemptOptions?: AttemptOptions;
   queryBuilder: IFalconApiClientQueryBuilder;
@@ -56,7 +54,6 @@ export type FalconAPIResourceIterationCallback<T> = (
 ) => boolean | void | Promise<boolean | void>;
 
 export class FalconAPIClient {
-  private credentials: OAuth2ClientCredentials;
   private logger: IntegrationLogger;
   private rateLimitState: RateLimitState;
   private attemptOptions: AttemptOptions;
@@ -65,19 +62,11 @@ export class FalconAPIClient {
   private crowdStrikeApiGateway: CrowdStrikeApiGateway;
 
   constructor({
-    credentials,
     logger,
     attemptOptions,
     queryBuilder,
     crowdStrikeApiGateway,
   }: FalconAPIClientConfig) {
-    this.credentials = credentials;
-
-    // If an availability zone is specified, prepare it for inclusion in the URL
-    this.credentials.availabilityZone = credentials.availabilityZone
-      ? credentials.availabilityZone + '.'
-      : '';
-
     this.logger = logger;
     this.attemptOptions = attemptOptions ?? DEFAULT_ATTEMPT_OPTIONS;
     this.queryBuilder = queryBuilder;
@@ -222,10 +211,11 @@ export class FalconAPIClient {
   }
 
   private async fetchDevices(ids: string[]): Promise<Device[]> {
+    const availabilityZone = this.crowdStrikeApiGateway.getAvailabilityZone();
     const response = await this.executeAPIRequestWithRetries<
       ResourcesResponse<Device>
     >(
-      `https://api.${this.credentials.availabilityZone}crowdstrike.com/devices/entities/devices/v2`,
+      `https://api.${availabilityZone}crowdstrike.com/devices/entities/devices/v2`,
       {
         method: 'POST',
         body: JSON.stringify({ ids }),
@@ -248,10 +238,11 @@ export class FalconAPIClient {
       searchParams.append('ids', id);
     }
 
+    const availabilityZone = this.crowdStrikeApiGateway.getAvailabilityZone();
     const response = await this.executeAPIRequestWithRetries<
       ResourcesResponse<any>
     >(
-      `https://api.${this.credentials.availabilityZone}crowdstrike.com/zero-trust-assessment/entities/assessments/v1?` +
+      `https://api.${availabilityZone}crowdstrike.com/zero-trust-assessment/entities/assessments/v1?` +
         searchParams,
       {
         method: 'GET',
@@ -278,10 +269,11 @@ export class FalconAPIClient {
     let finished = false;
 
     let paginationParams: PaginationParams | undefined = undefined;
+    const availabilityZone = this.crowdStrikeApiGateway.getAvailabilityZone();
 
     do {
       const url = this.queryBuilder.buildResourcePathUrl(
-        this.credentials.availabilityZone,
+        availabilityZone,
         resourcePath,
         paginationParams,
         query,
@@ -324,7 +316,7 @@ export class FalconAPIClient {
       seen += response.resources.length;
 
       const baseUrl = this.queryBuilder.buildResourcePathUrl(
-        this.credentials.availabilityZone,
+        availabilityZone,
         resourcePath,
       );
 

@@ -12,7 +12,6 @@ export default function getOrCreateFalconAPIClient(
 ): FalconAPIClient {
   if (!client) {
     client = new FalconAPIClient({
-      credentials: config,
       logger,
       queryBuilder: new FalconApiClientQueryBuilder(),
       crowdStrikeApiGateway: new CrowdStrikeApiGateway(config, logger),

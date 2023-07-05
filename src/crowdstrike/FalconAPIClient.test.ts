@@ -13,7 +13,6 @@ let recording: Recording;
 
 const createClient = (): FalconAPIClient => {
   return new FalconAPIClient({
-    credentials: config,
     logger: createMockIntegrationLogger(),
     queryBuilder: new FalconApiClientQueryBuilder(),
     attemptOptions: {
@@ -118,14 +117,10 @@ describe('authenticate', () => {
     });
 
     const client = new FalconAPIClient({
-      credentials: {
-        ...config,
-        clientSecret: 'test-error-handling',
-      },
       logger: createMockIntegrationLogger(),
       queryBuilder: new FalconApiClientQueryBuilder(),
       crowdStrikeApiGateway: new CrowdStrikeApiGateway(
-        config,
+        { ...config, clientSecret: 'test-error-handling' },
         createMockIntegrationLogger(),
       ),
     });
@@ -269,7 +264,6 @@ describe('executeAPIRequest', () => {
     });
 
     const client = new FalconAPIClient({
-      credentials: config,
       logger: createMockIntegrationLogger(),
       queryBuilder: new FalconApiClientQueryBuilder(),
       crowdStrikeApiGateway: new CrowdStrikeApiGateway(
@@ -631,7 +625,6 @@ describe('iteratePreventionPolicyMemberIds', () => {
 describe('test availability zones', () => {
   test('specify availability zone', async () => {
     const client = new FalconAPIClient({
-      credentials: availabilityZoneConfig,
       logger: createMockIntegrationLogger(),
       queryBuilder: new FalconApiClientQueryBuilder(),
       attemptOptions: {

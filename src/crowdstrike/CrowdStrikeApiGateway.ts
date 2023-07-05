@@ -54,6 +54,14 @@ export class CrowdStrikeApiGateway {
     this.credentials = credentials;
     this.logger = logger;
     this.attemptOptions = attemptOptions ?? DEFAULT_ATTEMPT_OPTIONS;
+
+    this.credentials.availabilityZone = credentials.availabilityZone
+      ? `${credentials.availabilityZone}.`
+      : '';
+  }
+
+  public getAvailabilityZone(): string {
+    return this.credentials.availabilityZone || '';
   }
 
   public handleRedirects(response, handler) {
