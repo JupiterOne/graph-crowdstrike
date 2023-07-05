@@ -25,9 +25,9 @@ import {
   IntegrationProviderAuthenticationError,
   IntegrationProviderAuthorizationError,
 } from '@jupiterone/integration-sdk-core';
-import { URL } from 'url';
 import { IFalconApiClientQueryBuilder } from './FalconApiClientQueryBuilder';
 import { Total } from './Total';
+import { CrowdStrikeApiGateway } from './CrowdStrikeApiGateway';
 
 function getUnixTimeNow() {
   return Date.now() / 1000;
@@ -62,6 +62,7 @@ export type FalconAPIClientConfig = {
   logger: IntegrationLogger;
   attemptOptions?: AttemptOptions;
   queryBuilder: IFalconApiClientQueryBuilder;
+  crowdStrikeApiGateway: CrowdStrikeApiGateway;
 };
 
 export type FalconAPIResourceIterationCallback<T> = (
@@ -77,12 +78,14 @@ export class FalconAPIClient {
   private attemptOptions: AttemptOptions;
   private queryBuilder: IFalconApiClientQueryBuilder;
   private total: Total;
+  private crowdStrikeApiGateway: CrowdStrikeApiGateway;
 
   constructor({
     credentials,
     logger,
     attemptOptions,
     queryBuilder,
+    crowdStrikeApiGateway,
   }: FalconAPIClientConfig) {
     this.credentials = credentials;
 
@@ -95,6 +98,7 @@ export class FalconAPIClient {
     this.attemptOptions = attemptOptions ?? DEFAULT_ATTEMPT_OPTIONS;
     this.queryBuilder = queryBuilder;
     this.total = new Total();
+    this.crowdStrikeApiGateway = crowdStrikeApiGateway;
   }
 
   public async authenticate(): Promise<OAuth2Token> {
@@ -455,12 +459,16 @@ export class FalconAPIClient {
       };
       // Manually handle redirects.
       if ([301, 302, 308].includes(response.status)) {
-        return this.handleRedirects(response, (redirectLocationUrl) => {
-          return this.executeAPIRequestWithRetries<T>(
-            redirectLocationUrl,
-            init,
-          );
-        });
+        return this.crowdStrikeApiGateway.handleRedirects(
+          response,
+          (redirectLocationUrl) => {
+            return this.executeAPIRequestWithRetries<T>(
+              redirectLocationUrl,
+              init,
+            );
+          },
+          this.logger,
+        );
       }
 
       if (response.ok) {
@@ -518,31 +526,6 @@ export class FalconAPIClient {
         );
       },
     });
-  }
-
-  private handleRedirects(response, handler) {
-    this.logger.info(
-      {
-        locationHeader: response.headers.get('location'),
-        responseUrl: response.url,
-      },
-      'Encountered a redirect.',
-    );
-
-    const redirectLocationUrl = new URL(
-      response.headers.get('location'),
-      response.url,
-    );
-
-    const validUrls = /^api\.(\S+\.)?crowdstrike.com/;
-    if (validUrls.test(redirectLocationUrl.host)) {
-      return handler(redirectLocationUrl);
-    } else {
-      this.logger.warn(
-        { redirectLocationUrl },
-        `Encountered an invalid redirect location URL! Redirect prevented.`,
-      );
-    }
   }
 
   private async handle429Error() {

@@ -2,6 +2,7 @@ import { IntegrationLogger } from '@jupiterone/integration-sdk-core';
 import { IntegrationConfig } from '../config';
 import { FalconAPIClient } from './FalconAPIClient';
 import { FalconApiClientQueryBuilder } from './FalconApiClientQueryBuilder';
+import { CrowdStrikeApiGateway } from './CrowdStrikeApiGateway';
 
 let client: FalconAPIClient | undefined;
 
@@ -14,6 +15,7 @@ export default function getOrCreateFalconAPIClient(
       credentials: config,
       logger,
       queryBuilder: new FalconApiClientQueryBuilder(),
+      crowdStrikeApiGateway: new CrowdStrikeApiGateway(),
     });
   }
   return client;

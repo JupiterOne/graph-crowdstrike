@@ -8,6 +8,7 @@ import {
   FalconAPIClient,
 } from './FalconAPIClient';
 import { FalconApiClientQueryBuilder } from './FalconApiClientQueryBuilder';
+import { CrowdStrikeApiGateway } from './CrowdStrikeApiGateway';
 
 let recording: Recording;
 
@@ -22,6 +23,7 @@ const createClient = (): FalconAPIClient => {
       timeout: 1000,
       factor: 1,
     },
+    crowdStrikeApiGateway: new CrowdStrikeApiGateway(),
   });
 };
 
@@ -114,6 +116,7 @@ describe('authenticate', () => {
       },
       logger: createMockIntegrationLogger(),
       queryBuilder: new FalconApiClientQueryBuilder(),
+      crowdStrikeApiGateway: new CrowdStrikeApiGateway(),
     });
     try {
       await client.authenticate();
@@ -258,6 +261,7 @@ describe('executeAPIRequest', () => {
       credentials: config,
       logger: createMockIntegrationLogger(),
       queryBuilder: new FalconApiClientQueryBuilder(),
+      crowdStrikeApiGateway: new CrowdStrikeApiGateway(),
     });
 
     const startTime = Date.now();
@@ -622,6 +626,7 @@ describe('test availability zones', () => {
         timeout: 1000,
         factor: 1,
       },
+      crowdStrikeApiGateway: new CrowdStrikeApiGateway(),
     });
     // We really only care that the API URL is properly formed to include the availability zone.  It doesn't need to have
     // a successful run.  Additionally, we don't need to test the default use case of not providing an availability zone,
