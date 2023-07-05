@@ -13,8 +13,11 @@ export default function getOrCreateFalconAPIClient(
   if (!client) {
     client = new FalconAPIClient({
       logger,
-      queryBuilder: new FalconApiClientQueryBuilder(),
-      crowdStrikeApiGateway: new CrowdStrikeApiGateway(config, logger),
+      crowdStrikeApiGateway: new CrowdStrikeApiGateway(
+        config,
+        logger,
+        new FalconApiClientQueryBuilder(),
+      ),
     });
   }
   return client;

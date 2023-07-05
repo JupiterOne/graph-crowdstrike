@@ -14,16 +14,10 @@ let recording: Recording;
 const createClient = (): FalconAPIClient => {
   return new FalconAPIClient({
     logger: createMockIntegrationLogger(),
-    queryBuilder: new FalconApiClientQueryBuilder(),
-    attemptOptions: {
-      ...DEFAULT_ATTEMPT_OPTIONS,
-      delay: 2,
-      timeout: 1000,
-      factor: 1,
-    },
     crowdStrikeApiGateway: new CrowdStrikeApiGateway(
       config,
       createMockIntegrationLogger(),
+      new FalconApiClientQueryBuilder(),
       {
         ...DEFAULT_ATTEMPT_OPTIONS,
         delay: 2,
@@ -118,10 +112,10 @@ describe('authenticate', () => {
 
     const client = new FalconAPIClient({
       logger: createMockIntegrationLogger(),
-      queryBuilder: new FalconApiClientQueryBuilder(),
       crowdStrikeApiGateway: new CrowdStrikeApiGateway(
         { ...config, clientSecret: 'test-error-handling' },
         createMockIntegrationLogger(),
+        new FalconApiClientQueryBuilder(),
       ),
     });
     try {
@@ -265,10 +259,10 @@ describe('executeAPIRequest', () => {
 
     const client = new FalconAPIClient({
       logger: createMockIntegrationLogger(),
-      queryBuilder: new FalconApiClientQueryBuilder(),
       crowdStrikeApiGateway: new CrowdStrikeApiGateway(
         config,
         createMockIntegrationLogger(),
+        new FalconApiClientQueryBuilder(),
       ),
     });
 
@@ -626,16 +620,10 @@ describe('test availability zones', () => {
   test('specify availability zone', async () => {
     const client = new FalconAPIClient({
       logger: createMockIntegrationLogger(),
-      queryBuilder: new FalconApiClientQueryBuilder(),
-      attemptOptions: {
-        ...DEFAULT_ATTEMPT_OPTIONS,
-        delay: 2,
-        timeout: 1000,
-        factor: 1,
-      },
       crowdStrikeApiGateway: new CrowdStrikeApiGateway(
         availabilityZoneConfig,
         createMockIntegrationLogger(),
+        new FalconApiClientQueryBuilder(),
         {
           ...DEFAULT_ATTEMPT_OPTIONS,
           delay: 2,

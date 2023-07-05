@@ -2,12 +2,15 @@ import { Headers } from 'node-fetch';
 import { CrowdStrikeApiGateway } from './CrowdStrikeApiGateway';
 import * as sinon from 'sinon';
 import { config } from '../../test/config';
+import { FalconApiClientQueryBuilder } from './FalconApiClientQueryBuilder';
 
 const noop = () => {
   // does nothing
 };
 
 describe('CrowdStrikeApiGateway', () => {
+  const queryBuilder = new FalconApiClientQueryBuilder();
+
   describe('handleRedirects', () => {
     describe('given a response with the crowdstrike api domain', () => {
       it('should invoke the handler', () => {
@@ -15,7 +18,11 @@ describe('CrowdStrikeApiGateway', () => {
           warn: noop,
           info: noop,
         };
-        const apiGateway = new CrowdStrikeApiGateway(config, logger as any);
+        const apiGateway = new CrowdStrikeApiGateway(
+          config,
+          logger as any,
+          queryBuilder,
+        );
         const headers = new Headers();
         headers.set('location', '/');
 
@@ -52,7 +59,11 @@ describe('CrowdStrikeApiGateway', () => {
           info: noop,
         };
 
-        const apiGateway = new CrowdStrikeApiGateway(config, logger as any);
+        const apiGateway = new CrowdStrikeApiGateway(
+          config,
+          logger as any,
+          queryBuilder,
+        );
 
         const handler = noop;
 
@@ -68,7 +79,11 @@ describe('CrowdStrikeApiGateway', () => {
           warn: noop,
           info: sinon.spy(),
         };
-        const apiGateway = new CrowdStrikeApiGateway(config, logger as any);
+        const apiGateway = new CrowdStrikeApiGateway(
+          config,
+          logger as any,
+          queryBuilder,
+        );
 
         await apiGateway.handle429Error({
           retryAfter: 100,

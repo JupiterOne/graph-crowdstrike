@@ -8,10 +8,17 @@ import { retry } from '@lifeomic/attempt';
 import {
   OAuth2ClientCredentials,
   OAuth2Token,
+  PaginationMeta,
+  PaginationParams,
+  QueryParams,
   RateLimitConfig,
   RateLimitState,
+  ResourcesResponse,
 } from './types';
 import fetch, { RequestInit } from 'node-fetch';
+import { FalconAPIResourceIterationCallback } from './FalconAPIClient';
+import { IFalconApiClientQueryBuilder } from './FalconApiClientQueryBuilder';
+import { Total } from './Total';
 
 function getUnixTimeNow() {
   return Date.now() / 1000;
@@ -47,12 +54,17 @@ export class CrowdStrikeApiGateway {
   private attemptOptions: AttemptOptions;
   private logger: IntegrationLogger;
   private readonly rateLimitConfig: RateLimitConfig = DEFAULT_RATE_LIMIT_CONFIG;
+  private total: Total;
+  private queryBuilder: IFalconApiClientQueryBuilder;
 
   constructor(
     credentials: OAuth2ClientCredentials,
     logger: IntegrationLogger,
+    queryBuilder: IFalconApiClientQueryBuilder,
     attemptOptions?: AttemptOptions,
   ) {
+    this.queryBuilder = queryBuilder;
+    this.total = new Total();
     this.credentials = credentials;
     this.logger = logger;
     this.attemptOptions = attemptOptions ?? DEFAULT_ATTEMPT_OPTIONS;
@@ -305,6 +317,84 @@ export class CrowdStrikeApiGateway {
         );
       },
     });
+  }
+
+  public async paginateResources<ResourceType>({
+    callback,
+    resourcePath,
+    query,
+  }: {
+    callback: FalconAPIResourceIterationCallback<ResourceType>;
+    resourcePath: string;
+    query?: QueryParams;
+  }): Promise<void> {
+    let seen: number = 0;
+    let total: number = 0;
+    let finished = false;
+
+    let paginationParams: PaginationParams | undefined = undefined;
+    const availabilityZone = this.getAvailabilityZone();
+
+    do {
+      const url = this.queryBuilder.buildResourcePathUrl(
+        availabilityZone,
+        resourcePath,
+        paginationParams,
+        query,
+      );
+
+      this.logger.info({ requestUrl: url, paginationParams });
+      const response: ResourcesResponse<ResourceType> =
+        await this.executeAPIRequestWithRetries<
+          ResourcesResponse<ResourceType>
+        >(url, {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+          },
+        });
+
+      if (response.errors?.length) {
+        const errorsToLog = response.errors.map((err) => {
+          return { code: err.code, message: err.message, id: err.id };
+        });
+
+        this.logger.error(
+          { errors: errorsToLog },
+          'encountered error(s) in api response',
+        );
+      }
+
+      await callback(response.resources);
+
+      this.logger.info(
+        {
+          pagination: response.meta,
+          resourcesLength: response.resources.length,
+          errors: response.errors,
+        },
+        'pagination response details',
+      );
+
+      paginationParams = response.meta.pagination as PaginationMeta;
+      seen += response.resources.length;
+
+      const baseUrl = this.queryBuilder.buildResourcePathUrl(
+        availabilityZone,
+        resourcePath,
+      );
+
+      this.total.setValue(baseUrl, paginationParams?.total);
+
+      total = this.total.getValue(baseUrl);
+
+      finished = seen === 0 || seen >= total;
+
+      this.logger.info(
+        { seen, total, finished },
+        'post-request pagination state',
+      );
+    } while (!finished);
   }
 }
 
