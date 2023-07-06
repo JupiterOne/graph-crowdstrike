@@ -2,24 +2,31 @@ import { createMockIntegrationLogger } from '@jupiterone/integration-sdk-testing
 
 import { Recording, setupCrowdstrikeRecording } from '../../test/recording';
 import { config, availabilityZoneConfig } from '../../test/config';
+import { DEFAULT_ATTEMPT_OPTIONS, FalconAPIClient } from './FalconAPIClient';
+import { CrowdStrikeApiClientQueryBuilder } from './CrowdStrikeApiClientQueryBuilder';
 import {
-  DEFAULT_ATTEMPT_OPTIONS,
+  CrowdStrikeApiGateway,
   DEFAULT_RATE_LIMIT_CONFIG,
-  FalconAPIClient,
-} from './FalconAPIClient';
+} from './CrowdStrikeApiGateway';
+import fetch from 'node-fetch';
 
 let recording: Recording;
 
 const createClient = (): FalconAPIClient => {
   return new FalconAPIClient({
-    credentials: config,
     logger: createMockIntegrationLogger(),
-    attemptOptions: {
-      ...DEFAULT_ATTEMPT_OPTIONS,
-      delay: 2,
-      timeout: 1000,
-      factor: 1,
-    },
+    crowdStrikeApiGateway: new CrowdStrikeApiGateway(
+      config,
+      createMockIntegrationLogger(),
+      new CrowdStrikeApiClientQueryBuilder(),
+      fetch,
+      {
+        ...DEFAULT_ATTEMPT_OPTIONS,
+        delay: 2,
+        timeout: 1000,
+        factor: 1,
+      },
+    ),
   });
 };
 
@@ -106,11 +113,13 @@ describe('authenticate', () => {
     });
 
     const client = new FalconAPIClient({
-      credentials: {
-        ...config,
-        clientSecret: 'test-error-handling',
-      },
       logger: createMockIntegrationLogger(),
+      crowdStrikeApiGateway: new CrowdStrikeApiGateway(
+        { ...config, clientSecret: 'test-error-handling' },
+        createMockIntegrationLogger(),
+        new CrowdStrikeApiClientQueryBuilder(),
+        fetch,
+      ),
     });
     try {
       await client.authenticate();
@@ -252,8 +261,13 @@ describe('executeAPIRequest', () => {
     });
 
     const client = new FalconAPIClient({
-      credentials: config,
       logger: createMockIntegrationLogger(),
+      crowdStrikeApiGateway: new CrowdStrikeApiGateway(
+        config,
+        createMockIntegrationLogger(),
+        new CrowdStrikeApiClientQueryBuilder(),
+        fetch,
+      ),
     });
 
     const startTime = Date.now();
@@ -609,14 +623,19 @@ describe('iteratePreventionPolicyMemberIds', () => {
 describe('test availability zones', () => {
   test('specify availability zone', async () => {
     const client = new FalconAPIClient({
-      credentials: availabilityZoneConfig,
       logger: createMockIntegrationLogger(),
-      attemptOptions: {
-        ...DEFAULT_ATTEMPT_OPTIONS,
-        delay: 2,
-        timeout: 1000,
-        factor: 1,
-      },
+      crowdStrikeApiGateway: new CrowdStrikeApiGateway(
+        availabilityZoneConfig,
+        createMockIntegrationLogger(),
+        new CrowdStrikeApiClientQueryBuilder(),
+        fetch,
+        {
+          ...DEFAULT_ATTEMPT_OPTIONS,
+          delay: 2,
+          timeout: 1000,
+          factor: 1,
+        },
+      ),
     });
     // We really only care that the API URL is properly formed to include the availability zone.  It doesn't need to have
     // a successful run.  Additionally, we don't need to test the default use case of not providing an availability zone,
