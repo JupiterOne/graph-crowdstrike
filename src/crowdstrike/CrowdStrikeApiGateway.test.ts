@@ -2,14 +2,14 @@ import { Headers } from 'node-fetch';
 import { CrowdStrikeApiGateway } from './CrowdStrikeApiGateway';
 import * as sinon from 'sinon';
 import { config } from '../../test/config';
-import { FalconApiClientQueryBuilder } from './FalconApiClientQueryBuilder';
+import { CrowdStrikeApiClientQueryBuilder } from './CrowdStrikeApiClientQueryBuilder';
 
 const noop = () => {
   // does nothing
 };
 
 describe('CrowdStrikeApiGateway', () => {
-  const queryBuilder = new FalconApiClientQueryBuilder();
+  const queryBuilder = new CrowdStrikeApiClientQueryBuilder();
 
   describe('handleRedirects', () => {
     describe('given a response with the crowdstrike api domain', () => {

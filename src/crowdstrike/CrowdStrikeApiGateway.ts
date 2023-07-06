@@ -17,7 +17,7 @@ import {
 } from './types';
 import fetch, { RequestInit } from 'node-fetch';
 import { FalconAPIResourceIterationCallback } from './FalconAPIClient';
-import { IFalconApiClientQueryBuilder } from './FalconApiClientQueryBuilder';
+import { ICrowdStrikeApiClientQueryBuilder } from './CrowdStrikeApiClientQueryBuilder';
 import { Total } from './Total';
 
 function getUnixTimeNow() {
@@ -55,12 +55,12 @@ export class CrowdStrikeApiGateway {
   private logger: IntegrationLogger;
   private readonly rateLimitConfig: RateLimitConfig = DEFAULT_RATE_LIMIT_CONFIG;
   private total: Total;
-  private queryBuilder: IFalconApiClientQueryBuilder;
+  private queryBuilder: ICrowdStrikeApiClientQueryBuilder;
 
   constructor(
     credentials: OAuth2ClientCredentials,
     logger: IntegrationLogger,
-    queryBuilder: IFalconApiClientQueryBuilder,
+    queryBuilder: ICrowdStrikeApiClientQueryBuilder,
     attemptOptions?: AttemptOptions,
   ) {
     this.queryBuilder = queryBuilder;

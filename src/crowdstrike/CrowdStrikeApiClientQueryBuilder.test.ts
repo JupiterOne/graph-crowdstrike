@@ -1,10 +1,10 @@
-import { FalconApiClientQueryBuilder } from './FalconApiClientQueryBuilder';
+import { CrowdStrikeApiClientQueryBuilder } from './CrowdStrikeApiClientQueryBuilder';
 
-describe('FalconApiClientQueryBuilder', () => {
+describe('CrowdStrikeApiClientQueryBuilder', () => {
   describe('buildResourcePathUrl()', () => {
     describe('given a resource path', () => {
       it('should build a valid URL', () => {
-        const queryBuilder = new FalconApiClientQueryBuilder();
+        const queryBuilder = new CrowdStrikeApiClientQueryBuilder();
         const result = queryBuilder.buildResourcePathUrl(
           '',
           '/zero-trust-assessment/queries/assessments/v1',

@@ -1,6 +1,6 @@
 import { PaginationParams, QueryParams } from './types';
 
-export interface IFalconApiClientQueryBuilder {
+export interface ICrowdStrikeApiClientQueryBuilder {
   buildResourcePathUrl(
     availabilityZone: string | undefined,
     resourcePath: string,
@@ -9,8 +9,8 @@ export interface IFalconApiClientQueryBuilder {
   ): string;
 }
 
-export class FalconApiClientQueryBuilder
-  implements IFalconApiClientQueryBuilder
+export class CrowdStrikeApiClientQueryBuilder
+  implements ICrowdStrikeApiClientQueryBuilder
 {
   private toQueryString(
     pagination?: {

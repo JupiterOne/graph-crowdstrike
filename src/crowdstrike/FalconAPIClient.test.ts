@@ -3,7 +3,7 @@ import { createMockIntegrationLogger } from '@jupiterone/integration-sdk-testing
 import { Recording, setupCrowdstrikeRecording } from '../../test/recording';
 import { config, availabilityZoneConfig } from '../../test/config';
 import { DEFAULT_ATTEMPT_OPTIONS, FalconAPIClient } from './FalconAPIClient';
-import { FalconApiClientQueryBuilder } from './FalconApiClientQueryBuilder';
+import { CrowdStrikeApiClientQueryBuilder } from './CrowdStrikeApiClientQueryBuilder';
 import {
   CrowdStrikeApiGateway,
   DEFAULT_RATE_LIMIT_CONFIG,
@@ -17,7 +17,7 @@ const createClient = (): FalconAPIClient => {
     crowdStrikeApiGateway: new CrowdStrikeApiGateway(
       config,
       createMockIntegrationLogger(),
-      new FalconApiClientQueryBuilder(),
+      new CrowdStrikeApiClientQueryBuilder(),
       {
         ...DEFAULT_ATTEMPT_OPTIONS,
         delay: 2,
@@ -115,7 +115,7 @@ describe('authenticate', () => {
       crowdStrikeApiGateway: new CrowdStrikeApiGateway(
         { ...config, clientSecret: 'test-error-handling' },
         createMockIntegrationLogger(),
-        new FalconApiClientQueryBuilder(),
+        new CrowdStrikeApiClientQueryBuilder(),
       ),
     });
     try {
@@ -262,7 +262,7 @@ describe('executeAPIRequest', () => {
       crowdStrikeApiGateway: new CrowdStrikeApiGateway(
         config,
         createMockIntegrationLogger(),
-        new FalconApiClientQueryBuilder(),
+        new CrowdStrikeApiClientQueryBuilder(),
       ),
     });
 
@@ -623,7 +623,7 @@ describe('test availability zones', () => {
       crowdStrikeApiGateway: new CrowdStrikeApiGateway(
         availabilityZoneConfig,
         createMockIntegrationLogger(),
-        new FalconApiClientQueryBuilder(),
+        new CrowdStrikeApiClientQueryBuilder(),
         {
           ...DEFAULT_ATTEMPT_OPTIONS,
           delay: 2,
