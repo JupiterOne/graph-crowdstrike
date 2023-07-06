@@ -2,7 +2,6 @@ import {
   IntegrationLogger,
   IntegrationProviderAPIError,
   IntegrationProviderAuthenticationError,
-  IntegrationProviderAuthorizationError,
 } from '@jupiterone/integration-sdk-core';
 import { retry } from '@lifeomic/attempt';
 import {
@@ -19,6 +18,7 @@ import { RequestInit } from 'node-fetch';
 import { FalconAPIResourceIterationCallback } from './FalconAPIClient';
 import { ICrowdStrikeApiClientQueryBuilder } from './CrowdStrikeApiClientQueryBuilder';
 import { Total } from './Total';
+import { httpErrorPolicy } from './HttpErrorPolicy';
 
 function getUnixTimeNow() {
   return Date.now() / 1000;
@@ -269,25 +269,7 @@ export class CrowdStrikeApiGateway {
         return response.json();
       }
 
-      if (response.status === 401) {
-        throw new IntegrationProviderAuthenticationError({
-          status: response.status,
-          statusText: response.statusText,
-          endpoint: requestUrl,
-        });
-      }
-      if (response.status === 403) {
-        throw new IntegrationProviderAuthorizationError({
-          status: response.status,
-          statusText: response.statusText,
-          endpoint: requestUrl,
-        });
-      }
-      throw new IntegrationProviderAPIError({
-        status: response.status,
-        statusText: response.statusText,
-        endpoint: requestUrl,
-      });
+      httpErrorPolicy.handleError(response, requestUrl);
     };
 
     return retry(requestAttempt, {
