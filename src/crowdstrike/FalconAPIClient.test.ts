@@ -8,6 +8,7 @@ import {
   CrowdStrikeApiGateway,
   DEFAULT_RATE_LIMIT_CONFIG,
 } from './CrowdStrikeApiGateway';
+import fetch from 'node-fetch';
 
 let recording: Recording;
 
@@ -18,6 +19,7 @@ const createClient = (): FalconAPIClient => {
       config,
       createMockIntegrationLogger(),
       new CrowdStrikeApiClientQueryBuilder(),
+      fetch,
       {
         ...DEFAULT_ATTEMPT_OPTIONS,
         delay: 2,
@@ -116,6 +118,7 @@ describe('authenticate', () => {
         { ...config, clientSecret: 'test-error-handling' },
         createMockIntegrationLogger(),
         new CrowdStrikeApiClientQueryBuilder(),
+        fetch,
       ),
     });
     try {
@@ -263,6 +266,7 @@ describe('executeAPIRequest', () => {
         config,
         createMockIntegrationLogger(),
         new CrowdStrikeApiClientQueryBuilder(),
+        fetch,
       ),
     });
 
@@ -624,6 +628,7 @@ describe('test availability zones', () => {
         availabilityZoneConfig,
         createMockIntegrationLogger(),
         new CrowdStrikeApiClientQueryBuilder(),
+        fetch,
         {
           ...DEFAULT_ATTEMPT_OPTIONS,
           delay: 2,

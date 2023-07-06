@@ -3,6 +3,7 @@ import { IntegrationConfig } from '../config';
 import { FalconAPIClient } from './FalconAPIClient';
 import { CrowdStrikeApiClientQueryBuilder } from './CrowdStrikeApiClientQueryBuilder';
 import { CrowdStrikeApiGateway } from './CrowdStrikeApiGateway';
+import fetch from 'node-fetch';
 
 let client: FalconAPIClient | undefined;
 
@@ -17,6 +18,7 @@ export default function getOrCreateFalconAPIClient(
         config,
         logger,
         new CrowdStrikeApiClientQueryBuilder(),
+        fetch,
       ),
     });
   }

@@ -15,7 +15,7 @@ import {
   RateLimitState,
   ResourcesResponse,
 } from './types';
-import fetch, { RequestInit } from 'node-fetch';
+import { RequestInit } from 'node-fetch';
 import { FalconAPIResourceIterationCallback } from './FalconAPIClient';
 import { ICrowdStrikeApiClientQueryBuilder } from './CrowdStrikeApiClientQueryBuilder';
 import { Total } from './Total';
@@ -56,11 +56,13 @@ export class CrowdStrikeApiGateway {
   private readonly rateLimitConfig: RateLimitConfig = DEFAULT_RATE_LIMIT_CONFIG;
   private total: Total;
   private queryBuilder: ICrowdStrikeApiClientQueryBuilder;
+  private fetcher;
 
   constructor(
     credentials: OAuth2ClientCredentials,
     logger: IntegrationLogger,
     queryBuilder: ICrowdStrikeApiClientQueryBuilder,
+    fetcher,
     attemptOptions?: AttemptOptions,
   ) {
     this.queryBuilder = queryBuilder;
@@ -68,6 +70,7 @@ export class CrowdStrikeApiGateway {
     this.credentials = credentials;
     this.logger = logger;
     this.attemptOptions = attemptOptions ?? DEFAULT_ATTEMPT_OPTIONS;
+    this.fetcher = fetcher;
 
     this.credentials.availabilityZone = credentials.availabilityZone
       ? `${credentials.availabilityZone}.`
@@ -164,7 +167,7 @@ export class CrowdStrikeApiGateway {
 
     const authRequestAttempt = async () => {
       const endpoint = `https://api.${this.credentials.availabilityZone}crowdstrike.com/oauth2/token`;
-      const response = await fetch(endpoint, {
+      const response = await this.fetcher(endpoint, {
         method: 'POST',
         headers: {
           accept: 'application/json',
@@ -229,7 +232,7 @@ export class CrowdStrikeApiGateway {
     const requestAttempt = async () => {
       const token = await this.authenticate();
       const startTime = Date.now();
-      const response = await fetch(requestUrl, {
+      const response = await this.fetcher(requestUrl, {
         ...init,
         headers: {
           ...init.headers,

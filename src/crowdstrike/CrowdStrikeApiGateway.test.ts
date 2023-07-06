@@ -1,4 +1,4 @@
-import { Headers } from 'node-fetch';
+import fetch, { Headers } from 'node-fetch';
 import { CrowdStrikeApiGateway } from './CrowdStrikeApiGateway';
 import * as sinon from 'sinon';
 import { config } from '../../test/config';
@@ -11,7 +11,7 @@ const noop = () => {
 describe('CrowdStrikeApiGateway', () => {
   const queryBuilder = new CrowdStrikeApiClientQueryBuilder();
 
-  describe('handleRedirects', () => {
+  describe('handleRedirects()', () => {
     describe('given a response with the crowdstrike api domain', () => {
       it('should invoke the handler', () => {
         const logger = {
@@ -22,6 +22,7 @@ describe('CrowdStrikeApiGateway', () => {
           config,
           logger as any,
           queryBuilder,
+          fetch,
         );
         const headers = new Headers();
         headers.set('location', '/');
@@ -31,11 +32,9 @@ describe('CrowdStrikeApiGateway', () => {
           url: 'https://api.crowdstrike.com',
         };
 
-        const handler = (value) => {
+        apiGateway.handleRedirects(response, (value) => {
           expect(value.href).toBe('https://api.crowdstrike.com/');
-        };
-
-        apiGateway.handleRedirects(response, handler);
+        });
       });
     });
 
@@ -63,16 +62,15 @@ describe('CrowdStrikeApiGateway', () => {
           config,
           logger as any,
           queryBuilder,
+          fetch,
         );
 
-        const handler = noop;
-
-        apiGateway.handleRedirects(response, handler);
+        apiGateway.handleRedirects(response, noop);
       });
     });
   });
 
-  describe('handle429Error', () => {
+  describe('handle429Error()', () => {
     describe('given a limitRemaining less than the reserveLimit', () => {
       it('should wait for the cooldwon period', async () => {
         const logger = {
@@ -83,6 +81,7 @@ describe('CrowdStrikeApiGateway', () => {
           config,
           logger as any,
           queryBuilder,
+          fetch,
         );
 
         await apiGateway.handle429Error({
@@ -119,6 +118,80 @@ describe('CrowdStrikeApiGateway', () => {
         expect(logger.info.secondCall.args[1]).toEqual(
           'Rate limit remaining is less than reserve limit. Waiting for cooldown period.',
         );
+      });
+    });
+  });
+
+  describe('paginateResources()', () => {
+    describe('given a resource', () => {
+      describe('when pagination turns undefined', () => {
+        it('should not break', async () => {
+          const logger = {
+            warn: noop,
+            info: noop,
+            debug: noop,
+          };
+
+          let count = 0;
+
+          const fetcher = () => {
+            if (count === 0) {
+              count += 1;
+              return Promise.resolve({
+                ok: true,
+                json() {
+                  return {
+                    access_token: '',
+                    expires_in: new Date('3000-12-12'),
+                  };
+                },
+              });
+            }
+
+            const headers = new Headers();
+            headers.set('X-RateLimit-Remaining', '0');
+            headers.set('X-RateLimit-Limit', '1');
+            headers.set('X-RateLimit-RetryAfter', '1000');
+
+            count++;
+            return Promise.resolve({
+              ok: true,
+              headers,
+              json() {
+                return {
+                  resources: [{ id: count }],
+                  meta: {
+                    pagination:
+                      count === 4
+                        ? undefined
+                        : {
+                            total: 3,
+                          },
+                  },
+                  errors: [],
+                };
+              },
+            });
+          };
+
+          const apiGateway = new CrowdStrikeApiGateway(
+            config,
+            logger as any,
+            queryBuilder,
+            fetcher,
+          );
+
+          const callback = sinon.spy();
+
+          await apiGateway.paginateResources({
+            callback,
+            resourcePath: 'https://api.crowdstrike.com/',
+          });
+
+          expect(callback.firstCall.args[0]).toEqual([{ id: 2 }]);
+          expect(callback.secondCall.args[0]).toEqual([{ id: 4 }]);
+          expect(callback.thirdCall.args[0]).toEqual([{ id: 6 }]);
+        });
       });
     });
   });
