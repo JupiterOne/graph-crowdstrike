@@ -202,6 +202,7 @@ export function createVulnerabilityEntity(source: Vulnerability) {
         cveId,
         exploitStatus: cve?.exploit_status,
         exprtRating: cve?.exprt_rating,
+        productNameVersion: source.apps.product_name_version
         // TODO: Consider additional properties: apps, remediation
       },
     },
