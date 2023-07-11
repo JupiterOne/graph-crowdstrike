@@ -702,15 +702,6 @@
     ajv "^8.0.0"
     ajv-formats "^2.0.0"
 
-"@jupiterone/graph-crowdstrike@^3.6.4":
-  version "3.6.4"
-  resolved "https://registry.yarnpkg.com/@jupiterone/graph-crowdstrike/-/graph-crowdstrike-3.6.4.tgz#a167290e8dfcba39626d9fb8a6826348332b62b9"
-  integrity sha512-+Y5UrK0hYmga6zUplZymZJtir/xPVC1OfJgzFObLZPXRH2jGQ6AnAHOwNAvxKRhROq2E6s+P2Ba/tjqALmiEkg==
-  dependencies:
-    auto "^10.46.0"
-    node-fetch "^2.6.7"
-    p-map "^4.0.0"
-
 "@jupiterone/integration-sdk-cli@^8.41.0":
   version "8.41.0"
   resolved "https://registry.yarnpkg.com/@jupiterone/integration-sdk-cli/-/integration-sdk-cli-8.41.0.tgz#e93de8549d5bf4d20f739ad6c29c3105cf4586a2"
