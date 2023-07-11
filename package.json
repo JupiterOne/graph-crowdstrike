@@ -35,7 +35,8 @@
   "dependencies": {
     "auto": "^10.46.0",
     "node-fetch": "^2.6.7",
-    "p-map": "^4.0.0"
+    "p-map": "^4.0.0",
+    "prettier": "^3.0.0"
   },
   "peerDependencies": {
     "@jupiterone/integration-sdk-core": "^8.24.1"

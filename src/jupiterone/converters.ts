@@ -164,8 +164,12 @@ export function createPreventionPolicyEntity(source: PreventionPolicy) {
  *         "evaluation_logic": { "id": "" }
  *       }
  *     ],
- *     "cve": { "id": "CVE-2021-23444" }
- *   }
+ *     "cve": { "id": "CVE-2021-23444",
+ *              "vendor_advisory": [
+ *                "https://docs.microsoft.com/en-us/security-updates/securitybulletins/2013/ms13-098",
+ *                "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2013-3900",
+ *                ] }
+ *      }
  * @param source
  */
 export function createVulnerabilityEntity(source: Vulnerability) {
@@ -196,14 +200,17 @@ export function createVulnerabilityEntity(source: Vulnerability) {
         public: true,
         impact: cve.impact_score,
         vector: cve?.vector,
+        vendorAdvisory: cve.vendor_advisory,
         references: cve.references,
         webLink: cve.references?.length ? cve.references[0] : undefined,
         open: source.status.includes('open'), // matches open and reopen
         cveId,
         exploitStatus: cve?.exploit_status,
         exprtRating: cve?.exprt_rating,
-        productNameVersion: source.apps.product_name_version
-        // TODO: Consider additional properties: apps, remediation
+        productNameVersion: source.apps?.length
+          ? source.apps[0].product_name_version
+          : undefined,
+        // TODO: Consider additional properties: remediation..
       },
     },
   });
