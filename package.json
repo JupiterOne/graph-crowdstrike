@@ -33,6 +33,7 @@
     "validate:questions:dry": "j1-integration validate-question-file --dry-run"
   },
   "dependencies": {
+    "@jupiterone/graph-crowdstrike": "^3.6.4",
     "auto": "^10.46.0",
     "node-fetch": "^2.6.7",
     "p-map": "^4.0.0",
