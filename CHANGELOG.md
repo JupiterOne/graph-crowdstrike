@@ -1,3 +1,20 @@
+# v3.7.0 (Tue Jul 11 2023)
+
+#### 🚀 Enhancement
+
+- added productNameVersion property [#162](https://github.com/JupiterOne/graph-crowdstrike/pull/162) ([@SeaBlooms](https://github.com/SeaBlooms))
+
+#### 🐛 Bug Fix
+
+- INT-8360: fix total null pointer exception [#161](https://github.com/JupiterOne/graph-crowdstrike/pull/161) ([@mishelashala](https://github.com/mishelashala))
+
+#### Authors: 2
+
+- [@SeaBlooms](https://github.com/SeaBlooms)
+- Michell Ayala ([@mishelashala](https://github.com/mishelashala))
+
+---
+
 # v3.6.4 (Mon Jul 03 2023)
 
 #### 🐛 Bug Fix
