@@ -1,3 +1,15 @@
+# v3.8.0 (Mon Jul 31 2023)
+
+#### 🚀 Enhancement
+
+- Updating to node 18 and updating SDK. [#163](https://github.com/JupiterOne/graph-crowdstrike/pull/163) ([@adam-in-ict](https://github.com/adam-in-ict))
+
+#### Authors: 1
+
+- Adam Pierson ([@adam-in-ict](https://github.com/adam-in-ict))
+
+---
+
 # v3.7.0 (Tue Jul 11 2023)
 
 #### 🚀 Enhancement
