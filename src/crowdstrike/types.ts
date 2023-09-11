@@ -177,6 +177,7 @@ export type Vulnerability = {
     exploitability_score?: number;
     impact_score?: number;
     vector?: string;
+    vendor_advisory?: string[];
   };
   host_info?: {
     hostname: string;

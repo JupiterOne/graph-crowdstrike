@@ -1,3 +1,68 @@
+# v3.8.0 (Mon Jul 31 2023)
+
+#### 🚀 Enhancement
+
+- Updating to node 18 and updating SDK. [#163](https://github.com/JupiterOne/graph-crowdstrike/pull/163) ([@adam-in-ict](https://github.com/adam-in-ict))
+
+#### Authors: 1
+
+- Adam Pierson ([@adam-in-ict](https://github.com/adam-in-ict))
+
+---
+
+# v3.7.0 (Tue Jul 11 2023)
+
+#### 🚀 Enhancement
+
+- added productNameVersion property [#162](https://github.com/JupiterOne/graph-crowdstrike/pull/162) ([@SeaBlooms](https://github.com/SeaBlooms))
+
+#### 🐛 Bug Fix
+
+- INT-8360: fix total null pointer exception [#161](https://github.com/JupiterOne/graph-crowdstrike/pull/161) ([@mishelashala](https://github.com/mishelashala))
+
+#### Authors: 2
+
+- [@SeaBlooms](https://github.com/SeaBlooms)
+- Michell Ayala ([@mishelashala](https://github.com/mishelashala))
+
+---
+
+# v3.6.4 (Mon Jul 03 2023)
+
+#### 🐛 Bug Fix
+
+- Changing when we authenticate [#160](https://github.com/JupiterOne/graph-crowdstrike/pull/160) (gonzaloavalosribas@Gonzalos-MacBook-Pro.local)
+
+#### Authors: 1
+
+- Gonzalo Avalos Ribas ([@Gonzalo-Avalos-Ribas](https://github.com/Gonzalo-Avalos-Ribas))
+
+---
+
+# v3.6.3 (Fri Jun 30 2023)
+
+#### 🐛 Bug Fix
+
+- Added log of body for when 400 happens [#159](https://github.com/JupiterOne/graph-crowdstrike/pull/159) (gonzaloavalosribas@Gonzalos-MacBook-Pro.local)
+
+#### Authors: 1
+
+- Gonzalo Avalos Ribas ([@Gonzalo-Avalos-Ribas](https://github.com/Gonzalo-Avalos-Ribas))
+
+---
+
+# v3.6.2 (Tue Jun 27 2023)
+
+#### 🐛 Bug Fix
+
+- Fixes to zta step [#158](https://github.com/JupiterOne/graph-crowdstrike/pull/158) (gonzaloavalosribas@Gonzalos-MacBook-Pro.local)
+
+#### Authors: 1
+
+- Gonzalo Avalos Ribas ([@Gonzalo-Avalos-Ribas](https://github.com/Gonzalo-Avalos-Ribas))
+
+---
+
 # v3.6.1 (Mon Jun 05 2023)
 
 #### 🐛 Bug Fix

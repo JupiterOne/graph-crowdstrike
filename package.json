@@ -1,9 +1,12 @@
 {
   "name": "@jupiterone/graph-crowdstrike",
-  "version": "3.6.1",
+  "version": "3.8.0",
   "description": "A graph conversion tool for the CrowdStrike API",
   "main": "src/index.js",
   "types": "src/index.d.ts",
+  "engines": {
+    "node": ">=18.0.0 <19.x"
+  },
   "repository": "https://github.com/JupiterOne/graph-crowdstrike",
   "license": "MPL-2.0",
   "files": [
@@ -38,13 +41,15 @@
     "p-map": "^4.0.0"
   },
   "peerDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.24.1"
+    "@jupiterone/integration-sdk-core": "^9.9.2"
   },
   "devDependencies": {
-    "@jupiterone/integration-sdk-core": "^8.31.0",
-    "@jupiterone/integration-sdk-dev-tools": "^8.31.0",
-    "@jupiterone/integration-sdk-testing": "^8.31.0",
-    "@types/node-fetch": "^2.6.2"
+    "@jupiterone/integration-sdk-core": "^9.9.2",
+    "@jupiterone/integration-sdk-dev-tools": "^9.9.2",
+    "@jupiterone/integration-sdk-testing": "^9.9.2",
+    "@types/node-fetch": "^2.6.2",
+    "@types/sinon": "^10.0.15",
+    "sinon": "^15.2.0"
   },
   "auto": {
     "plugins": [

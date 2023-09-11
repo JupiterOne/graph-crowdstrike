@@ -1,6 +1,8 @@
 import {
+  IntegrationProviderAuthorizationError,
   IntegrationStep,
   IntegrationStepExecutionContext,
+  IntegrationWarnEventName,
   createDirectRelationship,
   getRawData,
 } from '@jupiterone/integration-sdk-core';
@@ -16,23 +18,44 @@ async function fetchZeroTrustAssessments({
   logger,
 }: IntegrationStepExecutionContext<IntegrationConfig>): Promise<void> {
   const client = getOrCreateFalconAPIClient(instance.config, logger);
-  await client.iterateZeroTrustAssessment({
-    query: {
-      limit: '250',
-      filter: 'score:<=100', // Score is the only filter possible. We must include a filter. Score is between [0,100]
-    },
-    callback: async (zeroTrustAssessments) => {
-      for (const zta of zeroTrustAssessments) {
-        if (
-          !jobState.hasKey(`${Entities.ZERO_TRUST_ASSESSMENT._type}|${zta.aid}`)
-        ) {
-          await jobState.addEntity(createZeroTrustAssessmentEntity(zta));
-        } else {
-          logger.warn({ zta }, `Duplicated key detected.`);
+  await client
+    .iterateZeroTrustAssessment({
+      query: {
+        limit: '250',
+        filter: 'score:<=50', // Score is the only filter possible. We must include a filter. Score is between [0,100]
+      },
+      callback: async (zeroTrustAssessments) => {
+        for (const zta of zeroTrustAssessments) {
+          if (
+            !jobState.hasKey(
+              `${Entities.ZERO_TRUST_ASSESSMENT._type}|${zta.aid}`,
+            )
+          ) {
+            await jobState.addEntity(createZeroTrustAssessmentEntity(zta));
+          } else {
+            logger.warn({ zta }, `Duplicated key detected.`);
+          }
         }
+      },
+    })
+    .catch((error) => {
+      if (
+        error instanceof IntegrationProviderAuthorizationError &&
+        error.status === 403
+      ) {
+        logger.warn(
+          { error },
+          'Encountered a 403 while ingesting zero trust assessments. This is most like a permissions error.',
+        );
+        logger.publishWarnEvent({
+          name: IntegrationWarnEventName.MissingPermission,
+          description:
+            'Received authorization error when attempting to retrieve zero trust assessments. Please update credentials to grant access.',
+        });
+      } else {
+        throw error;
       }
-    },
-  });
+    });
 }
 
 async function fetchZTASensorRelationships({

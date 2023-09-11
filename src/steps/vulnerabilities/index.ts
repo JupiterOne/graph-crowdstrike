@@ -166,7 +166,7 @@ async function buildVulnerabilitySensorRelationship({
       duplicateVulnerabilitySensorRelationshipKeysFoundCount,
       sensorEntitiesNotFoundCount,
     },
-    'Build Vunlerability -> Sensor relationship step summary',
+    'Build Vulnerability -> Sensor relationship step summary',
   );
 }
 
@@ -180,7 +180,7 @@ export const vulnerabilitiesSteps: IntegrationStep<IntegrationConfig>[] = [
   },
   {
     id: StepIds.VULN_EXPLOITS_SENSOR,
-    name: 'Build Vunlerability -> Sensor relationship',
+    name: 'Build Vulnerability -> Sensor relationship',
     entities: [],
     relationships: [Relationships.VULN_EXPLOITS_SENSOR],
     dependsOn: [StepIds.VULNERABILITIES, StepIds.DEVICES],
