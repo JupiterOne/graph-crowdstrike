@@ -14,7 +14,7 @@ import {
   RateLimitState,
   ResourcesResponse,
 } from './types';
-import { RequestInit } from 'node-fetch';
+import fetch, { RequestInit } from 'node-fetch';
 import { FalconAPIResourceIterationCallback } from './FalconAPIClient';
 import { ICrowdStrikeApiClientQueryBuilder } from './CrowdStrikeApiClientQueryBuilder';
 import { Total } from './Total';
@@ -24,7 +24,7 @@ function getUnixTimeNow() {
   return Date.now() / 1000;
 }
 
-async function sleep(ms) {
+async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
@@ -56,13 +56,13 @@ export class CrowdStrikeApiGateway {
   private readonly rateLimitConfig: RateLimitConfig = DEFAULT_RATE_LIMIT_CONFIG;
   private total: Total;
   private queryBuilder: ICrowdStrikeApiClientQueryBuilder;
-  private fetcher;
+  private fetcher: typeof fetch;
 
   constructor(
     credentials: OAuth2ClientCredentials,
     logger: IntegrationLogger,
     queryBuilder: ICrowdStrikeApiClientQueryBuilder,
-    fetcher,
+    fetcher: typeof fetch,
     attemptOptions?: AttemptOptions,
   ) {
     this.queryBuilder = queryBuilder;
@@ -361,8 +361,11 @@ export class CrowdStrikeApiGateway {
         'pagination response details',
       );
 
-      paginationParams = response.meta.pagination as PaginationMeta;
       seen += response.resources.length;
+      paginationParams = {
+        ...response.meta.pagination,
+        offset: seen,
+      } as PaginationMeta;
 
       const baseUrl = this.queryBuilder.buildResourcePathUrl(
         availabilityZone,

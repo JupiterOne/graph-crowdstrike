@@ -10,10 +10,13 @@ import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/
 import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
 import { IntegrationConfig } from '../../config';
 import { Entities, Relationships, StepIds } from '../constants';
-import { createApplicationEntity } from '../../jupiterone/converters';
+import {
+  createDiscoverApplicationEntity,
+  createSensorAgentKey,
+} from '../../jupiterone/converters';
 import pMap from 'p-map';
 
-async function fetchApplications({
+async function fetchDiscoverApplications({
   instance,
   jobState,
   logger,
@@ -29,15 +32,20 @@ async function fetchApplications({
         await pMap(
           apps,
           async (app) => {
-            const appEntity = createApplicationEntity(app);
+            if (!app.host?.aid) {
+              // Don't create application, it's not useful if it doesn't relates to any HostAgent
+              return;
+            }
 
+            const appEntity = createDiscoverApplicationEntity(app);
             await jobState.addEntity(appEntity);
 
-            if (app.host?.aid && jobState.hasKey(app.host?.aid)) {
+            const sensorKey = createSensorAgentKey(app.host.aid);
+            if (jobState.hasKey(sensorKey)) {
               await jobState.addRelationship(
                 createDirectRelationship({
                   _class: RelationshipClass.HAS,
-                  fromKey: app.host?.aid,
+                  fromKey: sensorKey,
                   fromType: Entities.SENSOR._type,
                   toKey: appEntity._key,
                   toType: appEntity._type,
@@ -73,11 +81,11 @@ async function fetchApplications({
 
 export const applicationsSteps: IntegrationStep<IntegrationConfig>[] = [
   {
-    id: StepIds.APPLICATIONS,
+    id: StepIds.DISCOVER_APPLICATIONS,
     name: 'Fetch Applications',
-    entities: [Entities.APPLICATION],
-    relationships: [Relationships.SENSOR_HAS_APPLICATION],
+    entities: [Entities.DISCOVER_APPLICATION],
+    relationships: [Relationships.SENSOR_HAS_DISCOVER_APPLICATION],
     dependsOn: [StepIds.DEVICES],
-    executionHandler: fetchApplications,
+    executionHandler: fetchDiscoverApplications,
   },
 ];

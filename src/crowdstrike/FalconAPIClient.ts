@@ -1,8 +1,8 @@
 import { URLSearchParams } from 'url';
 
 import {
-  Application,
-  ApplicationIdentifier,
+  DiscoverApplication,
+  DiscoverApplicationIdentifier,
   Device,
   DeviceIdentifier,
   OAuth2Token,
@@ -150,18 +150,20 @@ export class FalconAPIClient {
    * @returns Promise
    */
   public async iterateApplications(input: {
-    callback: FalconAPIResourceIterationCallback<Application>;
+    callback: FalconAPIResourceIterationCallback<DiscoverApplication>;
     query?: QueryParams;
   }): Promise<void> {
-    return this.crowdStrikeApiGateway.paginateResources<ApplicationIdentifier>({
-      callback: async (appsIds) => {
-        if (appsIds.length) {
-          return input.callback(await this.fetchApplications(appsIds));
-        }
+    return this.crowdStrikeApiGateway.paginateResources<DiscoverApplicationIdentifier>(
+      {
+        callback: async (appsIds) => {
+          if (appsIds.length) {
+            return input.callback(await this.fetchApplications(appsIds));
+          }
+        },
+        query: input.query,
+        resourcePath: '/discover/queries/applications/v1',
       },
-      query: input.query,
-      resourcePath: '/discover/queries/applications/v1',
-    });
+    );
   }
 
   /**
@@ -253,15 +255,16 @@ export class FalconAPIClient {
    * Discover Service - applications.
    * Swagger: https://assets.falcon.us-2.crowdstrike.com/support/api/swagger-us2.html#/discover/get-applications
    */
-  private async fetchApplications(ids: string[]): Promise<Application[]> {
+  private async fetchApplications(
+    ids: string[],
+  ): Promise<DiscoverApplication[]> {
     const availabilityZone = this.crowdStrikeApiGateway.getAvailabilityZone();
+    const queryParams = ids.map((id) => `ids=${id}`).join('&');
     const response =
       await this.crowdStrikeApiGateway.executeAPIRequestWithRetries<
-        ResourcesResponse<Application>
+        ResourcesResponse<DiscoverApplication>
       >(
-        `https://api.${availabilityZone}crowdstrike.com/discover/entities/applications/v1?ids=${ids.join(
-          '&ids=',
-        )}`,
+        `https://api.${availabilityZone}crowdstrike.com/discover/entities/applications/v1?${queryParams}`,
         {
           method: 'GET',
           headers: {

@@ -136,7 +136,7 @@ export type ResourcesResponse<T> = {
  * The identifier of a discovered device within the CrowdStrike Falcon platform.
  */
 export type DeviceIdentifier = string;
-export type ApplicationIdentifier = string;
+export type DiscoverApplicationIdentifier = string;
 
 export type Device = {
   device_id: DeviceIdentifier;
@@ -202,39 +202,48 @@ export type DetectedApplication = {
   };
 };
 
-export type Application = {
-  id: string;
+export interface DiscoverApplication {
+  id: DiscoverApplicationIdentifier;
+  category?: string;
   cid: string;
   name?: string;
   vendor?: string;
   version?: string;
-  name_vendor: string;
+  name_vendor?: string;
   name_vendor_version?: string;
   versioning_scheme?: string;
   architectures?: string[];
+  groups?: string[];
   installation_paths?: string[];
   installation_timestamp?: string;
   first_seen_timestamp?: string;
   last_updated_timestamp?: string;
+  last_used_timestamp?: string;
   is_suspicious?: boolean;
   is_normalized?: boolean;
-  host?: {
-    id?: string;
-    aid?: string;
-    country?: string;
-    platform_name?: string;
-    os_version?: string;
-    kernel_version?: string;
-    product_type_desc?: string;
-    system_manufacturer?: string;
-    agent_version?: string;
-    external_ip?: string;
-    hostname?: string;
-    current_mac_address?: string;
-    current_network_prefix?: string;
-    internet_exposure?: string;
-  };
-};
+  host?: Host;
+  last_used_file_hash?: string;
+  last_used_file_name?: string;
+  last_used_user_name?: string;
+  last_used_user_sid?: string;
+}
+
+export interface Host {
+  id: string;
+  aid?: string;
+  country?: string;
+  platform_name?: string;
+  os_version?: string;
+  kernel_version?: string;
+  product_type_desc?: string;
+  system_manufacturer?: string;
+  agent_version?: string;
+  external_ip?: string;
+  hostname?: string;
+  current_mac_address?: string;
+  current_network_prefix?: string;
+  internet_exposure?: string;
+}
 
 export type ZTA_Score = {
   aid: string;

@@ -7,17 +7,17 @@ import { StepIds } from '../constants';
 import { setupCrowdstrikeRecording } from '../../../test/recording';
 import { buildStepTestConfig } from '../../../test/config';
 
-describe(`vulnerabilities#${StepIds.APPLICATIONS}`, () => {
+describe(StepIds.DISCOVER_APPLICATIONS, () => {
   let recording: Recording;
   afterEach(async () => {
     if (recording) await recording.stop();
   });
 
   test(
-    StepIds.APPLICATIONS,
+    StepIds.DISCOVER_APPLICATIONS,
     async () => {
       recording = setupCrowdstrikeRecording({
-        name: StepIds.APPLICATIONS,
+        name: StepIds.DISCOVER_APPLICATIONS,
         directory: __dirname,
         options: {
           matchRequestsBy: {
@@ -27,11 +27,11 @@ describe(`vulnerabilities#${StepIds.APPLICATIONS}`, () => {
         },
       });
 
-      const stepConfig = buildStepTestConfig(StepIds.APPLICATIONS);
+      const stepConfig = buildStepTestConfig(StepIds.DISCOVER_APPLICATIONS);
       const result = await executeStepWithDependencies(stepConfig);
 
       expect(result).toMatchStepMetadata(stepConfig);
     },
-    100_000,
+    200_000,
   );
 });

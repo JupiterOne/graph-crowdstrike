@@ -6,7 +6,7 @@ import {
 import { Entities } from '../steps/constants';
 
 import {
-  Application,
+  DiscoverApplication,
   DetectedApplication,
   Device,
   PreventionPolicy,
@@ -94,6 +94,10 @@ export function buildEc2InstanceArn(source: Device): string | undefined {
   return `arn:aws:ec2:${region}:${serviceProviderAccountId}:instance/${instanceId}`;
 }
 
+export function createSensorAgentKey(deviceId: string): string {
+  return deviceId;
+}
+
 export function createSensorAgentEntity(source: Device) {
   return createIntegrationEntity({
     entityData: {
@@ -107,7 +111,7 @@ export function createSensorAgentEntity(source: Device) {
         // version is upgraded.  This is listed in their API documentation
         // and it notes that this means that it's a valid case for a Host to
         // potentially have multiple sensors protecting it.
-        _key: source.device_id,
+        _key: createSensorAgentKey(source.device_id),
         name: source.hostname,
         function: ['anti-malware', 'activity-monitor'],
         firstSeenOn: parseTimePropertyValue(source.first_seen),
@@ -234,48 +238,27 @@ export function createDetectedApplicationEntity(source: DetectedApplication) {
   });
 }
 
-export function createApplicationEntity(source: Application) {
+export function createDiscoverApplicationEntity(source: DiscoverApplication) {
   return createIntegrationEntity({
     entityData: {
       source,
       assign: {
-        _class: Entities.APPLICATION._class,
-        _type: Entities.APPLICATION._type,
+        _class: Entities.DISCOVER_APPLICATION._class,
+        _type: Entities.DISCOVER_APPLICATION._type,
         _key: source.id,
-        name: source.name || source.name_vendor,
+        name: source.name || source.id,
         id: source.id,
         vendor: source.vendor,
         version: source.version,
-        nameVendor: source.name_vendor,
-        nameVendorVersion: source.name_vendor,
         versioningScheme: source.versioning_scheme,
         architectures: source.architectures,
         isSuspicious: source.is_suspicious,
         isNormalized: source.is_normalized,
-        installationPaths: source.installation_paths?.map(
-          (installationPath) => installationPath,
-        ),
-        installationTimestamp: parseTimePropertyValue(
-          source.installation_timestamp,
-        ),
-        firstSeenTimestamp: parseTimePropertyValue(source.first_seen_timestamp),
-        lastUpdatedTimestamp: parseTimePropertyValue(
-          source.last_updated_timestamp,
-        ),
-        'host.id': source?.host?.id,
-        'host.aid': source?.host?.aid,
-        'host.country': source?.host?.country,
-        'host.platformName': source?.host?.platform_name,
-        'host.osVersion': source?.host?.os_version,
-        'host.kernelVersion': source?.host?.kernel_version,
-        'host.productTypeDesc': source?.host?.product_type_desc,
-        'host.systemManufacturer': source?.host?.system_manufacturer,
-        'host.agentVersion': source?.host?.agent_version,
-        'host.externalIp': source?.host?.external_ip,
-        'host.hostname': source?.host?.hostname,
-        'host.currentMacAddress': source?.host?.current_mac_address,
-        'host.currentNetworkPrefix': source?.host?.current_network_prefix,
-        'host.internetExposure': source?.host?.internet_exposure,
+        installationPaths: source.installation_paths,
+        installedOn: parseTimePropertyValue(source.installation_timestamp),
+        firstSeenOn: parseTimePropertyValue(source.first_seen_timestamp),
+        lastUpdatedOn: parseTimePropertyValue(source.last_updated_timestamp),
+        lastUsedOn: parseTimePropertyValue(source.last_used_timestamp),
       },
     },
   });

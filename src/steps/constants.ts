@@ -13,7 +13,7 @@ export const StepIds: Record<
   | 'ACCOUNT'
   | 'DEVICES'
   | 'PREVENTION_POLICIES'
-  | 'APPLICATIONS'
+  | 'DISCOVER_APPLICATIONS'
   | 'VULNERABILITIES'
   | 'DEVICE_POLICY_RELATIONSHIPS'
   | 'ZERO_TRUST_ASSESSMENT'
@@ -24,7 +24,7 @@ export const StepIds: Record<
   ACCOUNT: 'get-account',
   DEVICES: 'fetch-devices',
   PREVENTION_POLICIES: 'fetch-prevention-policies',
-  APPLICATIONS: 'fetch-applications',
+  DISCOVER_APPLICATIONS: 'fetch-discover-applications',
   DEVICE_POLICY_RELATIONSHIPS: 'fetch-device-policies',
   VULNERABILITIES: 'fetch-vulnerabilities',
   ZERO_TRUST_ASSESSMENT: 'fetch-zero-trust-assessments',
@@ -40,9 +40,9 @@ export const Entities: Record<
   | 'SENSOR'
   | 'PREVENTION_POLICY'
   | 'VULNERABILITY'
-  | 'APPLICATION'
   | 'DETECTED_APPLICATION'
-  | 'ZERO_TRUST_ASSESSMENT',
+  | 'ZERO_TRUST_ASSESSMENT'
+  | 'DISCOVER_APPLICATION',
   CrowdstrikeStepEntityMetadata
 > = {
   ACCOUNT: {
@@ -76,16 +76,16 @@ export const Entities: Record<
     _type: 'crowdstrike_detected_application',
     _class: ['Application'],
   },
-  APPLICATION: {
-    resourceName: 'Application',
-    _type: 'crowdstrike_application',
-    _class: ['Application'],
-  },
   ZERO_TRUST_ASSESSMENT: {
     resourceName: 'Zero Trust Assessment',
     _type: 'crowdstrike_zero_trust_assessment',
     _class: ['Assessment'],
     disableClassMatch: true,
+  },
+  DISCOVER_APPLICATION: {
+    resourceName: 'Discover Application',
+    _type: 'crowdstrike_discover_application',
+    _class: ['Application'],
   },
 };
 
@@ -94,7 +94,7 @@ export const Relationships: Record<
   | 'ACCOUNT_HAS_SENSOR'
   | 'PREVENTION_POLICY_ENFORCES_PROTECTION_SERVICE'
   | 'SENSOR_ASSIGNED_PREVENTION_POLICY'
-  | 'SENSOR_HAS_APPLICATION'
+  | 'SENSOR_HAS_DISCOVER_APPLICATION'
   | 'VULN_EXPLOITS_SENSOR'
   | 'APP_HAS_VULN'
   | 'SENSOR_HAS_ZERO_TRUST_ASSESSMENT',
@@ -124,11 +124,11 @@ export const Relationships: Record<
     _class: RelationshipClass.ASSIGNED,
     targetType: Entities.PREVENTION_POLICY._type,
   },
-  SENSOR_HAS_APPLICATION: {
-    _type: 'crowdstrike_sensor_has_application',
+  SENSOR_HAS_DISCOVER_APPLICATION: {
+    _type: 'crowdstrike_sensor_has_discover_application',
     sourceType: Entities.SENSOR._type,
     _class: RelationshipClass.HAS,
-    targetType: Entities.APPLICATION._type,
+    targetType: Entities.DISCOVER_APPLICATION._type,
   },
   VULN_EXPLOITS_SENSOR: {
     _type: 'crowdstrike_vulnerability_exploits_sensor',
@@ -139,7 +139,7 @@ export const Relationships: Record<
   },
   APP_HAS_VULN: {
     _type: 'crowdstrike_detected_application_has_vulnerability',
-    sourceType: Entities.APPLICATION._type,
+    sourceType: Entities.DETECTED_APPLICATION._type,
     _class: RelationshipClass.HAS,
     targetType: Entities.VULNERABILITY._type,
     partial: true,
