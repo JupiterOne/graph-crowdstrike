@@ -1,3 +1,21 @@
+# v3.9.0 (Tue Sep 12 2023)
+
+#### 🚀 Enhancement
+
+- INT-7921: ingest applications [#157](https://github.com/JupiterOne/graph-crowdstrike/pull/157) ([@gastonyelmini](https://github.com/gastonyelmini) ronald.arias@contractor.jupiterone.com)
+
+#### 🐛 Bug Fix
+
+- INT-8364: fix typo [#164](https://github.com/JupiterOne/graph-crowdstrike/pull/164) ([@mishelashala](https://github.com/mishelashala))
+
+#### Authors: 3
+
+- Gaston Yelmini ([@gastonyelmini](https://github.com/gastonyelmini))
+- Michell Ayala ([@mishelashala](https://github.com/mishelashala))
+- Ronald Arias (ronald.arias@contractor.jupiterone.com)
+
+---
+
 # v3.8.0 (Mon Jul 31 2023)
 
 #### 🚀 Enhancement
