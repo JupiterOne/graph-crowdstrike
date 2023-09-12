@@ -6,7 +6,8 @@ import {
 import { Entities } from '../steps/constants';
 
 import {
-  Application,
+  DiscoverApplication,
+  DetectedApplication,
   Device,
   PreventionPolicy,
   Vulnerability,
@@ -93,6 +94,10 @@ export function buildEc2InstanceArn(source: Device): string | undefined {
   return `arn:aws:ec2:${region}:${serviceProviderAccountId}:instance/${instanceId}`;
 }
 
+export function createSensorAgentKey(deviceId: string): string {
+  return deviceId;
+}
+
 export function createSensorAgentEntity(source: Device) {
   return createIntegrationEntity({
     entityData: {
@@ -106,7 +111,7 @@ export function createSensorAgentEntity(source: Device) {
         // version is upgraded.  This is listed in their API documentation
         // and it notes that this means that it's a valid case for a Host to
         // potentially have multiple sensors protecting it.
-        _key: source.device_id,
+        _key: createSensorAgentKey(source.device_id),
         name: source.hostname,
         function: ['anti-malware', 'activity-monitor'],
         firstSeenOn: parseTimePropertyValue(source.first_seen),
@@ -216,13 +221,13 @@ export function createVulnerabilityEntity(source: Vulnerability) {
   });
 }
 
-export function createApplicationEntity(source: Application) {
+export function createDetectedApplicationEntity(source: DetectedApplication) {
   return createIntegrationEntity({
     entityData: {
       source,
       assign: {
-        _class: Entities.APPLICATION._class,
-        _type: Entities.APPLICATION._type,
+        _class: Entities.DETECTED_APPLICATION._class,
+        _type: Entities.DETECTED_APPLICATION._type,
         _key: source.product_name_version.toLowerCase().replace(/\s/g, '-'),
         name: source.product_name_version,
         open: source.sub_status.toLowerCase() === 'open',
@@ -232,6 +237,33 @@ export function createApplicationEntity(source: Application) {
     },
   });
 }
+
+export function createDiscoverApplicationEntity(source: DiscoverApplication) {
+  return createIntegrationEntity({
+    entityData: {
+      source,
+      assign: {
+        _class: Entities.DISCOVER_APPLICATION._class,
+        _type: Entities.DISCOVER_APPLICATION._type,
+        _key: source.id,
+        name: source.name || source.id,
+        id: source.id,
+        vendor: source.vendor,
+        version: source.version,
+        versioningScheme: source.versioning_scheme,
+        architectures: source.architectures,
+        isSuspicious: source.is_suspicious,
+        isNormalized: source.is_normalized,
+        installationPaths: source.installation_paths,
+        installedOn: parseTimePropertyValue(source.installation_timestamp),
+        firstSeenOn: parseTimePropertyValue(source.first_seen_timestamp),
+        lastUpdatedOn: parseTimePropertyValue(source.last_updated_timestamp),
+        lastUsedOn: parseTimePropertyValue(source.last_used_timestamp),
+      },
+    },
+  });
+}
+
 export function createZeroTrustAssessmentEntity(source: ZeroTrustAssessment) {
   const unmet_os_signals = source.assessment_items.os_signals.filter(
     (s) => s.meets_criteria == 'no',

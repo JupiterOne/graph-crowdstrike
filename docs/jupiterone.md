@@ -102,6 +102,7 @@ The following entities are created:
 | Account               | `crowdstrike_account`               | `Account`       |
 | Application           | `crowdstrike_detected_application`  | `Application`   |
 | Device Sensor Agent   | `crowdstrike_sensor`                | `HostAgent`     |
+| Discover Application  | `crowdstrike_discover_application`  | `Application`   |
 | Prevention Policy     | `crowdstrike_prevention_policy`     | `ControlPolicy` |
 | Service               | `crowdstrike_endpoint_protection`   | `Service`       |
 | Vulnerability         | `crowdstrike_vulnerability`         | `Finding`       |
@@ -118,6 +119,7 @@ The following relationships are created:
 | `crowdstrike_detected_application` | **HAS**               | `crowdstrike_vulnerability`         |
 | `crowdstrike_prevention_policy`    | **ENFORCES**          | `crowdstrike_endpoint_protection`   |
 | `crowdstrike_sensor`               | **ASSIGNED**          | `crowdstrike_prevention_policy`     |
+| `crowdstrike_sensor`               | **HAS**               | `crowdstrike_discover_application`  |
 | `crowdstrike_sensor`               | **HAS**               | `crowdstrike_zero_trust_assessment` |
 | `crowdstrike_vulnerability`        | **EXPLOITS**          | `crowdstrike_sensor`                |
 

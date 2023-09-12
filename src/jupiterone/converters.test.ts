@@ -7,7 +7,7 @@ import {
 import { createMockExecutionContext } from '@jupiterone/integration-sdk-testing';
 
 import {
-  Application,
+  DetectedApplication,
   Device,
   PreventionPolicy,
   Vulnerability,
@@ -18,7 +18,7 @@ import {
   createPreventionPolicyEntity,
   createProtectionServiceEntity,
   createVulnerabilityEntity,
-  createApplicationEntity,
+  createDetectedApplicationEntity,
 } from './converters';
 
 describe('createAccountEntity', () => {
@@ -398,9 +398,9 @@ describe('createVulnerabilityEntity', () => {
   });
 });
 
-describe('createApplicationEntity', () => {
+describe('createDetectedApplicationEntity', () => {
   test('properties transferred', () => {
-    const source: Application = {
+    const source: DetectedApplication = {
       product_name_version: 'Windows Server 2016 1607',
       sub_status: 'open',
       remediation: {
@@ -411,7 +411,7 @@ describe('createApplicationEntity', () => {
       },
     };
 
-    expect(createApplicationEntity(source)).toEqual({
+    expect(createDetectedApplicationEntity(source)).toEqual({
       _class: ['Application'],
       _key: 'windows-server-2016-1607',
       _rawData: [

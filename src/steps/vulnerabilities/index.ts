@@ -11,7 +11,7 @@ import { IntegrationConfig } from '../../config';
 import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
 import { Entities, Relationships, StepIds } from '../constants';
 import {
-  createApplicationEntity,
+  createDetectedApplicationEntity,
   createVulnerabilityEntity,
 } from '../../jupiterone/converters';
 import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/src/types/logger';
@@ -63,7 +63,7 @@ async function fetchVulnerabilities({
             }
 
             for (const app of vulnerability.apps || []) {
-              const appEntity = createApplicationEntity(app);
+              const appEntity = createDetectedApplicationEntity(app);
 
               // We probably don't want to count the duplicate apps, since the single app could have multiple findings (e.g. might be expected scenario)
               if (!jobState.hasKey(appEntity._key)) {
@@ -174,7 +174,7 @@ export const vulnerabilitiesSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: StepIds.VULNERABILITIES,
     name: 'Fetch Vulnerabilities',
-    entities: [Entities.VULNERABILITY, Entities.APPLICATION],
+    entities: [Entities.VULNERABILITY, Entities.DETECTED_APPLICATION],
     relationships: [Relationships.APP_HAS_VULN],
     executionHandler: fetchVulnerabilities,
   },

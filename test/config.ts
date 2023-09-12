@@ -14,7 +14,7 @@ if (process.env.LOAD_ENV) {
 export const config: IntegrationConfig = {
   clientId: process.env.CLIENT_ID || 'clientId',
   clientSecret: process.env.CLIENT_SECRET || 'clientSecret',
-  availabilityZone: '',
+  availabilityZone: process.env.AVAILABILITY_ZONE || '',
 };
 
 export const availabilityZoneConfig: IntegrationConfig = {
