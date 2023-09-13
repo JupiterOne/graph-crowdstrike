@@ -248,6 +248,7 @@ export function createDiscoverApplicationEntity(source: DiscoverApplication) {
         _key: source.id,
         name: source.name || source.id,
         id: source.id,
+        agentId: source.host?.aid,
         vendor: source.vendor,
         version: source.version,
         versioningScheme: source.versioning_scheme,
