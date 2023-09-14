@@ -1,3 +1,15 @@
+# v3.9.2 (Thu Sep 14 2023)
+
+#### 🐛 Bug Fix
+
+- NO-JIRA: fix pagination [#166](https://github.com/JupiterOne/graph-crowdstrike/pull/166) (ronald.arias@contractor.jupiterone.com)
+
+#### Authors: 1
+
+- Ronald Arias ([@RonaldEAM](https://github.com/RonaldEAM))
+
+---
+
 # v3.9.1 (Wed Sep 13 2023)
 
 #### 🐛 Bug Fix
