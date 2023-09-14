@@ -361,11 +361,19 @@ export class CrowdStrikeApiGateway {
         'pagination response details',
       );
 
-      seen += response.resources.length;
       paginationParams = {
         ...response.meta.pagination,
-        offset: seen,
       } as PaginationMeta;
+      seen += response.resources.length;
+
+      // In some endpoints the returned offset is not the offset of the next page but the current one, this fixes it.
+      if (
+        response.meta.pagination &&
+        'offset' in response.meta.pagination &&
+        typeof response.meta.pagination.offset === 'number'
+      ) {
+        paginationParams.offset = seen;
+      }
 
       const baseUrl = this.queryBuilder.buildResourcePathUrl(
         availabilityZone,
