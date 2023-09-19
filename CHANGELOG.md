@@ -1,3 +1,15 @@
+# v3.10.0 (Tue Sep 19 2023)
+
+#### 🚀 Enhancement
+
+- Add vulnerabilitiesMaxDaysInPast Config Field [#167](https://github.com/JupiterOne/graph-crowdstrike/pull/167) ([@zemberdotnet](https://github.com/zemberdotnet))
+
+#### Authors: 1
+
+- Matthew Zember ([@zemberdotnet](https://github.com/zemberdotnet))
+
+---
+
 # v3.9.2 (Thu Sep 14 2023)
 
 #### 🐛 Bug Fix
