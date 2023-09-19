@@ -32,22 +32,32 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
   availabilityZone: {
     type: 'string',
     mask: false,
+    optional: true,
   },
   vulnerabilitySeverities: {
     type: 'string',
     mask: false,
+    optional: true,
   },
   includeClosedVulnerabilities: {
     type: 'boolean',
     mask: false,
+    optional: true,
   },
   vulnerabilitiesLimit: {
     type: 'string',
     mask: false,
+    optional: true,
   },
   devicesLimit: {
     type: 'string',
     mask: false,
+    optional: true,
+  },
+  vulnerabilitiesMaxDaysInPast: {
+    type: 'string',
+    mask: false,
+    optional: true,
   },
 };
 
@@ -60,6 +70,7 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   ingestAllVulnerabilities?: boolean;
   vulnerabilitiesLimit?: string;
   devicesLimit?: string;
+  vulnerabilitiesMaxDaysInPast?: string;
 }
 
 export async function validateInvocation({
@@ -78,6 +89,15 @@ export async function validateInvocation({
     instance.config.vulnerabilitySeverities =
       instance.config.vulnerabilitySeverities.replace(/\s+/g, '');
     validateSeverities(instance.config.vulnerabilitySeverities);
+  }
+
+  if (instance.config.vulnerabilitiesMaxDaysInPast) {
+    const number = Number(instance.config.vulnerabilitiesMaxDaysInPast);
+    if (!isFinite(number) || isNaN(number) || number <= 0) {
+      throw new IntegrationValidationError(
+        `Invalid vulnerabilitiesMaxDaysInPast: "${instance.config.vulnerabilitiesMaxDaysInPast}"`,
+      );
+    }
   }
 
   const client = getOrCreateFalconAPIClient(instance.config, logger);

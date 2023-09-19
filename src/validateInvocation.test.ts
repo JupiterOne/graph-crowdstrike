@@ -104,4 +104,30 @@ describe('#validateInvocation', () => {
       'Severity - NOTGOOD - is not valid. Valid vulnerability severities include CRITICAL,HIGH,MEDIUM,LOW,NONE,UNKNOWN',
     );
   });
+
+  test('fails to validate vulnerabilitiesMaxDaysInPast contains invalid number', async () => {
+    const executionContext = createMockExecutionContext<IntegrationConfig>({
+      instanceConfig: {
+        ...config,
+        vulnerabilitiesMaxDaysInPast: '-1',
+      },
+    });
+
+    await expect(validateInvocation(executionContext)).rejects.toThrow(
+      `Invalid vulnerabilitiesMaxDaysInPast: "1"`,
+    );
+  });
+
+  test('fails to validate vulnerabilitiesMaxDaysInPast is not a number', async () => {
+    const executionContext = createMockExecutionContext<IntegrationConfig>({
+      instanceConfig: {
+        ...config,
+        vulnerabilitiesMaxDaysInPast: 'I am not a number im just text',
+      },
+    });
+
+    await expect(validateInvocation(executionContext)).rejects.toThrow(
+      `Invalid vulnerabilitiesMaxDaysInPast: "I am not a number im just text"`,
+    );
+  });
 });
