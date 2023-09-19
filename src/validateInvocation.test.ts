@@ -114,7 +114,7 @@ describe('#validateInvocation', () => {
     });
 
     await expect(validateInvocation(executionContext)).rejects.toThrow(
-      `Invalid vulnerabilitiesMaxDaysInPast: "1"`,
+      `Invalid vulnerabilitiesMaxDaysInPast: "-1"`,
     );
   });
 
