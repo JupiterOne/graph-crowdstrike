@@ -115,9 +115,7 @@ describe('#createVulnerabilityFQLFilter', () => {
       maxDaysInPast: 10,
     });
 
-    expect(actual).toContain(
-      `cve.severity:['CRITICAL','HIGH','MEDIUM','UNKNOWN']`,
-    );
+    expect(actual).toContain(`cve.severity:['CRITICAL','HIGH']`);
   });
 
   test('uses default filter when vulnerability severities is empty string', () => {
@@ -134,9 +132,7 @@ describe('#createVulnerabilityFQLFilter', () => {
       maxDaysInPast: 10,
     });
 
-    expect(actual).toContain(
-      `cve.severity:['CRITICAL','HIGH','MEDIUM','UNKNOWN']`,
-    );
+    expect(actual).toContain(`cve.severity:['CRITICAL','HIGH']`);
   });
 
   test('excludes created_timestamp if ingestAllVulnerabilities is set to true', () => {
