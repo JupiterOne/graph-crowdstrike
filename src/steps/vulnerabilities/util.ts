@@ -64,7 +64,7 @@ export function createVulnerabilityFQLFilter({
   return filter.join('+');
 }
 
-const DEFAULT_FILTER = `cve.severity:['SPOTLIGHT','CRITICAL','HIGH']`;
+const DEFAULT_FILTER = `cve.severity:['CRITICAL','HIGH']`;
 function createSeverityFilter(severities: string | undefined) {
   if (!severities) {
     return DEFAULT_FILTER;
