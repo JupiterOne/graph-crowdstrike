@@ -7,8 +7,9 @@ import {
 import { MappedRelationships, StepIds } from '../constants';
 import { setupCrowdstrikeRecording } from '../../../test/recording';
 import { buildStepTestConfig } from '../../../test/config';
+import { resetFalconAPIClient } from '../../crowdstrike/getOrCreateFalconAPIClient';
 
-describe(`vulnerabilities#${StepIds.VULN_EXPLOITS_SENSOR}`, () => {
+describe(`vulnerabilities`, () => {
   let recording: Recording;
   afterEach(async () => {
     if (recording) await recording.stop();
@@ -35,7 +36,7 @@ describe(`vulnerabilities#${StepIds.VULN_EXPLOITS_SENSOR}`, () => {
   });
 });
 
-describe(`vulnerability_is_cve#${StepIds.BUILD_INSPECTORV2_FINDING_CVE_RELATIONSHIPS}`, () => {
+describe(`vulnerability_is_cve#${StepIds.BUILD_VULNERABILITY_FINDING_CVE_RELATIONSHIPS}`, () => {
   let recording: Recording;
   afterEach(async () => {
     if (recording) await recording.stop();
@@ -43,9 +44,10 @@ describe(`vulnerability_is_cve#${StepIds.BUILD_INSPECTORV2_FINDING_CVE_RELATIONS
 
   jest.setTimeout(45000);
 
-  test(StepIds.BUILD_INSPECTORV2_FINDING_CVE_RELATIONSHIPS, async () => {
+  test(StepIds.BUILD_VULNERABILITY_FINDING_CVE_RELATIONSHIPS, async () => {
+    resetFalconAPIClient();
     recording = setupCrowdstrikeRecording({
-      name: StepIds.BUILD_INSPECTORV2_FINDING_CVE_RELATIONSHIPS,
+      name: StepIds.BUILD_VULNERABILITY_FINDING_CVE_RELATIONSHIPS,
       directory: __dirname,
       options: {
         matchRequestsBy: {
@@ -55,7 +57,7 @@ describe(`vulnerability_is_cve#${StepIds.BUILD_INSPECTORV2_FINDING_CVE_RELATIONS
     });
 
     const stepConfig = buildStepTestConfig(
-      StepIds.BUILD_INSPECTORV2_FINDING_CVE_RELATIONSHIPS,
+      StepIds.BUILD_VULNERABILITY_FINDING_CVE_RELATIONSHIPS,
     );
 
     const { collectedRelationships } = await executeStepWithDependencies(

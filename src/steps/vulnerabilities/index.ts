@@ -200,7 +200,7 @@ export const vulnerabilitiesSteps: IntegrationStep<IntegrationConfig>[] = [
     executionHandler: fetchVulnerabilities,
   },
   {
-    id: StepIds.BUILD_INSPECTORV2_FINDING_CVE_RELATIONSHIPS,
+    id: StepIds.BUILD_VULNERABILITY_FINDING_CVE_RELATIONSHIPS,
     name: 'Build Vulnerability -> CVE relationship',
     entities: [],
     relationships: [],

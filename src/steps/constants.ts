@@ -21,7 +21,7 @@ export const StepIds: Record<
   | 'ZERO_TRUST_ASSESSMENT'
   | 'ZERO_TRUST_ASSESSMENT_SENSOR_RELATIONSHIPS'
   | 'VULN_EXPLOITS_SENSOR'
-  | 'BUILD_INSPECTORV2_FINDING_CVE_RELATIONSHIPS',
+  | 'BUILD_VULNERABILITY_FINDING_CVE_RELATIONSHIPS',
   string
 > = {
   ACCOUNT: 'get-account',
@@ -33,7 +33,7 @@ export const StepIds: Record<
   ZERO_TRUST_ASSESSMENT: 'fetch-zero-trust-assessments',
   ZERO_TRUST_ASSESSMENT_SENSOR_RELATIONSHIPS: 'fetch_zta_sensor_relationships',
   VULN_EXPLOITS_SENSOR: 'build-vulnerability-expoits-sensor-relationship',
-  BUILD_INSPECTORV2_FINDING_CVE_RELATIONSHIPS:
+  BUILD_VULNERABILITY_FINDING_CVE_RELATIONSHIPS:
     'build-vulnerability-finding-cve-relationships',
 };
 type CrowdstrikeStepEntityMetadata = StepEntityMetadata & {
