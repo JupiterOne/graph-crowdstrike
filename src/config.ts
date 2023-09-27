@@ -114,7 +114,6 @@ export async function validateInvocation({
 }
 
 const VALID_SEVERITIES = [
-  'SPOTLIGHT',
   'CRITICAL',
   'HIGH',
   'MEDIUM',

@@ -9,9 +9,15 @@ import {
 } from '@jupiterone/integration-sdk-core';
 import { IntegrationConfig } from '../../config';
 import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
-import { Entities, Relationships, StepIds } from '../constants';
+import {
+  Entities,
+  MappedRelationships,
+  Relationships,
+  StepIds,
+} from '../constants';
 import {
   createDetectedApplicationEntity,
+  createFindingCVEMappedRelationship,
   createVulnerabilityEntity,
 } from '../../jupiterone/converters';
 import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/src/types/logger';
@@ -125,6 +131,20 @@ async function fetchVulnerabilities({
   );
 }
 
+async function buildFindingCveRelationships({
+  jobState,
+}: IntegrationStepExecutionContext<IntegrationConfig>): Promise<void> {
+  await jobState.iterateEntities(
+    { _type: Entities.VULNERABILITY._type },
+    async (finding) => {
+      const relationship = createFindingCVEMappedRelationship(finding);
+      if (relationship) {
+        await jobState.addRelationship(relationship);
+      }
+    },
+  );
+}
+
 async function buildVulnerabilitySensorRelationship({
   jobState,
   logger,
@@ -178,6 +198,15 @@ export const vulnerabilitiesSteps: IntegrationStep<IntegrationConfig>[] = [
     entities: [Entities.VULNERABILITY, Entities.DETECTED_APPLICATION],
     relationships: [Relationships.APP_HAS_VULN],
     executionHandler: fetchVulnerabilities,
+  },
+  {
+    id: StepIds.BUILD_INSPECTORV2_FINDING_CVE_RELATIONSHIPS,
+    name: 'Build Vulnerability -> CVE relationship',
+    entities: [],
+    relationships: [],
+    mappedRelationships: [MappedRelationships.VULN_IS_CVE],
+    dependsOn: [StepIds.VULNERABILITIES],
+    executionHandler: buildFindingCveRelationships,
   },
   {
     id: StepIds.VULN_EXPLOITS_SENSOR,

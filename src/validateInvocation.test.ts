@@ -101,7 +101,7 @@ describe('#validateInvocation', () => {
     });
 
     await expect(validateInvocation(executionContext)).rejects.toThrow(
-      'Severity - NOTGOOD - is not valid. Valid vulnerability severities include SPOTLIGHT,CRITICAL,HIGH,MEDIUM,LOW,NONE,UNKNOWN',
+      'Severity - NOTGOOD - is not valid. Valid vulnerability severities include CRITICAL,HIGH,MEDIUM,LOW,NONE,UNKNOWN',
     );
   });
 

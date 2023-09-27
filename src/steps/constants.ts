@@ -1,6 +1,8 @@
 import {
   RelationshipClass,
+  RelationshipDirection,
   StepEntityMetadata,
+  StepMappedRelationshipMetadata,
   StepRelationshipMetadata,
 } from '@jupiterone/integration-sdk-core';
 
@@ -18,7 +20,8 @@ export const StepIds: Record<
   | 'DEVICE_POLICY_RELATIONSHIPS'
   | 'ZERO_TRUST_ASSESSMENT'
   | 'ZERO_TRUST_ASSESSMENT_SENSOR_RELATIONSHIPS'
-  | 'VULN_EXPLOITS_SENSOR',
+  | 'VULN_EXPLOITS_SENSOR'
+  | 'BUILD_INSPECTORV2_FINDING_CVE_RELATIONSHIPS',
   string
 > = {
   ACCOUNT: 'get-account',
@@ -30,6 +33,8 @@ export const StepIds: Record<
   ZERO_TRUST_ASSESSMENT: 'fetch-zero-trust-assessments',
   ZERO_TRUST_ASSESSMENT_SENSOR_RELATIONSHIPS: 'fetch_zta_sensor_relationships',
   VULN_EXPLOITS_SENSOR: 'build-vulnerability-expoits-sensor-relationship',
+  BUILD_INSPECTORV2_FINDING_CVE_RELATIONSHIPS:
+    'build-vulnerability-finding-cve-relationships',
 };
 type CrowdstrikeStepEntityMetadata = StepEntityMetadata & {
   disableClassMatch?: boolean;
@@ -146,5 +151,18 @@ export const Relationships: Record<
     sourceType: Entities.SENSOR._type,
     _class: RelationshipClass.HAS,
     targetType: Entities.ZERO_TRUST_ASSESSMENT._type,
+  },
+};
+
+export const MappedRelationships: Record<
+  'VULN_IS_CVE',
+  StepMappedRelationshipMetadata
+> = {
+  VULN_IS_CVE: {
+    _type: 'crowdstrike_vulnerability_is_cve',
+    sourceType: 'crowdstrike_vulnerability',
+    _class: RelationshipClass.IS,
+    targetType: 'cve',
+    direction: RelationshipDirection.FORWARD,
   },
 };
