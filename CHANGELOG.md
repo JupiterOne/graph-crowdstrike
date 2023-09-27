@@ -1,3 +1,15 @@
+# v3.10.1 (Wed Sep 27 2023)
+
+#### 🐛 Bug Fix
+
+- fix: remove total class to fix pagination bug [#169](https://github.com/JupiterOne/graph-crowdstrike/pull/169) ([@zemberdotnet](https://github.com/zemberdotnet))
+
+#### Authors: 1
+
+- Matthew Zember ([@zemberdotnet](https://github.com/zemberdotnet))
+
+---
+
 # v3.10.0 (Tue Sep 19 2023)
 
 #### 🚀 Enhancement
