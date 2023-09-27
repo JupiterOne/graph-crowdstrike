@@ -378,6 +378,14 @@ export class CrowdStrikeApiGateway {
 
       finished = seen === 0 || seen >= total;
 
+      if (!response.resources?.length && finished !== true) {
+        this.logger.info(
+          { resourcesLength: response.resources?.length },
+          'response with zero resources, but finished is not true',
+        );
+        finished = true;
+      }
+
       this.logger.info(
         { seen, total, finished },
         'post-request pagination state',
