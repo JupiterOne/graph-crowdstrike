@@ -17,7 +17,6 @@ import {
 import fetch, { RequestInit } from 'node-fetch';
 import { FalconAPIResourceIterationCallback } from './FalconAPIClient';
 import { ICrowdStrikeApiClientQueryBuilder } from './CrowdStrikeApiClientQueryBuilder';
-import { Total } from './Total';
 import { httpErrorPolicy } from './HttpErrorPolicy';
 
 function getUnixTimeNow() {
@@ -54,7 +53,6 @@ export class CrowdStrikeApiGateway {
   private attemptOptions: AttemptOptions;
   private logger: IntegrationLogger;
   private readonly rateLimitConfig: RateLimitConfig = DEFAULT_RATE_LIMIT_CONFIG;
-  private total: Total;
   private queryBuilder: ICrowdStrikeApiClientQueryBuilder;
   private fetcher: typeof fetch;
 
@@ -66,7 +64,6 @@ export class CrowdStrikeApiGateway {
     attemptOptions?: AttemptOptions,
   ) {
     this.queryBuilder = queryBuilder;
-    this.total = new Total();
     this.credentials = credentials;
     this.logger = logger;
     this.attemptOptions = attemptOptions ?? DEFAULT_ATTEMPT_OPTIONS;
@@ -375,16 +372,22 @@ export class CrowdStrikeApiGateway {
         paginationParams.offset = seen;
       }
 
-      const baseUrl = this.queryBuilder.buildResourcePathUrl(
-        availabilityZone,
-        resourcePath,
-      );
-
-      this.total.setValue(baseUrl, paginationParams?.total);
-
-      total = this.total.getValue(baseUrl);
+      if (paginationParams?.total) {
+        total = paginationParams.total;
+      }
 
       finished = seen === 0 || seen >= total;
+
+      if (
+        (!response.resources || response.resources.length === 0) &&
+        !finished
+      ) {
+        this.logger.info(
+          { resourcesLength: response.resources?.length },
+          'response with zero resources, but finished is not true',
+        );
+        finished = true;
+      }
 
       this.logger.info(
         { seen, total, finished },
