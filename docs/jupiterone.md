@@ -123,6 +123,14 @@ The following relationships are created:
 | `crowdstrike_sensor`               | **HAS**               | `crowdstrike_zero_trust_assessment` |
 | `crowdstrike_vulnerability`        | **EXPLOITS**          | `crowdstrike_sensor`                |
 
+### Mapped Relationships
+
+The following mapped relationships are created:
+
+| Source Entity `_type`       | Relationship `_class` | Target Entity `_type` | Direction |
+| --------------------------- | --------------------- | --------------------- | --------- |
+| `crowdstrike_vulnerability` | **IS**                | `*cve*`               | FORWARD   |
+
 <!--
 ********************************************************************************
 END OF GENERATED DOCUMENTATION AFTER BELOW MARKER

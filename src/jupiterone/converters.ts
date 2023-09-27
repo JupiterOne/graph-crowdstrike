@@ -1,9 +1,11 @@
 import {
+  Entity,
+  MappedRelationship,
   convertProperties,
   createIntegrationEntity,
   parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
-import { Entities } from '../steps/constants';
+import { Entities, MappedRelationships } from '../steps/constants';
 
 import {
   DiscoverApplication,
@@ -219,6 +221,41 @@ export function createVulnerabilityEntity(source: Vulnerability) {
       },
     },
   });
+}
+
+export function createCVEEntity(cveId: string, cveLink?: string) {
+  const cveLowerCase = cveId.toLowerCase();
+  const cveUpperCase = cveId.toUpperCase();
+  const cveType = 'cve';
+  const cveClass = 'Vulnerability';
+
+  return {
+    _key: cveLowerCase,
+    _class: cveClass,
+    _type: cveType,
+    name: cveUpperCase,
+    displayName: cveUpperCase,
+    webLink: cveLink,
+  };
+}
+
+export function createFindingCVEMappedRelationship(
+  finding: Entity,
+): MappedRelationship | undefined {
+  if (typeof finding.id === 'string') {
+    return {
+      _key: `${finding._key}|is|${finding.id.toLowerCase()}`,
+      _type: `${finding._type}_is_cve`,
+      _class: 'IS',
+      displayName: 'IS',
+      _mapping: {
+        sourceEntityKey: finding._key,
+        relationshipDirection: MappedRelationships.VULN_IS_CVE.direction,
+        targetFilterKeys: [['_type', '_key']],
+        targetEntity: createCVEEntity(finding.id, finding.webLink),
+      },
+    };
+  }
 }
 
 export function createDetectedApplicationEntity(source: DetectedApplication) {
