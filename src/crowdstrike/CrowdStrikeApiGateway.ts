@@ -378,7 +378,10 @@ export class CrowdStrikeApiGateway {
 
       finished = seen === 0 || seen >= total;
 
-      if ((!response.resources || response.resources.length === 0) && !finished) {
+      if (
+        (!response.resources || response.resources.length === 0) &&
+        !finished
+      ) {
         this.logger.info(
           { resourcesLength: response.resources?.length },
           'response with zero resources, but finished is not true',
