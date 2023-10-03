@@ -59,6 +59,11 @@ export const instanceConfigFields: IntegrationInstanceConfigFieldMap = {
     mask: false,
     optional: true,
   },
+  sensorsMaxDaysInPast: {
+    type: 'string',
+    mask: false,
+    optional: true,
+  },
 };
 
 export interface IntegrationConfig extends IntegrationInstanceConfig {
@@ -71,6 +76,17 @@ export interface IntegrationConfig extends IntegrationInstanceConfig {
   vulnerabilitiesLimit?: string;
   devicesLimit?: string;
   vulnerabilitiesMaxDaysInPast?: string;
+  sensorsMaxDaysInPast?: string;
+}
+
+function validateMaxDaysInPastValue(maxDaysInPastValue: number) {
+  if (
+    !isFinite(maxDaysInPastValue) ||
+    isNaN(maxDaysInPastValue) ||
+    maxDaysInPastValue <= 0
+  ) {
+    throw new Error();
+  }
 }
 
 export async function validateInvocation({
@@ -92,10 +108,23 @@ export async function validateInvocation({
   }
 
   if (instance.config.vulnerabilitiesMaxDaysInPast) {
-    const number = Number(instance.config.vulnerabilitiesMaxDaysInPast);
-    if (!isFinite(number) || isNaN(number) || number <= 0) {
+    try {
+      validateMaxDaysInPastValue(
+        Number(instance.config.vulnerabilitiesMaxDaysInPast),
+      );
+    } catch (err) {
       throw new IntegrationValidationError(
         `Invalid vulnerabilitiesMaxDaysInPast: "${instance.config.vulnerabilitiesMaxDaysInPast}"`,
+      );
+    }
+  }
+
+  if (instance.config.sensorsMaxDaysInPast) {
+    try {
+      validateMaxDaysInPastValue(Number(instance.config.sensorsMaxDaysInPast));
+    } catch (err) {
+      throw new IntegrationValidationError(
+        `Invalid sensorsMaxDaysInPast: "${instance.config.sensorsMaxDaysInPast}"`,
       );
     }
   }

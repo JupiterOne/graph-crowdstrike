@@ -24,7 +24,11 @@ async function fetchDevices({
 
   logger.info('Iterating devices...');
 
-  const timestamp = createFQLTimestamp(getDateInPast(50));
+  const maxDaysInPast = instance.config.sensorsMaxDaysInPast
+    ? Number(instance.config.sensorsMaxDaysInPast)
+    : 50;
+
+  const timestamp = createFQLTimestamp(getDateInPast(maxDaysInPast));
 
   await client.iterateDevices({
     query: {
