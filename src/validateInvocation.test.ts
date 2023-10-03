@@ -130,4 +130,30 @@ describe('#validateInvocation', () => {
       `Invalid vulnerabilitiesMaxDaysInPast: "I am not a number im just text"`,
     );
   });
+
+  test('fails to validate sensorsMaxDaysInPast contains invalid number', async () => {
+    const executionContext = createMockExecutionContext<IntegrationConfig>({
+      instanceConfig: {
+        ...config,
+        sensorsMaxDaysInPast: '-1',
+      },
+    });
+
+    await expect(validateInvocation(executionContext)).rejects.toThrow(
+      `Invalid sensorsMaxDaysInPast: "-1"`,
+    );
+  });
+
+  test('fails to validate sensorsMaxDaysInPast is not a number', async () => {
+    const executionContext = createMockExecutionContext<IntegrationConfig>({
+      instanceConfig: {
+        ...config,
+        sensorsMaxDaysInPast: 'I am not a number im just text',
+      },
+    });
+
+    await expect(validateInvocation(executionContext)).rejects.toThrow(
+      `Invalid sensorsMaxDaysInPast: "I am not a number im just text"`,
+    );
+  });
 });
