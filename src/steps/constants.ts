@@ -74,6 +74,7 @@ export const Entities: Record<
     resourceName: 'Vulnerability',
     _type: 'crowdstrike_vulnerability',
     _class: ['Finding'], // J1 data model considers CrowdStrike vulns as Findings. Note: this changes the billing of the entity
+    partial: true,
   },
   DETECTED_APPLICATION: {
     resourceName: 'Application',
@@ -139,12 +140,14 @@ export const Relationships: Record<
     sourceType: Entities.VULNERABILITY._type,
     _class: RelationshipClass.EXPLOITS,
     targetType: Entities.SENSOR._type,
+    partial: true,
   },
   APP_HAS_VULN: {
     _type: 'crowdstrike_detected_application_has_vulnerability',
     sourceType: Entities.DETECTED_APPLICATION._type,
     _class: RelationshipClass.HAS,
     targetType: Entities.VULNERABILITY._type,
+    partial: true,
   },
   SENSOR_HAS_ZERO_TRUST_ASSESSMENT: {
     _type: 'crowdstrike_sensor_has_zero_trust_assessment',
