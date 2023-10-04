@@ -1,3 +1,15 @@
+# v3.12.1 (Wed Oct 04 2023)
+
+#### 🐛 Bug Fix
+
+- INT-8672: Re apply partial [#171](https://github.com/JupiterOne/graph-crowdstrike/pull/171) ([@gastonyelmini](https://github.com/gastonyelmini))
+
+#### Authors: 1
+
+- Gaston Yelmini ([@gastonyelmini](https://github.com/gastonyelmini))
+
+---
+
 # v3.12.0 (Tue Oct 03 2023)
 
 #### 🚀 Enhancement
