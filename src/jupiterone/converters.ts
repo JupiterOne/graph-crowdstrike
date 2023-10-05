@@ -3,6 +3,7 @@ import {
   MappedRelationship,
   convertProperties,
   createIntegrationEntity,
+  getRawData,
   parseTimePropertyValue,
 } from '@jupiterone/integration-sdk-core';
 import { Entities, MappedRelationships } from '../steps/constants';
@@ -242,9 +243,10 @@ export function createCVEEntity(cveId: string, cveLink?: string) {
 export function createFindingCVEMappedRelationship(
   finding: Entity,
 ): MappedRelationship | undefined {
-  if (typeof finding.id === 'string') {
+  const findingRawData = getRawData<Vulnerability>(finding);
+  if (typeof findingRawData?.cve.id === 'string') {
     return {
-      _key: `${finding._key}|is|${finding.id.toLowerCase()}`,
+      _key: `${finding._key}|is|${findingRawData?.cve.id.toLowerCase()}`,
       _type: `${finding._type}_is_cve`,
       _class: 'IS',
       displayName: 'IS',
@@ -252,7 +254,7 @@ export function createFindingCVEMappedRelationship(
         sourceEntityKey: finding._key,
         relationshipDirection: MappedRelationships.VULN_IS_CVE.direction,
         targetFilterKeys: [['_type', '_key']],
-        targetEntity: createCVEEntity(finding.id, finding.webLink),
+        targetEntity: createCVEEntity(findingRawData?.cve.id, finding.webLink),
       },
     };
   }
