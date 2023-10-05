@@ -1,3 +1,15 @@
+# v3.12.2 (Thu Oct 05 2023)
+
+#### 🐛 Bug Fix
+
+- INT-9590: update Vulnerability is CVE relationship [#172](https://github.com/JupiterOne/graph-crowdstrike/pull/172) ([@gastonyelmini](https://github.com/gastonyelmini))
+
+#### Authors: 1
+
+- Gaston Yelmini ([@gastonyelmini](https://github.com/gastonyelmini))
+
+---
+
 # v3.12.1 (Wed Oct 04 2023)
 
 #### 🐛 Bug Fix
