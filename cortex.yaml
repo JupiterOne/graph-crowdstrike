@@ -1,0 +1,12 @@
+openapi: 3.0.1
+info:
+  title: '@jupiterone/graph-crowdstrike'
+  description: A graph conversion tool for the CrowdStrike API
+  x-cortex-git:
+    github:
+      repository: JupiterOne/graph-crowdstrike
+  x-cortex-owners:
+    - type: group
+      name: JupiterOne/integrations
+  x-cortex-service-groups: tier-4
+  x-cortex-tag: '@jupiterone/graph-crowdstrike'
