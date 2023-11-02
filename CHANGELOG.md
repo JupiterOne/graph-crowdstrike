@@ -1,3 +1,20 @@
+# v3.12.3 (Thu Nov 02 2023)
+
+#### 🐛 Bug Fix
+
+- INT-8959: add ingest sources [#173](https://github.com/JupiterOne/graph-crowdstrike/pull/173) ([@gastonyelmini](https://github.com/gastonyelmini))
+
+#### ⚠️ Pushed to `main`
+
+- Populate CODEOWENRS, baseline package.json and baseline cortex.yaml ([@jablonnc](https://github.com/jablonnc))
+
+#### Authors: 2
+
+- Gaston Yelmini ([@gastonyelmini](https://github.com/gastonyelmini))
+- Noah Jablonski ([@jablonnc](https://github.com/jablonnc))
+
+---
+
 # v3.12.2 (Thu Oct 05 2023)
 
 #### 🐛 Bug Fix
