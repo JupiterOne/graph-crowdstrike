@@ -24,6 +24,7 @@ import { IntegrationWarnEventName } from '@jupiterone/integration-sdk-core/dist/
 import { createVulnerabilityFQLFilter } from './util';
 import pMap from 'p-map';
 import { Vulnerability } from '../../crowdstrike/types';
+import { IngestionSources } from '../../constants';
 async function fetchVulnerabilities({
   instance,
   jobState,
@@ -194,6 +195,7 @@ async function buildVulnerabilitySensorRelationship({
 export const vulnerabilitiesSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: StepIds.VULNERABILITIES,
+    ingestionSourceId: IngestionSources.VULNERABILITIES,
     name: 'Fetch Vulnerabilities',
     entities: [Entities.VULNERABILITY, Entities.DETECTED_APPLICATION],
     relationships: [Relationships.APP_HAS_VULN],

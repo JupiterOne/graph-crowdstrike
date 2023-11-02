@@ -11,6 +11,7 @@ import { Entities, Relationships, StepIds } from '../constants';
 import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
 import { createZeroTrustAssessmentEntity } from '../../jupiterone/converters';
 import { ZeroTrustAssessment } from '../../crowdstrike/types';
+import { IngestionSources } from '../../constants';
 
 async function fetchZeroTrustAssessments({
   instance,
@@ -82,6 +83,7 @@ async function fetchZTASensorRelationships({
 export const ZTASteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: StepIds.ZERO_TRUST_ASSESSMENT,
+    ingestionSourceId: IngestionSources.ZERO_TRUST_ASSESSMENT,
     name: 'Fetch Zero Trust Assessments',
     entities: [Entities.ZERO_TRUST_ASSESSMENT],
     relationships: [],

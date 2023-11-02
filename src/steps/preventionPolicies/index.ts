@@ -9,6 +9,7 @@ import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPICl
 import { createPreventionPolicyEntity } from '../../jupiterone/converters';
 import { IntegrationConfig } from '../../config';
 import { getProtectionServiceEntityFromJobState } from '../util';
+import { IngestionSources } from '../../constants';
 
 async function fetchPreventionPolicies({
   instance,
@@ -50,6 +51,7 @@ async function fetchPreventionPolicies({
 export const preventionPoliciesSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: StepIds.PREVENTION_POLICIES,
+    ingestionSourceId: IngestionSources.PREVENTION_POLICIES,
     name: 'Fetch Prevention Policies',
     entities: [Entities.PREVENTION_POLICY],
     relationships: [
