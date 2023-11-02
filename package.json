@@ -1,6 +1,6 @@
 {
   "name": "@jupiterone/graph-crowdstrike",
-  "version": "3.12.2",
+  "version": "3.12.3",
   "description": "A graph conversion tool for the CrowdStrike API",
   "repository": {
     "type": "git",
