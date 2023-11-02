@@ -13,6 +13,7 @@ import {
   getAccountEntityFromJobState,
   getDateInPast,
 } from '../util';
+import { IngestionSources } from '../../constants';
 
 async function fetchDevices({
   instance,
@@ -89,6 +90,7 @@ async function fetchDevices({
 export const devicesSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: StepIds.DEVICES,
+    ingestionSourceId: IngestionSources.DEVICES,
     name: 'Fetch Devices',
     entities: [Entities.SENSOR],
     relationships: [Relationships.ACCOUNT_HAS_SENSOR],

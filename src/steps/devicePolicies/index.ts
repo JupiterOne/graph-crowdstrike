@@ -8,6 +8,7 @@ import { Entities, Relationships, StepIds } from '../constants';
 import getOrCreateFalconAPIClient from '../../crowdstrike/getOrCreateFalconAPIClient';
 import { PreventionPolicy } from '../../crowdstrike/types';
 import { IntegrationConfig } from '../../config';
+import { IngestionSources } from '../../constants';
 
 async function fetchDevicePolicyRelationships({
   instance,
@@ -102,6 +103,7 @@ async function fetchDevicePolicyRelationships({
 export const devicePolicySteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: StepIds.DEVICE_POLICY_RELATIONSHIPS,
+    ingestionSourceId: IngestionSources.DEVICE_POLICIES,
     name: 'Fetch Device Policies',
     entities: [],
     relationships: [Relationships.SENSOR_ASSIGNED_PREVENTION_POLICY],

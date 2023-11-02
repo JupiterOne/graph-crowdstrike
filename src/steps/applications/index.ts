@@ -15,6 +15,7 @@ import {
   createSensorAgentKey,
 } from '../../jupiterone/converters';
 import pMap from 'p-map';
+import { IngestionSources } from '../../constants';
 
 async function fetchDiscoverApplications({
   instance,
@@ -82,6 +83,7 @@ async function fetchDiscoverApplications({
 export const applicationsSteps: IntegrationStep<IntegrationConfig>[] = [
   {
     id: StepIds.DISCOVER_APPLICATIONS,
+    ingestionSourceId: IngestionSources.DISCOVER_APPLICATIONS,
     name: 'Fetch Applications',
     entities: [Entities.DISCOVER_APPLICATION],
     relationships: [Relationships.SENSOR_HAS_DISCOVER_APPLICATION],
